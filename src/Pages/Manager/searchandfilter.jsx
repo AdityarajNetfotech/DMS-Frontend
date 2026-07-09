@@ -407,7 +407,7 @@ export default function Searchandfilter() {
           const flds = (data.data.folders || []).map(f => ({ ...f, kind: 'folder', type: 'Folder' }));
           
           let combined = [...flds, ...docs];
-          setSearchResults(combined);
+          setSearchResults(combined.filter(item => !item.isArchived));
         }
       } catch (err) {
         console.error("Failed to search", err);

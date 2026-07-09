@@ -127,7 +127,7 @@ export default function FolderExployer() {
         const formattedItems = [
           ...childFolders.map(f => ({ ...f, kind: 'folder', type: 'Folder' })),
           ...documents.map(d => ({ ...d, kind: getFileKind(d.fileType), type: d.fileType || 'File' }))
-        ];
+        ].filter(item => !item.isArchived);
         
         setItems(formattedItems);
         setCurrentFolder(data.data.folder);
@@ -534,13 +534,6 @@ export default function FolderExployer() {
                                 )}
                                 <button onClick={() => handleAction('share', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <Share2 size={16} /> Share
-                                </button>
-                                <button onClick={() => handleAction('favorite', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  <Star size={16} /> {item.isFavorited ? 'Remove Favorite' : 'Favorite'}
-                                </button>
-                                <button onClick={() => handleAction('lock', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  {item.isLocked ? <Unlock size={16} /> : <Lock size={16} />} 
-                                  {item.isLocked ? 'Unlock' : 'Lock'}
                                 </button>
                                 <button onClick={() => handleAction('archive', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <Archive size={16} /> Archive

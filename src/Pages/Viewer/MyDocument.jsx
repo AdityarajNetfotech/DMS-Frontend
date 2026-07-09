@@ -174,20 +174,22 @@ export default function MyDocument() {
       });
       const resData = await response.json();
       if (resData.success) {
-        const formatted = resData.data.map(doc => {
-          const sizeStr = formatBytes(doc.fileSize);
-          const timeStr = formatTimeAgo(doc.createdAt);
-          return {
-            _id: doc._id,
-            name: doc.name,
-            folder: doc.folderName || "Root",
-            meta: `${sizeStr} • ${timeStr}`,
-            type: doc.fileType || "FILE",
-            color: getDocColor(doc.fileType),
-            favorite: doc.favorite,
-            createdAt: doc.createdAt
-          };
-        });
+        const formatted = resData.data
+          .filter(doc => !doc.isArchived)
+          .map(doc => {
+            const sizeStr = formatBytes(doc.fileSize);
+            const timeStr = formatTimeAgo(doc.createdAt);
+            return {
+              _id: doc._id,
+              name: doc.name,
+              folder: doc.folderName || "Root",
+              meta: `${sizeStr} • ${timeStr}`,
+              type: doc.fileType || "FILE",
+              color: getDocColor(doc.fileType),
+              favorite: doc.favorite,
+              createdAt: doc.createdAt
+            };
+          });
         setDocuments(formatted);
       } else {
         setError(resData.message || "Failed to fetch documents.");
