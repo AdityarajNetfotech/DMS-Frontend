@@ -32,7 +32,7 @@ const DEMO_PROFILES = [
     textColor: "text-orange-700",
   },
 ];
- 
+
 export default function DMSSignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,7 +83,7 @@ export default function DMSSignIn() {
 
   // Build slug prefix for navigation (e.g. "/alpha-industries")
   const slugPrefix = companySlug ? `/${companySlug}` : "";
- 
+
   const handleQuickLogin = (profileEmail, profileRole) => {
     setEmail(profileEmail);
     setPassword("demopassword");
@@ -94,14 +94,14 @@ export default function DMSSignIn() {
     if (profileRole === "Company Admin") {
       navigate(`${activeSlugPrefix}/admin/user-management`);
     }
-    if(profileRole === "Manager") {
+    if (profileRole === "Manager") {
       navigate(`${activeSlugPrefix}/manager/dashboard`);
     }
-    if(profileRole === "Viewer") {
+    if (profileRole === "Viewer") {
       navigate(`${activeSlugPrefix}/viewer/dashboard`);
     }
   };
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!companySlug) {
@@ -152,11 +152,11 @@ export default function DMSSignIn() {
       setLoading(false);
     }
   };
- 
+
   return (
-<div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-b from-blue-50 to-blue-100 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-b from-blue-50 to-blue-100 flex items-center justify-center px-4 py-12">
       {/* Decorative dot grids */}
-<div
+      <div
         className="hidden md:block absolute top-40 left-10 w-36 h-36 opacity-40"
         style={{
           backgroundImage:
@@ -164,7 +164,7 @@ export default function DMSSignIn() {
           backgroundSize: "18px 18px",
         }}
       />
-<div
+      <div
         className="hidden md:block absolute bottom-24 right-10 w-40 h-40 opacity-40"
         style={{
           backgroundImage:
@@ -172,27 +172,27 @@ export default function DMSSignIn() {
           backgroundSize: "18px 18px",
         }}
       />
- 
+
       {/* Decorative wave at bottom */}
-<div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-<svg
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+        <svg
           viewBox="0 0 1440 200"
           className="w-full h-32 md:h-40"
           preserveAspectRatio="none"
->
-<path
+        >
+          <path
             d="M0,120 C240,180 480,60 720,90 C960,120 1200,180 1440,110 L1440,200 L0,200 Z"
             fill="#bfdbfe"
             opacity="0.7"
           />
-</svg>
-</div>
- 
+        </svg>
+      </div>
+
       <div className="relative z-10 w-full max-w-xl">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-1">
-            <div 
+            <div
               style={!branding.logo ? { backgroundColor: branding.primaryColor } : {}}
               className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-100 bg-white"
             >
@@ -229,20 +229,20 @@ export default function DMSSignIn() {
             All Your Documents, One Place.
           </p>
         </div>
- 
+
         {/* Card */}
-<div className="bg-white rounded-2xl shadow-xl shadow-blue-900/10 border border-slate-100 p-8 sm:p-10">
-<h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
-<p className="text-slate-500 text-sm mt-1 mb-6">
+        <div className="bg-white rounded-2xl shadow-xl shadow-blue-900/10 border border-slate-100 p-8 sm:p-10">
+          <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
+          <p className="text-slate-500 text-sm mt-1 mb-6">
             Enter your details or select a quick-login profile below
-</p>
+          </p>
 
           {error && (
             <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
               {error}
             </div>
           )}
- 
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1.5">
@@ -260,7 +260,7 @@ export default function DMSSignIn() {
                 />
               </div>
             </div>
- 
+
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-semibold text-slate-800">
@@ -285,7 +285,7 @@ export default function DMSSignIn() {
                 />
               </div>
             </div>
- 
+
             <button
               type="submit"
               disabled={loading}
@@ -295,46 +295,8 @@ export default function DMSSignIn() {
               {loading ? "Signing In..." : "Sign In to Account"}
               {!loading && <ArrowRight className="w-5 h-5" />}
             </button>
-</form>
- 
-          {/* Divider */}
-<div className="flex items-center gap-3 my-7">
-<div className="h-px flex-1 bg-slate-200" />
-<span className="text-xs font-semibold tracking-wider text-slate-400">
-              QUICK DEMO ACCESS
-</span>
-<div className="h-px flex-1 bg-slate-200" />
-</div>
- 
-          {/* Demo profiles */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {DEMO_PROFILES.map((profile) => {
-              const Icon = profile.icon;
-              return (
-<button
-                  key={profile.role}
-                  type="button"
-                  onClick={() => handleQuickLogin(profile.email, profile.role)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border ${profile.cardBg} ${profile.cardBorder} hover:shadow-md hover:-translate-y-0.5 transition text-left`}
->
-<span
-                    className={`w-10 h-10 shrink-0 rounded-full ${profile.iconBg} flex items-center justify-center`}
->
-<Icon className="w-5 h-5 text-white" />
-</span>
-<span className="min-w-0">
-<span className={`block font-semibold text-sm ${profile.textColor}`}>
-                      {profile.role}
-</span>
-<span className="block text-xs text-slate-500 truncate">
-                      {profile.email}
-</span>
-</span>
-</button>
-              );
-            })}
-</div>
- 
+          </form>
+
           <div className="text-center mt-7 space-y-2">
             <p className="text-sm text-slate-500">
               Need a new company or user profile?{" "}
@@ -349,8 +311,8 @@ export default function DMSSignIn() {
               </Link>
             </p>
           </div>
-</div>
-</div>
-</div>
+        </div>
+      </div>
+    </div>
   );
 }
