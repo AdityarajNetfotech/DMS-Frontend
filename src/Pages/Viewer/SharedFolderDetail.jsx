@@ -164,6 +164,7 @@ export default function SharedFolderDetail() {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.message);
+    fetchFolderContents();
   };
 
   const filteredItems = useMemo(() => {
