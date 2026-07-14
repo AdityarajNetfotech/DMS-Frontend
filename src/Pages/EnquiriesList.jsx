@@ -139,7 +139,7 @@ export default function EnquiriesList() {
               <table className="w-full min-w-[800px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/50 text-xs font-medium uppercase tracking-wide text-slate-500">
-                    <th className="px-5 py-3.5 w-12">#</th>
+                    <th className="px-5 py-3.5 w-12">S.No</th>
                     <th className="px-5 py-3.5">Name & Email</th>
                     <th className="px-5 py-3.5">Subject</th>
                     <th className="px-5 py-3.5 max-w-md">Message</th>
@@ -209,7 +209,7 @@ export default function EnquiriesList() {
                 ✕
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="mb-4 text-sm text-slate-600">
                 <strong>To:</strong> {replyModal.enquiry.name} &lt;{replyModal.enquiry.email}&gt;
@@ -217,7 +217,7 @@ export default function EnquiriesList() {
               <div className="mb-4 text-sm text-slate-600">
                 <strong>Subject:</strong> RE: {replyModal.enquiry.subject}
               </div>
-              
+
               <label className="block text-sm font-semibold text-slate-700 mb-2">Message</label>
               <textarea
                 value={replyModal.message}
@@ -229,7 +229,7 @@ export default function EnquiriesList() {
                 This email will be sent by <strong>aditya@netfotech.in</strong>.
               </p>
             </div>
-            
+
             <div className="border-t border-slate-100 bg-slate-50 px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => setReplyModal({ isOpen: false, enquiry: null, message: '', loading: false })}

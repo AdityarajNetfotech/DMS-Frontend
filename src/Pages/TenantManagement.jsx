@@ -126,11 +126,10 @@ export default function TenantManagement() {
       {/* ── Toast Notification ── */}
       {toast && (
         <div
-          className={`fixed top-6 right-6 z-50 flex items-center gap-3 rounded-xl px-5 py-3.5 text-sm font-medium shadow-lg transition-all animate-in slide-in-from-right ${
-            toast.type === "success"
-              ? "bg-emerald-600 text-white"
-              : "bg-red-600 text-white"
-          }`}
+          className={`fixed top-6 right-6 z-50 flex items-center gap-3 rounded-xl px-5 py-3.5 text-sm font-medium shadow-lg transition-all animate-in slide-in-from-right ${toast.type === "success"
+            ? "bg-emerald-600 text-white"
+            : "bg-red-600 text-white"
+            }`}
         >
           {toast.type === "success" ? (
             <CheckCircle2 size={18} />
@@ -173,9 +172,9 @@ export default function TenantManagement() {
                 />
               </div>
 
-              <button className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition cursor-pointer">
+              {/* <button className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition cursor-pointer">
                 <Filter size={16} />
-              </button>
+              </button> */}
 
               <Link
                 to="/register-tenant"
@@ -198,7 +197,7 @@ export default function TenantManagement() {
               <table className="w-full min-w-[700px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs font-medium uppercase tracking-wide text-slate-500">
-                    <th className="px-5 py-3.5 w-12">#</th>
+                    <th className="px-5 py-3.5 w-12">S.no</th>
                     <th className="px-5 py-3.5">Company Name</th>
                     <th className="px-5 py-3.5">Company Code</th>
                     <th className="px-5 py-3.5">Admin Email</th>
@@ -236,11 +235,10 @@ export default function TenantManagement() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span
-                          className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${
-                            tenant.isActive
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-red-50 text-red-600"
-                          }`}
+                          className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${tenant.isActive
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-red-50 text-red-600"
+                            }`}
                         >
                           {tenant.isActive ? "Active" : "Inactive"}
                         </span>
@@ -250,7 +248,7 @@ export default function TenantManagement() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-2">
-                           <button onClick={() => { setSelectedTenant(tenant); setIsEditMode(false); }} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition cursor-pointer">
+                          <button onClick={() => { setSelectedTenant(tenant); setIsEditMode(false); }} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition cursor-pointer">
                             <Eye size={16} />
                           </button>
                           <button onClick={() => { setSelectedTenant(tenant); setIsEditMode(true); }} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-amber-600 transition cursor-pointer">
@@ -300,11 +298,10 @@ export default function TenantManagement() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition cursor-pointer ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition cursor-pointer ${currentPage === page
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
                   >
                     {page}
                   </button>
@@ -322,7 +319,7 @@ export default function TenantManagement() {
         </section>
       </div>
       {/* Modal Integration */}
-       <TenantModal
+      <TenantModal
         tenant={selectedTenant}
         isOpen={!!selectedTenant}
         initialEditMode={isEditMode}

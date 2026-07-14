@@ -141,7 +141,7 @@ function StorageOverview({ storageRows, totalSizeFormatted }) {
   return (
     <Panel title="Storage Breakdown">
       <div className="flex flex-col items-center gap-6 md:flex-row xl:flex-col 2xl:flex-row w-full justify-center">
-        <div 
+        <div
           className="relative grid h-40 w-40 sm:h-48 sm:w-48 shrink-0 place-items-center rounded-full shadow-sm"
           style={{ background: generateConicGradient(storageRows) }}
         >
@@ -395,16 +395,16 @@ export default function ViewerDashboard() {
                 <h1 className="text-3xl font-extrabold tracking-tight">
                   Welcome back, {accountHolderName || "Viewer"}!
                 </h1>
-                <p className="mt-2 max-w-lg text-blue-100 font-medium leading-relaxed">
+                <p className="text-1xl font-extrabold tracking-tight">
                   You have view access to {totalDocuments} documents across the tenant's workspace. Discover and preview shared content.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <div className="rounded-xl bg-black/20 backdrop-blur-md p-4 shadow-inner border border-white/10 flex-1 md:w-40 text-center text-white">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-200">Total Access</p>
-                <p className="mt-1 text-3xl font-black">{totalDocuments + totalFolders}</p>
+              <div className="rounded-xl bg-white p-4 shadow-lg flex-1 md:w-40 text-center">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Access</p>
+                <p className="mt-1 text-3xl font-black text-blue-600">{totalDocuments + totalFolders}</p>
               </div>
               <div className="rounded-xl bg-white p-4 shadow-lg flex-1 md:w-40 text-center">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Shares</p>

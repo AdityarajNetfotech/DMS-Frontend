@@ -44,7 +44,7 @@ const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
-  
+
   let interval = Math.floor(seconds / 31536000);
   if (interval >= 1) return interval + (interval === 1 ? ' year ago' : ' years ago');
   interval = Math.floor(seconds / 2592000);
@@ -104,9 +104,8 @@ function DocumentCard({ document, companySlug, onFavoriteToggle }) {
         <button
           type="button"
           onClick={() => onFavoriteToggle(document._id, document.favorite)}
-          className={`rounded-md p-1 transition hover:bg-slate-100 cursor-pointer ${
-            document.favorite ? "text-amber-500" : "text-slate-400"
-          }`}
+          className={`rounded-md p-1 transition hover:bg-slate-100 cursor-pointer ${document.favorite ? "text-amber-500" : "text-slate-400"
+            }`}
           aria-label={`Favorite ${document.name}`}
         >
           <Star
@@ -233,7 +232,7 @@ export default function MyDocument() {
   };
 
   const typeOptions = ["All Types", "PDF", "DOCX", "XLSX", "PPTX", "ZIP"];
-  
+
   const folderOptions = useMemo(() => {
     const folders = new Set(documents.map((d) => d.folder));
     return ["All Folders", ...Array.from(folders)];
@@ -289,14 +288,14 @@ export default function MyDocument() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+          {/* <div className="flex flex-wrap items-center gap-4">
             <button className="inline-flex h-12 w-12 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100">
               <Grid2X2 size={21} />
             </button>
             <button className="inline-flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50">
               <List size={21} />
             </button>
-          </div>
+          </div> */}
         </section>
 
         {error && (
@@ -370,9 +369,9 @@ export default function MyDocument() {
                 ) : (
                   <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
                     {filteredDocuments.map((document) => (
-                      <DocumentCard 
-                        key={document._id} 
-                        document={document} 
+                      <DocumentCard
+                        key={document._id}
+                        document={document}
                         companySlug={companySlug}
                         onFavoriteToggle={handleFavoriteToggle}
                       />

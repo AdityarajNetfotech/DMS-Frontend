@@ -347,10 +347,10 @@ export default function Mydocument() {
                 className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </label>
-            <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200">
+            {/* <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200">
               <Filter size={18} />
               Filter
-            </button>
+            </button> */}
           </div>
         </section>
 
@@ -384,17 +384,16 @@ export default function Mydocument() {
                         <div className="flex items-center gap-4">
                           <FileIcon
                             kind={document.kind}
-                            className={`flex h-11 w-11 items-center justify-center rounded-lg ${
-                              document.kind === "folder"
+                            className={`flex h-11 w-11 items-center justify-center rounded-lg ${document.kind === "folder"
                                 ? "bg-slate-100 text-slate-500"
                                 : document.kind === "pdf"
-                                ? "bg-red-50 text-red-600"
-                                : document.kind === "excel"
-                                ? "bg-green-50 text-green-600"
-                                : document.kind === "powerpoint"
-                                ? "bg-orange-50 text-orange-600"
-                                : "bg-blue-50 text-blue-600"
-                            }`}
+                                  ? "bg-red-50 text-red-600"
+                                  : document.kind === "excel"
+                                    ? "bg-green-50 text-green-600"
+                                    : document.kind === "powerpoint"
+                                      ? "bg-orange-50 text-orange-600"
+                                      : "bg-blue-50 text-blue-600"
+                              }`}
                           />
                           <div>
                             <p className="font-semibold text-slate-900">
@@ -423,7 +422,7 @@ export default function Mydocument() {
                       </td>
 
                       <td className="px-6 py-5 text-slate-600">
-                        {document.kind === 'folder' 
+                        {document.kind === 'folder'
                           ? (document.fileSize ? (document.fileSize / (1024 * 1024) < 1 ? `${(document.fileSize / 1024).toFixed(1)} KB` : `${(document.fileSize / (1024 * 1024)).toFixed(2)} MB`) : '0 KB')
                           : (document.fileSize ? (document.fileSize / (1024 * 1024) < 1 ? `${(document.fileSize / 1024).toFixed(1)} KB` : `${(document.fileSize / (1024 * 1024)).toFixed(2)} MB`) : '-')}
                       </td>

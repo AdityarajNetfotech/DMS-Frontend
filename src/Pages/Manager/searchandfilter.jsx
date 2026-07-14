@@ -254,8 +254,8 @@ function DropdownButton({ label, icon: Icon, active, isOpen, onClick, children }
         type="button"
         onClick={onClick}
         className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${active
-            ? "border-blue-600 bg-blue-50 text-blue-700"
-            : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+          ? "border-blue-600 bg-blue-50 text-blue-700"
+          : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
           }`}
       >
         <span className="flex items-center gap-3">
@@ -477,10 +477,10 @@ export default function Searchandfilter() {
             </button>
           </div>
 
-          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
+          {/* <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
             <Bookmark size={18} />
             Save Search
-          </button>
+          </button> */}
         </section>
 
         <section className="flex flex-wrap gap-4">
@@ -500,8 +500,8 @@ export default function Searchandfilter() {
                     type="button"
                     onClick={() => handleFilterChange(filter.key, option)}
                     className={`block w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${filters[filter.key] === option
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-slate-700 hover:bg-slate-50"
                       }`}
                   >
                     {option}
@@ -515,8 +515,8 @@ export default function Searchandfilter() {
             type="button"
             onClick={() => setShowMoreFilters((current) => !current)}
             className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${showMoreFilters
-                ? "border-blue-600 bg-blue-50 text-blue-700"
-                : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+              ? "border-blue-600 bg-blue-50 text-blue-700"
+              : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
               }`}
           >
             <span className="flex items-center gap-3">

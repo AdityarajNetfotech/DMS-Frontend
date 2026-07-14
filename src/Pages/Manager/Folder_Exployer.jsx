@@ -41,9 +41,8 @@ const iconStyles = {
 };
 
 function ItemIcon({ kind }) {
-  const className = `flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-    iconStyles[kind] || "bg-slate-100 text-slate-500"
-  }`;
+  const className = `flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconStyles[kind] || "bg-slate-100 text-slate-500"
+    }`;
 
   if (kind === "folder") {
     return (
@@ -123,12 +122,12 @@ export default function FolderExployer() {
       if (data.success) {
         const childFolders = data.data.childFolders || data.data.subfolders || [];
         const documents = data.data.documents || [];
-        
+
         const formattedItems = [
           ...childFolders.map(f => ({ ...f, kind: 'folder', type: 'Folder' })),
           ...documents.map(d => ({ ...d, kind: getFileKind(d.fileType), type: d.fileType || 'File' }))
         ].filter(item => !item.isArchived);
-        
+
         setItems(formattedItems);
         setCurrentFolder(data.data.folder);
       }
@@ -208,7 +207,7 @@ export default function FolderExployer() {
         }
         return;
       }
-      
+
       if (action === 'preview') {
         window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${item._id}/preview?token=${token}`, '_blank');
         return;
@@ -217,7 +216,7 @@ export default function FolderExployer() {
       let body = null;
 
       if (action === 'delete') {
-        endpoint = item.kind === 'folder' 
+        endpoint = item.kind === 'folder'
           ? `/api/${companySlug}/manager/folders/${item._id}`
           : `/api/${companySlug}/manager/documents/${item._id}`;
         method = 'DELETE';
@@ -260,7 +259,7 @@ export default function FolderExployer() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
-      
+
       fetchFolderTree();
       fetchFolderDetails(currentFolder?._id);
     } catch (err) {
@@ -270,10 +269,10 @@ export default function FolderExployer() {
 
   const handleShareDocument = async (itemId, payload) => {
     const isFolder = shareConfig.document?.kind === 'folder';
-    const endpoint = isFolder 
+    const endpoint = isFolder
       ? `/api/${companySlug}/manager/shares/create/folder/${itemId}`
       : `/api/${companySlug}/manager/shares/create/${itemId}`;
-      
+
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
@@ -316,8 +315,8 @@ export default function FolderExployer() {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleString('en-US', { 
-      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' 
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
     });
   };
 
@@ -327,11 +326,10 @@ export default function FolderExployer() {
         <button
           onClick={() => fetchFolderDetails(folder._id)}
           style={{ paddingLeft: `${depth * 20 + 12}px` }}
-          className={`flex w-full items-center gap-3 rounded-lg py-2.5 pr-3 text-left text-sm font-semibold transition ${
-            currentFolder?._id === folder._id
+          className={`flex w-full items-center gap-3 rounded-lg py-2.5 pr-3 text-left text-sm font-semibold transition ${currentFolder?._id === folder._id
               ? "bg-blue-50 text-blue-700"
               : "text-slate-700 hover:bg-slate-50"
-          }`}
+            }`}
         >
           {folder.children?.length > 0 ? (
             <ChevronDown size={16} />
@@ -390,24 +388,24 @@ export default function FolderExployer() {
               />
             </label>
 
-            <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+            {/* <div className="flex rounded-lg border border-slate-200 bg-white p-1">
               <button className="inline-flex h-10 w-11 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-50">
                 <Grid2X2 size={18} />
               </button>
               <button className="inline-flex h-10 w-11 items-center justify-center rounded-md border border-blue-600 bg-blue-50 text-blue-700">
                 <List size={19} />
               </button>
-            </div>
+            </div> */}
 
-            <button 
+            <button
               onClick={() => setIsCreateFolderOpen(true)}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
             >
               <Plus size={19} />
               New Folder
             </button>
-            
-            <button 
+
+            <button
               onClick={() => setIsUploadOpen(true)}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
             >
@@ -419,7 +417,7 @@ export default function FolderExployer() {
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm h-fit max-h-[800px] overflow-y-auto">
-            <button 
+            <button
               onClick={() => fetchFolderDetails(null)}
               className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm font-semibold transition ${!currentFolder ? 'text-blue-700 bg-blue-50' : 'text-slate-900 hover:bg-slate-50'}`}
             >
@@ -470,7 +468,7 @@ export default function FolderExployer() {
                         className="text-sm font-medium text-slate-900 transition hover:bg-slate-50 group"
                       >
                         <td className="px-7 py-5">
-                          <div 
+                          <div
                             className="flex items-center gap-4 cursor-pointer"
                             onClick={() => item.kind === 'folder' ? fetchFolderDetails(item._id) : handleAction('preview', item)}
                           >
@@ -521,7 +519,7 @@ export default function FolderExployer() {
                             >
                               <MoreVertical size={20} />
                             </button>
-                            
+
                             {activeDropdown === item._id && (
                               <div ref={dropdownRef} className="absolute right-12 top-10 z-10 w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
                                 <button onClick={() => handleAction('download', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">

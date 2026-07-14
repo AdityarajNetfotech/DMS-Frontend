@@ -491,62 +491,87 @@ function LandingPage() {
       </main>
 
       <footer className="bg-[#031b32] text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 md:grid-cols-2 xl:grid-cols-[1.5fr_0.7fr_1fr_1fr_1.7fr] lg:px-8">
-          <div>
-            <Logo light />
-            <p className="mt-6 max-w-xs text-sm font-medium leading-7 text-slate-300">
-              DMS is a secure and intelligent document management solution designed to help organizations store, manage
-              and protect their important data.
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Main Footer Content */}
+          <div className="grid gap-12 py-14 md:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_1fr]">
+            {/* Brand Column */}
+            <div>
+              <Logo light />
+              <p className="mt-6 max-w-xs text-sm font-medium leading-7 text-slate-400">
+                A secure and intelligent document management solution designed to help organizations store, manage
+                and protect their important data.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="mb-5 text-xs font-extrabold uppercase tracking-widest text-slate-400">Navigate</h3>
+              <div className="space-y-3">
+                {navLinks.map((link) => (
+                  <a
+                    key={link}
+                    href={`#${link.toLowerCase().replaceAll(' ', '-')}`}
+                    className="block text-sm font-semibold text-slate-300 transition-colors hover:text-white"
+                  >
+                    {link}
+                  </a>
+                ))}
+                <a
+                  href="/superadminlogin"
+                  className="block text-sm font-semibold text-slate-300 transition-colors hover:text-white"
+                >
+                  Login
+                </a>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h3 className="mb-5 text-xs font-extrabold uppercase tracking-widest text-slate-400">Contact</h3>
+              <div className="space-y-4">
+                <a href="mailto:sales@netfotech.in" className="flex items-start gap-3 group">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 group-hover:bg-blue-600/20 transition-colors">
+                    <Mail className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">Email</p>
+                    <p className="text-sm font-semibold text-slate-300 group-hover:text-white transition-colors">sales@netfotech.in</p>
+                  </div>
+                </a>
+                <a href="tel:+9188888887965" className="flex items-start gap-3 group">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 group-hover:bg-blue-600/20 transition-colors">
+                    <Phone className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">Phone</p>
+                    <p className="text-sm font-semibold text-slate-300 group-hover:text-white transition-colors">88888887965</p>
+                  </div>
+                </a>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5">
+                    <MapPin className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">Address</p>
+                    <p className="text-sm font-semibold text-slate-300">World Trade Center, Pune, India</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-white/10 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm font-medium text-slate-500">
+              &copy; 2026 DMS. All rights reserved.
             </p>
-            <div className="mt-6 flex gap-4">
-              {['f', 'x', 'in', 'yt'].map((label) => (
-                <button key={label} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-extrabold text-white">
-                  {label}
-                </button>
-              ))}
+            <div className="flex items-center gap-6">
+              <a href="#contact" className="text-xs font-semibold text-slate-500 transition-colors hover:text-slate-300">Privacy Policy</a>
+              <a href="#contact" className="text-xs font-semibold text-slate-500 transition-colors hover:text-slate-300">Terms of Service</a>
             </div>
           </div>
-
-          <div>
-            <h3 className="mb-4 text-base font-extrabold">Quick Links</h3>
-            {navLinks.map((link) => (
-              <a key={link} className="mb-3 block text-sm font-medium text-slate-300" href={`#${link.toLowerCase().replaceAll(' ', '-')}`}>
-                {link}
-              </a>
-            ))}
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-base font-extrabold">Solutions</h3>
-            {['Document Storage', 'Access Control', 'Workflow Management', 'Audit Trails', 'Backup & Recovery', 'Integrations'].map((link) => (
-              <a key={link} className="mb-3 block text-sm font-medium text-slate-300" href="#features">
-                {link}
-              </a>
-            ))}
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-base font-extrabold">Resources</h3>
-            {['Blog', 'Help Center', 'Documentation', 'FAQs', 'Privacy Policy', 'Terms & Conditions'].map((link) => (
-              <a key={link} className="mb-3 block text-sm font-medium text-slate-300" href="#contact">
-                {link}
-              </a>
-            ))}
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-base font-extrabold">Newsletter</h3>
-            <p className="mb-6 max-w-sm text-sm font-medium leading-6 text-slate-300">
-              Subscribe to our newsletter for the latest updates and news.
-            </p>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <input className="h-11 min-w-0 flex-1 rounded-md border-0 bg-white px-4 text-sm font-semibold text-slate-900 outline-none" placeholder="Enter your email" />
-              <button className="rounded-md bg-blue-600 px-6 py-3 text-sm font-extrabold text-white">Subscribe</button>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-white/10 py-5 text-center text-sm font-medium text-slate-300">
-          (c) 2024 DMS. All rights reserved.
         </div>
       </footer>
     </div>
