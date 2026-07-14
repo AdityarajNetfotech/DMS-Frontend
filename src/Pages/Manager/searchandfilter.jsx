@@ -253,11 +253,10 @@ function DropdownButton({ label, icon: Icon, active, isOpen, onClick, children }
       <button
         type="button"
         onClick={onClick}
-        className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${
-          active
+        className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${active
             ? "border-blue-600 bg-blue-50 text-blue-700"
             : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-        }`}
+          }`}
       >
         <span className="flex items-center gap-3">
           {Icon ? <Icon size={18} /> : null}
@@ -295,9 +294,8 @@ function SelectBox({ label, value, options, onChange }) {
 }
 
 function ResultIcon({ kind }) {
-  const className = `flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
-    iconClass[kind] || "bg-slate-100 text-slate-500"
-  }`;
+  const className = `flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${iconClass[kind] || "bg-slate-100 text-slate-500"
+    }`;
 
   if (kind === "excel") {
     return (
@@ -327,9 +325,8 @@ function Avatar({ value }) {
 
   return (
     <span
-      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-        isManager ? "bg-blue-700 text-white" : "bg-slate-200 text-slate-700"
-      }`}
+      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${isManager ? "bg-blue-700 text-white" : "bg-slate-200 text-slate-700"
+        }`}
     >
       {value}
     </span>
@@ -380,32 +377,32 @@ export default function Searchandfilter() {
       setLoading(true);
       try {
         const token = localStorage.getItem("accessToken");
-        
+
         let url = `${API_BASE_URL}/api/${companySlug}/manager/search?query=${encodeURIComponent(debouncedSearchTerm)}`;
-        
+
         let apiSortBy = 'name';
         let apiOrder = 'desc';
         if (sortBy === 'Newest') { apiSortBy = 'uploadDate'; apiOrder = 'desc'; }
         else if (sortBy === 'Oldest') { apiSortBy = 'uploadDate'; apiOrder = 'asc'; }
         else if (sortBy === 'Name') { apiSortBy = 'name'; apiOrder = 'asc'; }
-        
+
         url += `&sortBy=${apiSortBy}&order=${apiOrder}`;
-        
+
         if (starredOnly) url += `&isFavorite=true`;
-        
+
         if (filters.documentType !== "All Types") {
-           url += `&fileType=${filters.documentType}`;
+          url += `&fileType=${filters.documentType}`;
         }
-        
+
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        
+
         if (data.success) {
           const docs = data.data.documents.map(d => ({ ...d, kind: d.fileType?.toLowerCase() || 'pdf', type: d.fileType || 'File' }));
           const flds = (data.data.folders || []).map(f => ({ ...f, kind: 'folder', type: 'Folder' }));
-          
+
           let combined = [...flds, ...docs];
           setSearchResults(combined.filter(item => !item.isArchived));
         }
@@ -502,11 +499,10 @@ export default function Searchandfilter() {
                     key={option}
                     type="button"
                     onClick={() => handleFilterChange(filter.key, option)}
-                    className={`block w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${
-                      filters[filter.key] === option
+                    className={`block w-full rounded-md px-3 py-2 text-left text-sm font-medium transition ${filters[filter.key] === option
                         ? "bg-blue-50 text-blue-700"
                         : "text-slate-700 hover:bg-slate-50"
-                    }`}
+                      }`}
                   >
                     {option}
                   </button>
@@ -518,11 +514,10 @@ export default function Searchandfilter() {
           <button
             type="button"
             onClick={() => setShowMoreFilters((current) => !current)}
-            className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${
-              showMoreFilters
+            className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${showMoreFilters
                 ? "border-blue-600 bg-blue-50 text-blue-700"
                 : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <span className="flex items-center gap-3">
               <Filter size={18} />
@@ -634,64 +629,64 @@ export default function Searchandfilter() {
                   </tr>
                 ) : filteredResults.length > 0 ? (
                   filteredResults.map((result) => (
-                  <tr
-                    key={result._id || result.id || result.name}
-                    className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <ResultIcon kind={result.kind} />
-                        <span className="truncate">{result.name || result.originalFileName}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar value={(result.uploadedBy?.name || result.createdBy?.name || "S").charAt(0).toUpperCase()} />
-                        <span className="truncate">{result.uploadedBy?.name || result.createdBy?.name || "System"}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-slate-700">
-                      {result.departmentId?.name ? (
-                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                          {result.departmentId.name}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 italic text-xs">Global</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4">{new Date(result.createdAt || result.modified || Date.now()).toLocaleDateString()}</td>
-                    <td className="px-5 py-4">
-                      {result.kind === 'folder' 
-                        ? (result.fileSize ? (result.fileSize / (1024 * 1024) < 1 ? `${(result.fileSize / 1024).toFixed(1)} KB` : `${(result.fileSize / (1024 * 1024)).toFixed(2)} MB`) : '0 KB')
-                        : (result.fileSize ? (result.fileSize / (1024 * 1024) < 1 ? `${(result.fileSize / 1024).toFixed(1)} KB` : `${(result.fileSize / (1024 * 1024)).toFixed(2)} MB`) : '-')}
-                    </td>
-                    <td className="px-5 py-4">{result.type}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <Folder size={18} className="shrink-0 text-slate-700" />
-                        <span className="truncate">{result.folderId || result.parentFolder ? "Nested" : "Root"}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => {
-                            if (result.kind === 'folder') {
-                              navigate(`/${companySlug}/manager/folder-explorer?folderId=${result._id}`);
-                            } else {
-                              const token = localStorage.getItem('accessToken');
-                              window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${result._id}/preview?token=${token}`, '_blank');
-                            }
-                          }}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-800 transition hover:bg-slate-100"
-                          aria-label={`Preview ${result.name || result.originalFileName}`}
-                        >
-                          <Eye size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))) : (
+                    <tr
+                      key={result._id || result.id || result.name}
+                      className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <ResultIcon kind={result.kind} />
+                          <span className="truncate">{result.name || result.originalFileName}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar value={(result.uploadedBy?.name || result.createdBy?.name || "S").charAt(0).toUpperCase()} />
+                          <span className="truncate">{result.uploadedBy?.name || result.createdBy?.name || "System"}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-slate-700">
+                        {result.departmentId?.name ? (
+                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                            {result.departmentId.name}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic text-xs">Global</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">{new Date(result.createdAt || result.modified || Date.now()).toLocaleDateString()}</td>
+                      <td className="px-5 py-4">
+                        {result.kind === 'folder'
+                          ? (result.fileSize ? (result.fileSize / (1024 * 1024) < 1 ? `${(result.fileSize / 1024).toFixed(1)} KB` : `${(result.fileSize / (1024 * 1024)).toFixed(2)} MB`) : '0 KB')
+                          : (result.fileSize ? (result.fileSize / (1024 * 1024) < 1 ? `${(result.fileSize / 1024).toFixed(1)} KB` : `${(result.fileSize / (1024 * 1024)).toFixed(2)} MB`) : '-')}
+                      </td>
+                      <td className="px-5 py-4">{result.type}</td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <Folder size={18} className="shrink-0 text-slate-700" />
+                          <span className="truncate">{result.folderId || result.parentFolder ? "Nested" : "Root"}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              if (result.kind === 'folder') {
+                                navigate(`/${companySlug}/manager/folder-explorer?folderId=${result._id}`);
+                              } else {
+                                const token = localStorage.getItem('accessToken');
+                                window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${result._id}/preview?token=${token}`, '_blank');
+                              }
+                            }}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-800 transition hover:bg-slate-100"
+                            aria-label={`Preview ${result.name || result.originalFileName}`}
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))) : (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-slate-500">No results found.</td>
                   </tr>

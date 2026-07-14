@@ -102,13 +102,6 @@ export default function Topbar() {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 lg:gap-5">
-        {/* Notification */}
-        <button className="relative p-2 rounded-lg hover:bg-slate-100">
-          <Bell size={20} className="text-slate-600" />
-
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
-
         {/* User Profile */}
         <div
           onClick={handleProfileClick}

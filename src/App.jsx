@@ -39,14 +39,15 @@ import SharedWithMe from "./Pages/Manager/SharedWithMe";
 import RecentDocuments from "./Pages/Manager/RecentDocuments";
 import ViewerDashboard from "./Pages/Viewer/Dashboard";
 import ViewerMyDocument from "./Pages/Viewer/MyDocument";
-import ViewerSharedWithMe from "./Pages/Viewer/SharedWithme";
 import SearchResults from "./Pages/Viewer/SearchResult";
 import ViewerSearch from "./Pages/Viewer/Search";
+import ViewerSharedFolderDetail from "./Pages/Viewer/SharedFolderDetail";
 import ViewerTrash from "./Pages/Viewer/Trash";
 import Profilepage from "./Pages/Viewer/Profilepage";
 // import SearchResult from "./Pages/Viewer/SearchPage";
 // import SharedWithMe from "./Pages/Manager/SharedWithMe";
-import SharedWithme from "./Pages/Viewer/SharedWithme";
+import ViewerSharedWithMe from "./Pages/Viewer/SharedWithme";
+const SharedWithme = ViewerSharedWithMe;
 import LandingPage from "./components/LandingPage/landingpage";
 import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
@@ -266,6 +267,7 @@ function App() {
       <Route path="/:companySlug/viewer/search" element={<ViewerSearch />} />
       <Route path="/:companySlug/viewer/profile" element={<Profilepage />} />
       <Route path="/:companySlug/viewer/recent" element={<SharedWithme />} />
+      <Route path="/:companySlug/viewer/shared-folders/:folderId" element={<ViewerSharedFolderDetail />} />
       <Route path="/:companySlug/viewer/trash" element={<ViewerTrash />} />
       {/* Legacy viewer routes (without slug) */}
       <Route path="/viewer/dashboard" element={<ViewerDashboard />} />
@@ -275,6 +277,7 @@ function App() {
       <Route path="/viewer/search" element={<ViewerSearch />} />
       <Route path="/viewer/profile" element={<Profilepage />} />
       <Route path="/viewer/recent" element={<SharedWithme />} />
+      <Route path="/viewer/shared-folders/:folderId" element={<ViewerSharedFolderDetail />} />
       <Route path="/viewer/trash" element={<ViewerTrash />} />
 
     </Routes>

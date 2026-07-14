@@ -60,7 +60,6 @@ const initialFormState = {
   website: "",
   logo: "",
   description: "",
-  officialEmail: "",
   phone: "",
   alternatePhone: "",
   address: "",
@@ -96,10 +95,18 @@ export default function RegisterTenant() {
 
   const handleChange = (e) => {
     let value = e.target.value;
-    if (["phone", "alternatePhone", "adminMobile"].includes(e.target.name)) {
+    const name = e.target.name;
+    if (["phone", "alternatePhone", "adminMobile"].includes(name)) {
+      // Keep only digits and cap at 10
+      value = value.replace(/[^0-9]/g, "").slice(0, 10);
+    }
+    if (["city", "state"].includes(name)) {
+      value = value.replace(/[0-9]/g, "");
+    }
+    if (name === "postalCode") {
       value = value.replace(/[a-zA-Z]/g, "");
     }
-    setForm({ ...form, [e.target.name]: value });
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -120,41 +127,50 @@ export default function RegisterTenant() {
     if (form.website && !/^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(form.website.trim())) {
       newErrors.website = "Invalid website URL.";
     }
-    
-    if (form.officialEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.officialEmail.trim())) {
-      newErrors.officialEmail = "Invalid official email address.";
-    }
     if (form.phone) {
-      if (/[a-zA-Z]/.test(form.phone)) {
-        newErrors.phone = "Phone number cannot contain alphabetic characters.";
-      } else if (!/^\+?[0-9\s\-()]{7,20}$/.test(form.phone)) {
-        newErrors.phone = "Invalid phone format.";
+      if (form.phone.length < 10) {
+        newErrors.phone = "Contact number must be exactly 10 digits.";
       }
     }
     if (form.alternatePhone) {
-      if (/[a-zA-Z]/.test(form.alternatePhone)) {
-        newErrors.alternatePhone = "Alternate phone cannot contain alphabetic characters.";
-      } else if (!/^\+?[0-9\s\-()]{7,20}$/.test(form.alternatePhone)) {
-        newErrors.alternatePhone = "Invalid alternate phone format.";
+      if (form.alternatePhone.length < 10) {
+        newErrors.alternatePhone = "Alternate number must be exactly 10 digits.";
+      } else if (form.phone && form.alternatePhone === form.phone) {
+        newErrors.alternatePhone = "Alternate phone number must be different from the main phone number.";
       }
     }
-    if (form.postalCode && !/^[a-z0-9\s-]{3,10}$/i.test(form.postalCode.trim())) {
-      newErrors.postalCode = "Invalid postal code.";
+    if (form.city && /[0-9]/.test(form.city)) {
+      newErrors.city = "City name should not contain numbers.";
+    }
+    if (form.state && /[0-9]/.test(form.state)) {
+      newErrors.state = "State name should not contain numbers.";
+    }
+    if (form.postalCode && !/^[0-9\s-]{3,10}$/.test(form.postalCode.trim())) {
+      newErrors.postalCode = "Postal code must contain only digits.";
     }
     
     if (!form.adminName.trim()) newErrors.adminName = "Tenant Admin Full Name is required.";
     if (!form.adminEmail.trim()) newErrors.adminEmail = "Admin Email is required.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.adminEmail.trim())) newErrors.adminEmail = "Invalid email address.";
     if (form.adminMobile) {
-      if (/[a-zA-Z]/.test(form.adminMobile)) {
-        newErrors.adminMobile = "Mobile number cannot contain alphabetic characters.";
-      } else if (!/^\+?[0-9\s\-()]{7,20}$/.test(form.adminMobile)) {
-        newErrors.adminMobile = "Invalid mobile number format.";
+      if (form.adminMobile.length < 10) {
+        newErrors.adminMobile = "Mobile number must be exactly 10 digits.";
       }
     }
     
-    if (!form.adminPassword) newErrors.adminPassword = "Password is required.";
-    else if (form.adminPassword.length < 8) newErrors.adminPassword = "Minimum 8 characters required.";
+    if (!form.adminPassword) {
+      newErrors.adminPassword = "Password is required.";
+    } else if (form.adminPassword.length < 8) {
+      newErrors.adminPassword = "Password must be at least 8 characters.";
+    } else if (!/[A-Z]/.test(form.adminPassword)) {
+      newErrors.adminPassword = "Password must contain at least one uppercase letter.";
+    } else if (!/[a-z]/.test(form.adminPassword)) {
+      newErrors.adminPassword = "Password must contain at least one lowercase letter.";
+    } else if (!/[0-9]/.test(form.adminPassword)) {
+      newErrors.adminPassword = "Password must contain at least one number.";
+    } else if (!/[^A-Za-z0-9]/.test(form.adminPassword)) {
+      newErrors.adminPassword = "Password must contain at least one special character.";
+    }
     
     if (form.adminPassword !== form.confirmPassword) newErrors.confirmPassword = "Passwords do not match.";
 
@@ -182,7 +198,6 @@ export default function RegisterTenant() {
           website: form.website,
           logo: form.logo,
           description: form.description,
-          officialEmail: form.officialEmail,
           phone: form.phone,
           alternatePhone: form.alternatePhone,
           address: form.address,
@@ -310,16 +325,12 @@ export default function RegisterTenant() {
             <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider bg-slate-50 p-2 rounded mb-3">Contact Details</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
-                <FormLabel>Official Email</FormLabel>
-                <FormInput name="officialEmail" type="email" value={form.officialEmail} onChange={handleChange} error={errors.officialEmail} placeholder="contact@company.com" />
-              </div>
-              <div className="col-span-2 sm:col-span-1">
                 <FormLabel>Contact Number</FormLabel>
                 <FormInput name="phone" type="tel" value={form.phone} onChange={handleChange} error={errors.phone} placeholder="Main Phone" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>Alternate Number (Optional)</FormLabel>
-                <FormInput name="alternatePhone" type="tel" value={form.alternatePhone} onChange={handleChange} error={errors.alternatePhone} placeholder="Alternate Phone" />
+                <FormInput name="alternatePhone" type="tel" value={form.alternatePhone} onChange={handleChange} error={errors.alternatePhone} placeholder="Alternate Phone (must be different)" />
               </div>
             </div>
           </div>
@@ -338,11 +349,11 @@ export default function RegisterTenant() {
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>City</FormLabel>
-                <FormInput name="city" value={form.city} onChange={handleChange} placeholder="City" />
+                <FormInput name="city" value={form.city} onChange={handleChange} error={errors.city} placeholder="City" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>State</FormLabel>
-                <FormInput name="state" value={form.state} onChange={handleChange} placeholder="State / Province" />
+                <FormInput name="state" value={form.state} onChange={handleChange} error={errors.state} placeholder="State / Province" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>Postal Code</FormLabel>

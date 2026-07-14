@@ -40,6 +40,7 @@ export default function TenantManagement() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [selectedTenant, setSelectedTenant] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -60,6 +61,15 @@ export default function TenantManagement() {
 
   useEffect(() => {
     fetchTenants();
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalSearch = (e) => {
+      setSearchTerm(e.detail || "");
+      setCurrentPage(1);
+    };
+    window.addEventListener("global-search", handleGlobalSearch);
+    return () => window.removeEventListener("global-search", handleGlobalSearch);
   }, []);
 
   useEffect(() => {
@@ -240,10 +250,10 @@ export default function TenantManagement() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => setSelectedTenant(tenant)} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition cursor-pointer">
+                           <button onClick={() => { setSelectedTenant(tenant); setIsEditMode(false); }} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition cursor-pointer">
                             <Eye size={16} />
                           </button>
-                          <button onClick={() => setSelectedTenant(tenant)} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-amber-600 transition cursor-pointer">
+                          <button onClick={() => { setSelectedTenant(tenant); setIsEditMode(true); }} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-amber-600 transition cursor-pointer">
                             <Pencil size={16} />
                           </button>
                           <button
@@ -312,9 +322,10 @@ export default function TenantManagement() {
         </section>
       </div>
       {/* Modal Integration */}
-      <TenantModal
+       <TenantModal
         tenant={selectedTenant}
         isOpen={!!selectedTenant}
+        initialEditMode={isEditMode}
         onClose={() => setSelectedTenant(null)}
         onRefresh={fetchTenants}
       />

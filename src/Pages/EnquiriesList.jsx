@@ -51,6 +51,14 @@ export default function EnquiriesList() {
     fetchEnquiries();
   }, []);
 
+  useEffect(() => {
+    const handleGlobalSearch = (e) => {
+      setSearchTerm(e.detail || "");
+    };
+    window.addEventListener("global-search", handleGlobalSearch);
+    return () => window.removeEventListener("global-search", handleGlobalSearch);
+  }, []);
+
   const fetchEnquiries = async () => {
     try {
       setLoading(true);

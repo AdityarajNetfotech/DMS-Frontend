@@ -218,9 +218,9 @@ export default function DMSSignIn() {
               <h1 className="text-4xl font-extrabold text-slate-900 leading-none" style={{ color: branding.primaryColor }}>
                 {branding.companyName || "DMS"}
               </h1>
-              <p className="text-sm text-slate-500 mt-1">
+              {/* <p className="text-sm text-slate-500 mt-1">
                 {companySlug ? `Workspace: ${companySlug.toUpperCase()}` : "Document Management System"}
-              </p>
+              </p> */}
             </div>
           </div>
           <p className="mt-4 text-base font-medium" style={{ color: branding.primaryColor }}>

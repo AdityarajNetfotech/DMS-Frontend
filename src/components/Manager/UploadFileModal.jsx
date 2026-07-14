@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, UploadCloud, File, Loader2 } from 'lucide-react';
 
 export default function UploadFileModal({ isOpen, onClose, onUpload, currentFolderId }) {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -11,36 +11,55 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
   if (!isOpen) return null;
 
   const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected) {
-      setFile(selected);
+    const selected = Array.from(e.target.files);
+    if (selected.length > 0) {
+      setFiles((prev) => [...prev, ...selected]);
       setError('');
     }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const selected = Array.from(e.dataTransfer.files);
+    if (selected.length > 0) {
+      setFiles((prev) => [...prev, ...selected]);
+      setError('');
+    }
+  };
+
+  const removeFile = (indexToRemove) => {
+    setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    if (!file) {
-      setError('Please select a file to upload');
+    if (files.length === 0) {
+      setError('Please select at least one file to upload');
       return;
     }
 
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('name', file.name);
-      if (description) formData.append('description', description);
-      if (currentFolderId) formData.append('folderId', currentFolderId);
+      for (const fileItem of files) {
+        const formData = new FormData();
+        formData.append('file', fileItem);
+        formData.append('name', fileItem.name);
+        if (description) formData.append('description', description);
+        if (currentFolderId) formData.append('folderId', currentFolderId);
 
-      await onUpload(formData);
-      setFile(null);
+        await onUpload(formData);
+      }
+      setFiles([]);
       setDescription('');
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to upload file');
+      setError(err.message || 'Failed to upload files');
     } finally {
       setLoading(false);
     }
@@ -52,7 +71,7 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
         <div className="mb-5 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
             <UploadCloud className="text-blue-600" size={24} />
-            Upload Document
+            Upload Documents
           </h2>
           <button
             onClick={onClose}
@@ -71,6 +90,8 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
         <form onSubmit={handleSubmit} className="space-y-4">
           <div 
             onClick={() => fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center transition hover:border-blue-500 hover:bg-blue-50"
           >
             <input 
@@ -78,18 +99,42 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
+              multiple
             />
-            {file ? (
-              <div className="flex flex-col items-center gap-2 text-blue-700">
-                <File size={40} className="text-blue-600" />
-                <span className="font-semibold">{file.name}</span>
-                <span className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+            {files.length > 0 ? (
+              <div className="flex flex-col items-stretch w-full gap-2 text-blue-700">
+                <div className="flex items-center justify-center gap-2">
+                  <File size={32} className="text-blue-600" />
+                  <span className="font-semibold text-slate-700">{files.length} files selected</span>
+                </div>
+                <div className="mt-2 max-h-40 overflow-y-auto space-y-1.5 text-left text-xs">
+                  {files.map((f, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between rounded bg-white p-2 border border-slate-200 shadow-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <File size={14} className="text-blue-500 shrink-0" />
+                        <span className="truncate text-slate-700 font-medium">{f.name}</span>
+                        <span className="text-[10px] text-slate-400 shrink-0">({(f.size / 1024 / 1024).toFixed(2)} MB)</span>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700 font-bold px-1 text-sm transition"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 text-slate-500">
                 <UploadCloud size={40} className="text-slate-400" />
-                <span className="font-semibold text-slate-700">Click to browse or drag file here</span>
-                <span className="text-xs">Supports PDF, DOCX, XLSX, etc.</span>
+                <span className="font-semibold text-slate-700">Click to browse or drag files here</span>
+                <span className="text-xs">Supports PDF, DOCX, XLSX, etc. (Multiple files allowed)</span>
               </div>
             )}
           </div>
@@ -118,7 +163,7 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
             </button>
             <button
               type="submit"
-              disabled={loading || !file}
+              disabled={loading || files.length === 0}
               className="inline-flex min-w-[100px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? <Loader2 size={18} className="animate-spin" /> : 'Upload'}

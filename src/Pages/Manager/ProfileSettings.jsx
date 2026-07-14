@@ -59,6 +59,7 @@ export default function ProfileSettings() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -82,6 +83,7 @@ export default function ProfileSettings() {
         if (data.success) {
           setName(data.data.name || "");
           setEmail(data.data.email || "");
+          setPhone(data.data.phone || "");
         } else {
           setError(data.message || "Failed to fetch profile settings.");
         }
@@ -110,7 +112,7 @@ export default function ProfileSettings() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, phone }),
       });
       const data = await response.json();
       if (data.success) {
@@ -132,6 +134,16 @@ export default function ProfileSettings() {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
+      return;
+    }
+    const hasLength = newPassword.length >= 8;
+    const hasUppercase = /[A-Z]/.test(newPassword);
+    const hasLowercase = /[a-z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+
+    if (!hasLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+      setError("Password must be at least 8 characters long and include uppercase, lowercase, number and special character.");
       return;
     }
     setLoading(true);
@@ -252,26 +264,6 @@ export default function ProfileSettings() {
                 type="email"
                 disabled={loading}
               />
-              <Field
-                label="Phone"
-                value="+1 (555) 123-4567"
-                type="tel"
-                disabled
-              />
-
-              <label className="block opacity-60 cursor-not-allowed">
-                <span className="text-sm font-semibold text-slate-900">
-                  Department
-                </span>
-                <button
-                  type="button"
-                  disabled
-                  className="mt-2 flex h-12 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 text-left text-sm font-medium text-slate-900 transition cursor-not-allowed"
-                >
-                  Operations
-                  <ChevronDown size={19} className="text-slate-500" />
-                </button>
-              </label>
             </div>
 
             <button

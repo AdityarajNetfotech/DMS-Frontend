@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import {
   ChevronLeft,
@@ -12,9 +12,11 @@ import {
   Search,
   Users,
   Clock3,
+  Upload,
 } from "lucide-react";
 
 import Viewer from "../../components/Viewer/Viewer";
+import UploadFileModal from "../../components/Manager/UploadFileModal";
 import { API_BASE_URL } from "../../config/api";
 
 const typeColors = {
@@ -123,7 +125,14 @@ function SelectButton({ value, onChange, options }) {
   );
 }
 
-function FileIcon({ type, color }) {
+function FileIcon({ type, color, isFolder }) {
+  if (isFolder) {
+    return (
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-blue-100 text-blue-600 shadow-sm">
+        <Folder size={16} />
+      </span>
+    );
+  }
   return (
     <span
       className={`relative inline-flex h-7 w-6 shrink-0 items-end justify-center rounded-sm ${color} pb-1 text-[8px] font-bold text-white shadow-sm`}
@@ -144,6 +153,7 @@ function Avatar({ initials }) {
 
 export default function SharedWithme() {
   const { companySlug } = useParams();
+  const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
@@ -151,6 +161,8 @@ export default function SharedWithme() {
   const [dateFilter, setDateFilter] = useState("Date Shared");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [uploadFolderId, setUploadFolderId] = useState(null);
 
   const fetchSharedDocuments = async () => {
     setLoading(true);
@@ -164,23 +176,25 @@ export default function SharedWithme() {
       const resData = await response.json();
       if (resData.success) {
         const formatted = resData.data.map(doc => {
-          const sizeStr = formatBytes(doc.fileSize);
+          const sizeStr = doc.isFolder ? "Folder" : formatBytes(doc.fileSize);
           const timeStr = formatTimeAgo(doc.createdAt);
           return {
             _id: doc._id,
             name: doc.name,
             type: doc.fileType || "FILE",
-            typeColor: getDocTypeColor(doc.fileType),
-            iconColor: getDocColor(doc.fileType),
+            typeColor: doc.isFolder ? "bg-blue-50 text-blue-600 border border-blue-100" : getDocTypeColor(doc.fileType),
+            iconColor: doc.isFolder ? "bg-blue-600" : getDocColor(doc.fileType),
             sharedBy: doc.sharedBy || "System",
             initials: getInitials(doc.sharedBy || "System"),
-            folder: doc.folderName,
+            folder: doc.isFolder ? "Shared Directory" : (doc.folderName || "Root"),
             date: new Date(doc.createdAt).toLocaleDateString(),
             time: new Date(doc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            meta: `${sizeStr} • ${timeStr}`,
+            meta: doc.isFolder ? `Folder • ${timeStr}` : `${sizeStr} • ${timeStr}`,
             downloadPermission: doc.downloadPermission,
+            uploadPermission: doc.uploadPermission || false,
             shareLinkToken: doc.shareLinkToken,
-            createdAt: doc.createdAt
+            createdAt: doc.createdAt,
+            isFolder: doc.isFolder || false
           };
         });
         setDocuments(formatted);
@@ -211,9 +225,29 @@ export default function SharedWithme() {
     window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/preview?token=${token}`, "_blank");
   };
 
+  const handleUploadFile = async (formData) => {
+    const token = localStorage.getItem("accessToken");
+    const res = await fetch(`${API_BASE_URL}/api/${companySlug}/manager/documents/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+  };
+
+  const handleOpenUpload = (folderId) => {
+    setUploadFolderId(folderId);
+    setIsUploadOpen(true);
+  };
+
+
+
   const stats = useMemo(() => {
     const totalDocs = documents.length;
-    const foldersSet = new Set(documents.map(d => d.folder));
+    const foldersSet = new Set(documents.filter(d => !d.isFolder).map(d => d.folder));
     const ownersSet = new Set(documents.map(d => d.sharedBy));
     
     // Count recently shared (last 7 days)
@@ -224,14 +258,14 @@ export default function SharedWithme() {
     return [
       {
         title: "Folders",
-        value: String(foldersSet.size),
+        value: String(documents.filter(d => d.isFolder).length),
         subtitle: "Shared folders",
         icon: Folder,
         color: "bg-blue-50 text-blue-600",
       },
       {
         title: "Documents",
-        value: String(totalDocs),
+        value: String(documents.filter(d => !d.isFolder).length),
         subtitle: "Shared documents",
         icon: FileText,
         color: "bg-emerald-50 text-emerald-600",
@@ -253,7 +287,7 @@ export default function SharedWithme() {
     ];
   }, [documents]);
 
-  const typeOptions = ["All Types", "PDF", "DOCX", "PPTX", "XLSX"];
+  const typeOptions = ["All Types", "Folder", "PDF", "DOCX", "PPTX", "XLSX"];
   
   const ownerOptions = useMemo(() => {
     const owners = new Set(documents.map(d => d.sharedBy));
@@ -435,8 +469,19 @@ export default function SharedWithme() {
                             <FileIcon
                               type={document.type}
                               color={document.iconColor}
+                              isFolder={document.isFolder}
                             />
-                            <span className="truncate" title={document.name}>{document.name}</span>
+                            {document.isFolder ? (
+                              <button
+                                onClick={() => navigate(`/${companySlug}/viewer/shared-folders/${document._id}?uploadAllowed=${document.uploadPermission}`)}
+                                className="truncate hover:text-blue-600 hover:underline text-left cursor-pointer font-semibold"
+                                title={document.name}
+                              >
+                                {document.name}
+                              </button>
+                            ) : (
+                              <span className="truncate" title={document.name}>{document.name}</span>
+                            )}
                           </div>
                         </td>
                         <td className="px-5 py-5">
@@ -458,25 +503,51 @@ export default function SharedWithme() {
                           <p className="mt-1 text-slate-500">{document.time}</p>
                         </td>
                         <td className="px-5 py-5">
-                          <span className="rounded-lg bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-                            View Only
-                          </span>
+                          {document.isFolder ? (
+                            document.uploadPermission ? (
+                              <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-100">
+                                Upload Access
+                              </span>
+                            ) : (
+                              <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 border border-slate-200">
+                                View Folder
+                              </span>
+                            )
+                          ) : (
+                            <span className="rounded-lg bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                              View Only
+                            </span>
+                          )}
                         </td>
                         <td className="py-5 pl-5">
                           <div className="flex items-center justify-end gap-4 text-slate-700">
-                            <button 
-                              onClick={() => handlePreview(document._id)}
-                              className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            {document.downloadPermission && (
-                              <button 
-                                onClick={() => handleDownload(document._id)}
-                                className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                              >
-                                <Download size={18} />
-                              </button>
+                            {document.isFolder ? (
+                              document.uploadPermission && (
+                                <button 
+                                  onClick={() => handleOpenUpload(document._id)}
+                                  title="Upload file into this folder"
+                                  className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
+                                >
+                                  <Upload size={18} />
+                                </button>
+                              )
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={() => handlePreview(document._id)}
+                                  className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
+                                >
+                                  <Eye size={18} />
+                                </button>
+                                {document.downloadPermission && (
+                                  <button 
+                                    onClick={() => handleDownload(document._id)}
+                                    className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
+                                  >
+                                    <Download size={18} />
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         </td>
@@ -517,6 +588,21 @@ export default function SharedWithme() {
           </div>
         </section>
       </div>
+
+      <UploadFileModal
+        isOpen={isUploadOpen}
+        onClose={() => {
+          setIsUploadOpen(false);
+          setUploadFolderId(null);
+        }}
+        onUpload={handleUploadFile}
+        onUploadSuccess={() => {
+          alert("Document uploaded successfully into shared folder!");
+          fetchSharedDocuments();
+        }}
+        companySlug={companySlug}
+        currentFolderId={uploadFolderId}
+      />
     </Viewer>
   );
 }

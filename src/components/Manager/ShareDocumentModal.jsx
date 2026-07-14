@@ -11,6 +11,7 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
   const [error, setError] = useState('');
   const [shareLink, setShareLink] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [allowUpload, setAllowUpload] = useState(false);
   
   const [viewers, setViewers] = useState([]);
   const [selectedViewers, setSelectedViewers] = useState([]);
@@ -52,11 +53,13 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
     try {
       const expiryDate = expiryDays ? new Date(Date.now() + parseInt(expiryDays) * 24 * 60 * 60 * 1000) : null;
       
+      const isFolder = document?.kind === 'folder';
       const payload = {
         sharingType,
         permissions: {
           readOnly: true,
-          download: canDownload
+          download: canDownload,
+          ...(sharingType === 'Internal' && isFolder && { uploadAllowed: allowUpload })
         },
         sharedWithViewers: sharingType === 'Internal' ? selectedViewers : []
       };
@@ -81,7 +84,29 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareLink);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareLink)
+        .then(() => alert("Link copied to clipboard!"))
+        .catch(() => fallbackCopyToClipboard());
+    } else {
+      fallbackCopyToClipboard();
+    }
+  };
+
+  const fallbackCopyToClipboard = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = shareLink;
+    textarea.style.position = "fixed";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      alert("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Fallback copy failed", err);
+    }
+    document.body.removeChild(textarea);
   };
 
   const handleClose = () => {
@@ -90,6 +115,7 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
     setPassword('');
     setExpiryDays('7');
     setSharingType('External');
+    setAllowUpload(false);
     onClose();
   };
 
@@ -220,7 +246,7 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
                 {/* Instagram — copy link (Instagram has no web share URL) */}
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(shareLink);
+                    copyToClipboard();
                     window.open('https://www.instagram.com/', '_blank');
                   }}
                   title="Copy link & open Instagram"
@@ -234,6 +260,19 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
                     </svg>
                   </div>
                   <span className="text-[10px] text-slate-500 font-medium">Instagram</span>
+                </button>
+                {/* Email */}
+                <button
+                  onClick={() => window.open(`mailto:?subject=${encodeURIComponent('Shared Document')}&body=${encodeURIComponent('Please find the shared document link here: ' + shareLink)}`, '_blank')}
+                  title="Share via Email"
+                  className="flex flex-col items-center gap-1 group"
+                >
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center bg-[#ea4335] shadow-md transition group-hover:scale-110 group-hover:shadow-lg">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-medium">Email</span>
                 </button>
 
               </div>
@@ -314,43 +353,21 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
               </div>
             )}
 
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-slate-700">Link Expiry</label>
-              <select
-                value={expiryDays}
-                onChange={(e) => setExpiryDays(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">Never expire</option>
-                <option value="1">1 Day</option>
-                <option value="7">7 Days</option>
-                <option value="30">30 Days</option>
-              </select>
-            </div>
+            {document?.kind === 'folder' && sharingType === 'Internal' && (
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="allowUpload"
+                  checked={allowUpload}
+                  onChange={(e) => setAllowUpload(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="allowUpload" className="text-sm text-slate-700 font-medium">
+                  Allow viewer to upload files into this folder
+                </label>
+              </div>
+            )}
 
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-slate-700">Password Protection (Optional)</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Leave blank for no password"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="canDownload"
-                checked={canDownload}
-                onChange={(e) => setCanDownload(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="canDownload" className="text-sm text-slate-700">
-                Allow viewer to download the document
-              </label>
-            </div>
 
             <div className="mt-6 flex justify-end gap-3">
               <button

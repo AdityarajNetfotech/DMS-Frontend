@@ -29,7 +29,9 @@ import {
   Users,
 } from 'lucide-react'
 
-const navLinks = ['Home', 'Features', 'Benefits', 'How It Works', 'Pricing', 'Contact']
+import { API_BASE_URL } from "../../config/api"
+
+const navLinks = ['Home', 'Features', 'Benefits', 'How It Works', 'Contact']
 
 const stats = [
   { label: 'Total Documents', value: '1,248', icon: FileText, bg: 'bg-blue-100', color: 'text-blue-600' },
@@ -129,9 +131,8 @@ function DashboardPreview() {
               return (
                 <div
                   key={item.label}
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-[11px] font-bold ${
-                    item.active ? 'bg-blue-600 text-white' : 'text-slate-200'
-                  }`}
+                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-[11px] font-bold ${item.active ? 'bg-blue-600 text-white' : 'text-slate-200'
+                    }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {item.label}
@@ -251,11 +252,12 @@ function LandingPage() {
     }
     setStatus({ loading: true, message: '', type: '' });
     try {
-      const res = await fetch('http://localhost:3000/api/super-admin/enquiry', {
+      const res = await fetch(`${API_BASE_URL}/api/super-admin/enquiry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+      console.log(res)
       const data = await res.json();
       if (data.success) {
         setStatus({ loading: false, message: 'Thank you! Your message has been sent.', type: 'success' });
@@ -278,26 +280,26 @@ function LandingPage() {
               <a
                 key={link}
                 href={`#${link.toLowerCase().replaceAll(' ', '-')}`}
-                className={`relative text-sm font-bold ${
-                  link === 'Home' ? 'text-blue-600 after:absolute after:-bottom-5 after:left-0 after:h-0.5 after:w-full after:bg-blue-600' : 'text-slate-700'
-                }`}
+                className={`relative text-sm font-bold ${link === 'Home' ? 'text-blue-600 after:absolute after:-bottom-5 after:left-0 after:h-0.5 after:w-full after:bg-blue-600' : 'text-slate-700'
+                  }`}
               >
                 {link}
               </a>
             ))}
           </nav>
           <div className="hidden items-center gap-5 md:flex">
-            <button className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700">
-              <Sun className="h-5 w-5" />
-            </button>
             <button
               type="button"
-              onClick={() => window.location.href = '/login'}
+              onClick={() => window.location.href = '/superadminlogin'}
               className="rounded-md border border-slate-200 px-8 py-3 text-sm font-extrabold text-blue-600 shadow-sm"
             >
               Login
             </button>
-            <button className="rounded-md bg-blue-600 px-8 py-3 text-sm font-extrabold text-white shadow-lg shadow-blue-200">
+            <button 
+              type="button"
+              onClick={() => window.location.href = '/superadminlogin'}
+              className="rounded-md bg-blue-600 px-8 py-3 text-sm font-extrabold text-white shadow-lg shadow-blue-200"
+            >
               Get Started
             </button>
           </div>
@@ -322,11 +324,19 @@ function LandingPage() {
                 reduce paperwork and boost productivity.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <button className="flex items-center justify-center gap-3 rounded-md bg-blue-600 px-8 py-4 text-sm font-extrabold text-white shadow-xl shadow-blue-200">
+                <button 
+                  type="button"
+                  onClick={() => window.location.href = '/superadminlogin'}
+                  className="flex items-center justify-center gap-3 rounded-md bg-blue-600 px-8 py-4 text-sm font-extrabold text-white shadow-xl shadow-blue-200"
+                >
                   Get Started
                   <span aria-hidden="true">-&gt;</span>
                 </button>
-                <button className="flex items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-8 py-4 text-sm font-extrabold text-slate-900 shadow-sm">
+                <button 
+                  type="button"
+                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-8 py-4 text-sm font-extrabold text-slate-900 shadow-sm"
+                >
                   Request Demo
                   <Calendar className="h-4 w-4 text-slate-600" />
                 </button>
@@ -437,9 +447,9 @@ function LandingPage() {
               </p>
               <div className="mt-6 space-y-4">
                 {[
-                  { icon: Mail, title: 'Email', value: 'info@dms.com' },
-                  { icon: Phone, title: 'Phone', value: '+1 (555) 123-4567' },
-                  { icon: MapPin, title: 'Address', value: '123 Business Ave, Suite 100, New York, NY 10001, USA' },
+                  { icon: Mail, title: 'Email', value: 'sales@netfotech.in' },
+                  { icon: Phone, title: 'Phone', value: '88888887965' },
+                  { icon: MapPin, title: 'Address', value: 'World Trade Center Pune,India' },
                 ].map((item) => {
                   const Icon = item.icon
                   return (
@@ -459,18 +469,18 @@ function LandingPage() {
 
             <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <div className="grid gap-4 sm:grid-cols-2">
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="h-11 rounded-md border border-slate-200 px-4 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Your Name" />
-                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="h-11 rounded-md border border-slate-200 px-4 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Your Email" />
+                <input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="h-11 rounded-md border border-slate-200 px-4 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Your Name" />
+                <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="h-11 rounded-md border border-slate-200 px-4 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Your Email" />
               </div>
-              <input required value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="mt-4 h-11 w-full rounded-md border border-slate-200 px-4 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Subject" />
-              <textarea required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} className="mt-4 h-28 w-full resize-none rounded-md border border-slate-200 px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Your Message" />
-              
+              <input required value={formData.subject} onChange={e => setFormData({ ...formData, subject: e.target.value })} className="mt-4 h-11 w-full rounded-md border border-slate-200 px-4 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Subject" />
+              <textarea required value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="mt-4 h-28 w-full resize-none rounded-md border border-slate-200 px-4 py-3 text-sm font-semibold outline-none focus:border-blue-500" placeholder="Your Message" />
+
               {status.message && (
                 <div className={`mt-4 p-3 rounded-md text-sm font-semibold ${status.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
                   {status.message}
                 </div>
               )}
-              
+
               <button disabled={status.loading} type="submit" className="mt-3 flex w-full items-center justify-center gap-3 rounded-md bg-blue-600 px-7 py-3 text-sm font-extrabold text-white shadow-lg shadow-blue-200 sm:w-auto disabled:opacity-50">
                 {status.loading ? 'Sending...' : 'Send Message'}
                 {!status.loading && <Send className="h-4 w-4" />}

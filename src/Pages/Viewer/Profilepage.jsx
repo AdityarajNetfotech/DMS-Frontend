@@ -134,6 +134,16 @@ export default function Profilepage() {
       setError("Passwords do not match.");
       return;
     }
+    const hasLength = newPassword.length >= 8;
+    const hasUppercase = /[A-Z]/.test(newPassword);
+    const hasLowercase = /[a-z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+
+    if (!hasLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+      setError("Password must be at least 8 characters long and include uppercase, lowercase, number and special character.");
+      return;
+    }
     setLoading(true);
     setError("");
     setSuccessMessage("");
@@ -252,13 +262,6 @@ export default function Profilepage() {
                 type="email"
                 disabled={loading}
               />
-              <Field
-                label="Phone"
-                value="+1 (555) 123-4567"
-                type="tel"
-                disabled
-              />
-
               <label className="block opacity-60 cursor-not-allowed">
                 <span className="text-sm font-semibold text-slate-900">
                   Role

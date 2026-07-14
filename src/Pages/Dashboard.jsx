@@ -12,7 +12,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { API_BASE_URL } from "../config/api";
 import {
   Building2,
@@ -164,6 +164,7 @@ function DocumentIcon({ type }) {
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -181,6 +182,14 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    const handleGlobalSearch = (e) => {
+      setSearchTerm(e.detail || "");
+    };
+    window.addEventListener("global-search", handleGlobalSearch);
+    return () => window.removeEventListener("global-search", handleGlobalSearch);
+  }, []);
+
   const dynamicMetricCards = stats ? [
     { ...metricCards[0], value: stats.stats.totalCompanies.toString() },
     { ...metricCards[1], value: stats.stats.activeCompanies.toString() },
@@ -189,12 +198,34 @@ export default function Dashboard() {
     { ...metricCards[4], value: stats.stats.totalUsers.toLocaleString() },
   ] : metricCards;
 
-  const dynamicCompanies = stats?.companiesList || companies;
+  const baseCompanies = stats?.companiesList || companies;
+  const baseRecentDocuments = stats?.recentDocuments || documents;
+  const baseActivity = stats?.recentActivity || activity;
+
+  const dynamicCompanies = useMemo(() => {
+    return baseCompanies.filter(([name]) => 
+      !searchTerm || name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [baseCompanies, searchTerm]);
+
   const dynamicDocumentTypes = stats?.documentTypes || documentTypes;
-  const dynamicRecentDocuments = stats?.recentDocuments || documents;
+
+  const dynamicRecentDocuments = useMemo(() => {
+    return baseRecentDocuments.filter(([name, company]) => 
+      !searchTerm || 
+      name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      company.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [baseRecentDocuments, searchTerm]);
+
   const dynamicTopCompanies = stats?.topCompanies || topCompanies;
   const dynamicDocumentsOverTime = stats?.documentsOverTime || documentsOverTime;
-  const dynamicActivity = stats?.recentActivity || activity;
+
+  const dynamicActivity = useMemo(() => {
+    return baseActivity.filter((item) => 
+      !searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [baseActivity, searchTerm]);
 
   return (
     <div className="space-y-6 relative">
@@ -268,13 +299,7 @@ export default function Dashboard() {
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-[1.15fr_1fr_1.3fr]">
         {/* Documents Over Time Redesign */}
         <Card className="p-6">
-          <SectionHeader title="Documents Over Time">
-            <select className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 outline-none focus:border-blue-500 cursor-pointer">
-              <option>Monthly</option>
-              <option>Weekly</option>
-              <option>Yearly</option>
-            </select>
-          </SectionHeader>
+          <SectionHeader title="Documents Over Time" />
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dynamicDocumentsOverTime} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>

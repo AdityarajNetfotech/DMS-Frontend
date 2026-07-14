@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, Save, Edit3, Loader2 } from "lucide-react";
 import { API_BASE_URL } from "../../config/api";
 
-export default function TenantModal({ tenant, isOpen, onClose, onRefresh }) {
+export default function TenantModal({ tenant, isOpen, onClose, onRefresh, initialEditMode = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({});
@@ -11,10 +11,10 @@ export default function TenantModal({ tenant, isOpen, onClose, onRefresh }) {
   useEffect(() => {
     if (tenant) {
       setFormData(tenant);
-      setIsEditing(false);
+      setIsEditing(initialEditMode);
       setError(null);
     }
-  }, [tenant]);
+  }, [tenant, initialEditMode]);
 
   if (!isOpen || !tenant) return null;
 
@@ -110,7 +110,7 @@ export default function TenantModal({ tenant, isOpen, onClose, onRefresh }) {
             <InputField label="Website" name="website" />
             <InputField label="Logo URL" name="logo" />
             <InputField label="Phone" name="phone" />
-            <InputField label="Email" name="email" type="email" disabled={true} />
+            <InputField label="Email" name="adminEmail" type="email" disabled={true} />
             
             <div className="col-span-1 md:col-span-2">
               <InputField label="Address" name="address" />
@@ -118,7 +118,7 @@ export default function TenantModal({ tenant, isOpen, onClose, onRefresh }) {
             
             <InputField label="City" name="city" />
             <InputField label="State" name="state" />
-            <InputField label="Zip Code" name="zipCode" />
+            <InputField label="Zip Code" name="postalCode" />
             <InputField label="Country" name="country" />
             <InputField label="Default Language" name="defaultLanguage" />
             <InputField label="Timezone" name="timezone" />
@@ -129,8 +129,12 @@ export default function TenantModal({ tenant, isOpen, onClose, onRefresh }) {
                 name="isActive"
                 value={formData.isActive !== false ? "true" : "false"}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.value === "true" })}
-                disabled={true}
-                className={`h-9 rounded-md border px-3 text-sm transition border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed opacity-75`}
+                disabled={!isEditing}
+                className={`h-9 rounded-md border px-3 text-sm transition ${
+                  !isEditing
+                    ? "border-transparent bg-slate-50 text-slate-700 cursor-default"
+                    : "border-slate-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                }`}
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
