@@ -21,7 +21,10 @@ import {
   Copy,
   FolderOutput,
   Eye,
-  Share2
+  Share2,
+  Edit3,
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
@@ -31,6 +34,9 @@ import CreateFolderModal from "../../components/Manager/CreateFolderModal";
 import UploadFileModal from "../../components/Manager/UploadFileModal";
 import MoveCopyModal from "../../components/Manager/MoveCopyModal";
 import ShareDocumentModal from "../../components/Manager/ShareDocumentModal";
+import RenameModal from "../../components/Manager/RenameModal";
+import ConvertFormatModal from "../../components/Manager/ConvertFormatModal";
+import AISummarizeModal from "../../components/Manager/AISummarizeModal";
 
 const iconStyles = {
   folder: "bg-amber-100 text-amber-500",
@@ -90,6 +96,9 @@ export default function FolderExployer() {
   const [uploadTargetFolderId, setUploadTargetFolderId] = useState(null);
   const [moveCopyConfig, setMoveCopyConfig] = useState({ isOpen: false, item: null, action: null });
   const [shareConfig, setShareConfig] = useState({ isOpen: false, document: null });
+  const [renameConfig, setRenameConfig] = useState({ isOpen: false, item: null });
+  const [convertConfig, setConvertConfig] = useState({ isOpen: false, item: null });
+  const [summarizeConfig, setSummarizeConfig] = useState({ isOpen: false, item: null });
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef(null);
 
@@ -245,6 +254,15 @@ export default function FolderExployer() {
       } else if (action === 'share') {
         setShareConfig({ isOpen: true, document: item });
         return;
+      } else if (action === 'rename') {
+        setRenameConfig({ isOpen: true, item });
+        return;
+      } else if (action === 'convert') {
+        setConvertConfig({ isOpen: true, item });
+        return;
+      } else if (action === 'summarize') {
+        setSummarizeConfig({ isOpen: true, item });
+        return;
       }
 
       const headers = getAuthHeaders();
@@ -281,6 +299,37 @@ export default function FolderExployer() {
     const data = await res.json();
     if (!data.success) throw new Error(data.message);
     return data.data;
+  };
+
+  const handleRename = async (item, newName) => {
+    const isFolder = item.kind === 'folder';
+    const endpoint = isFolder
+      ? `/api/${companySlug}/manager/folders/${item._id}`
+      : `/api/${companySlug}/manager/documents/${item._id}`;
+
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    fetchFolderTree();
+    fetchFolderDetails(currentFolder?._id);
+  };
+
+  const handleConvert = async (item, targetFormat) => {
+    const res = await fetch(`${API_BASE_URL}/api/${companySlug}/manager/documents/${item._id}/convert`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetFormat }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    fetchFolderTree();
+    fetchFolderDetails(currentFolder?._id);
   };
 
   const submitMoveCopy = async (destinationFolderId) => {
@@ -398,6 +447,15 @@ export default function FolderExployer() {
             </div> */}
 
             <button
+              onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-800"
+              title="Summarize current folder contents"
+            >
+              <Sparkles size={19} />
+              AI Summarize
+            </button>
+
+            <button
               onClick={() => setIsCreateFolderOpen(true)}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
             >
@@ -512,7 +570,14 @@ export default function FolderExployer() {
                         </td>
 
                         <td className="px-7 py-5 relative">
-                          <div className="flex justify-end">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleAction('summarize', item)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 transition hover:bg-violet-50 hover:text-violet-700"
+                              title="AI Summarize"
+                            >
+                              <Sparkles size={18} />
+                            </button>
                             <button
                               onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200"
@@ -522,6 +587,10 @@ export default function FolderExployer() {
 
                             {activeDropdown === item._id && (
                               <div ref={dropdownRef} className="absolute right-12 top-10 z-10 w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                                <button onClick={() => handleAction('summarize', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50">
+                                  <Sparkles size={16} className="text-violet-600" /> AI Summarize
+                                </button>
+                                <hr className="my-1 border-slate-100" />
                                 <button onClick={() => handleAction('download', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <Download size={16} /> Download
                                 </button>
@@ -549,6 +618,14 @@ export default function FolderExployer() {
                                 <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <FolderOutput size={16} /> Move
                                 </button>
+                                <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                  <Edit3 size={16} /> Rename
+                                </button>
+                                {item.kind !== 'folder' && (
+                                  <button onClick={() => handleAction('convert', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                    <RefreshCw size={16} /> Convert Format
+                                  </button>
+                                )}
                                 <hr className="my-1 border-slate-100" />
                                 <button onClick={() => handleAction('delete', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50">
                                   <Trash2 size={16} /> Move to Trash
@@ -612,6 +689,27 @@ export default function FolderExployer() {
         onClose={() => setShareConfig({ isOpen: false, document: null })}
         onShare={handleShareDocument}
         document={shareConfig.document}
+        companySlug={companySlug}
+      />
+
+      <RenameModal
+        isOpen={renameConfig.isOpen}
+        onClose={() => setRenameConfig({ isOpen: false, item: null })}
+        onRename={handleRename}
+        item={renameConfig.item}
+      />
+
+      <ConvertFormatModal
+        isOpen={convertConfig.isOpen}
+        onClose={() => setConvertConfig({ isOpen: false, item: null })}
+        onConvert={handleConvert}
+        item={convertConfig.item}
+      />
+
+      <AISummarizeModal
+        isOpen={summarizeConfig.isOpen}
+        onClose={() => setSummarizeConfig({ isOpen: false, item: null })}
+        item={summarizeConfig.item}
         companySlug={companySlug}
       />
     </MainLayout>
