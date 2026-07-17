@@ -1,7 +1,7 @@
 import { Trash2, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
-export default function RestoredFromTrash({ count = 0 }) {
+export default function RestoredFromTrash({ count = 0, showButton = true }) {
   const navigate = useNavigate();
   const { companySlug } = useParams();
 
@@ -27,13 +27,15 @@ export default function RestoredFromTrash({ count = 0 }) {
         </div>
       </div>
 
-      <button
-        onClick={() => navigate(`/${companySlug}/manager/trash`)}
-        className="mt-6 w-full inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-sm font-semibold text-slate-800 transition-all duration-200 active:scale-[0.98]"
-      >
-        <span>View Trash Bin</span>
-        <ChevronRight size={16} />
-      </button>
+      {showButton && (
+        <button
+          onClick={() => navigate(`/${companySlug}/manager/trash`)}
+          className="mt-6 w-full inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-sm font-semibold text-slate-800 transition-all duration-200 active:scale-[0.98]"
+        >
+          <span>View Trash Bin</span>
+          <ChevronRight size={16} />
+        </button>
+      )}
     </div>
   );
 }

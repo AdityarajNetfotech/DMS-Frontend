@@ -38,76 +38,7 @@ const defaultFilters = {
   shared: "Any",
 };
 
-const filterButtons = [
-  {
-    key: "documentType",
-    label: "Document Type",
-    icon: FileText,
-    options: ["All Types", "PDF", "Excel", "Word", "PowerPoint"],
-  },
-  {
-    key: "uploadedBy",
-    label: "Uploaded By",
-    icon: UserRound,
-    options: [
-      "All Users",
-      "Manager",
-      "John Doe",
-      "Jane Smith",
-      "Robert Brown",
-      "Sarah Wilson",
-    ],
-  },
-  {
-    key: "dateRange",
-    label: "Date Range",
-    icon: Calendar,
-    options: ["Any Time", "Last 7 Days", "Last 30 Days", "Older"],
-  },
-  {
-    key: "tag",
-    label: "Tags",
-    icon: Tag,
-    options: ["All Tags", "Finance", "Report", "Budget", "Audit", "Summary"],
-  },
-];
-
-const moreFilters = [
-  {
-    key: "fileSize",
-    label: "File Size",
-    options: ["Any Size", "Under 2 MB", "2 MB and Above"],
-  },
-  {
-    key: "accessLevel",
-    label: "Access Level",
-    options: ["Any Access Level", "Private", "Department", "Public"],
-  },
-  {
-    key: "department",
-    label: "Department",
-    options: ["Any Department", "Finance", "HR", "Audit", "Operations"],
-  },
-  {
-    key: "dateModified",
-    label: "Date Modified",
-    options: ["Any Time", "Last 7 Days", "Last 30 Days", "Older"],
-  },
-  {
-    key: "owner",
-    label: "Owner",
-    options: [
-      "Any Owner",
-      "Manager",
-      "John Doe",
-      "Jane Smith",
-      "Robert Brown",
-      "Sarah Wilson",
-    ],
-  },
-  { key: "hasVersion", label: "Has Version", options: ["Any", "Yes", "No"] },
-  { key: "shared", label: "Shared", options: ["Any", "Yes", "No"] },
-];
+// filterButtons is now dynamically defined inside the component to support dynamic users
 
 const results = [
   {
@@ -351,6 +282,47 @@ export default function Searchandfilter() {
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch(`${API_BASE_URL}/api/${companySlug}/users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      }
+    };
+    fetchUsers();
+  }, [companySlug]);
+
+  const filterButtons = useMemo(() => [
+    {
+      key: "documentType",
+      label: "Document Type",
+      icon: FileText,
+      options: ["All Types", "PDF", "Excel", "Word", "PowerPoint"],
+    },
+    {
+      key: "uploadedBy",
+      label: "Uploaded By",
+      icon: UserRound,
+      options: ["All Users", ...users.map(u => u.name)],
+    },
+    {
+      key: "dateRange",
+      label: "Date Range",
+      icon: Calendar,
+      options: ["Any Time", "Last 7 Days", "Last 30 Days", "Older"],
+    },
+  ], [users]);
+
   // Sync state if q param in URL changes (e.g. from navbar search)
   useEffect(() => {
     const q = searchParams.get("q") || "";
@@ -416,7 +388,38 @@ export default function Searchandfilter() {
     fetchResults();
   }, [companySlug, debouncedSearchTerm, sortBy, starredOnly, filters]);
 
-  const filteredResults = searchResults;
+  const filteredResults = useMemo(() => {
+    let list = searchResults;
+
+    // Filter by Uploaded By
+    if (filters.uploadedBy && filters.uploadedBy !== "All Users") {
+      list = list.filter(item => {
+        const uploaderName = item.uploadedBy?.name || item.createdBy?.name || "System";
+        return uploaderName === filters.uploadedBy;
+      });
+    }
+
+    // Filter by Date Range
+    if (filters.dateRange && filters.dateRange !== "Any Time") {
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      list = list.filter(item => {
+        const date = new Date(item.createdAt || item.modified || Date.now());
+        if (filters.dateRange === "Last 7 Days") {
+          return date >= sevenDaysAgo;
+        } else if (filters.dateRange === "Last 30 Days") {
+          return date >= thirtyDaysAgo;
+        } else if (filters.dateRange === "Older") {
+          return date < thirtyDaysAgo;
+        }
+        return true;
+      });
+    }
+
+    return list;
+  }, [searchResults, filters.uploadedBy, filters.dateRange]);
 
   const handleReset = () => {
     setSearchTerm("");
@@ -511,76 +514,7 @@ export default function Searchandfilter() {
             </DropdownButton>
           ))}
 
-          <button
-            type="button"
-            onClick={() => setShowMoreFilters((current) => !current)}
-            className={`inline-flex h-11 items-center justify-between gap-3 rounded-lg border px-4 text-sm font-semibold transition ${showMoreFilters
-              ? "border-blue-600 bg-blue-50 text-blue-700"
-              : "border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-              }`}
-          >
-            <span className="flex items-center gap-3">
-              <Filter size={18} />
-              More Filters
-            </span>
-            <ChevronDown size={17} className={`transition ${showMoreFilters ? "rotate-180" : "rotate-0"}`} />
-          </button>
         </section>
-
-        {showMoreFilters ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-3 text-sm font-bold text-blue-700">
-                <SlidersHorizontal size={18} />
-                More Filters
-              </h2>
-              <ChevronUp size={18} className="text-blue-700" />
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {moreFilters.map((filter) => (
-                <SelectBox
-                  key={filter.key}
-                  label={filter.label}
-                  value={filters[filter.key]}
-                  options={filter.options}
-                  onChange={(value) => setFilters((current) => ({ ...current, [filter.key]: value }))}
-                />
-              ))}
-
-              <div className="flex items-center gap-3 pt-7">
-                <button
-                  type="button"
-                  onClick={() => setStarredOnly((current) => !current)}
-                  className={`relative h-6 w-11 rounded-full transition ${starredOnly ? "bg-blue-700" : "bg-slate-400 hover:bg-slate-500"}`}
-                  aria-label="Toggle starred only"
-                >
-                  <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${starredOnly ? "left-6" : "left-1"}`} />
-                </button>
-                <span className="text-sm font-semibold text-slate-900">
-                  Starred Only
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowMoreFilters(false)}
-                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowMoreFilters(false)}
-                className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </section>
-        ) : null}
 
         <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-500">

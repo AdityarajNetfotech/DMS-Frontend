@@ -154,52 +154,34 @@ export default function DMSSignIn() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-b from-blue-50 to-blue-100 flex items-center justify-center px-4 py-12">
-      {/* Decorative dot grids */}
+    <div className="min-h-screen w-full relative overflow-hidden bg-[#f8fafc] flex items-center justify-center px-4 py-12 font-sans">
+      {/* Soft light-diffusing 3D background blobs */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-blue-300/30 rounded-full blur-[100px] animate-pulse pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-indigo-300/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-purple-300/10 rounded-full blur-[140px] pointer-events-none" />
+
+      {/* Decorative subtle dot patterns */}
       <div
-        className="hidden md:block absolute top-40 left-10 w-36 h-36 opacity-40"
+        className="absolute inset-0 opacity-[0.06] pointer-events-none"
         style={{
           backgroundImage:
-            "radial-gradient(circle, #93c5fd 1.5px, transparent 1.5px)",
-          backgroundSize: "18px 18px",
-        }}
-      />
-      <div
-        className="hidden md:block absolute bottom-24 right-10 w-40 h-40 opacity-40"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, #93c5fd 1.5px, transparent 1.5px)",
-          backgroundSize: "18px 18px",
+            "radial-gradient(circle, #0f172a 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
         }}
       />
 
-      {/* Decorative wave at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-        <svg
-          viewBox="0 0 1440 200"
-          className="w-full h-32 md:h-40"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,120 C240,180 480,60 720,90 C960,120 1200,180 1440,110 L1440,200 L0,200 Z"
-            fill="#bfdbfe"
-            opacity="0.7"
-          />
-        </svg>
-      </div>
-
-      <div className="relative z-10 w-full max-w-xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-1">
+      <div className="relative z-10 w-full max-w-lg">
+        {/* Floating Header */}
+        <div className="text-center mb-10 transform transition-all duration-700 hover:scale-[1.02]">
+          <div className="flex flex-col items-center justify-center gap-4">
             <div
               style={!branding.logo ? { backgroundColor: branding.primaryColor } : {}}
-              className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-100 bg-white"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-100 bg-white hover:rotate-12 transition-transform duration-300"
             >
               {branding.logo ? (
-                <img src={branding.logo} alt="Logo" className="w-full h-full object-contain" />
+                <img src={branding.logo} alt="Logo" className="w-full h-full object-contain p-1" />
               ) : (
-                <svg viewBox="0 0 24 24" className="w-8 h-8 text-white" fill="none">
+                <svg viewBox="0 0 24 24" className="w-10 h-10 text-white" fill="none">
                   <path
                     d="M4 8c0-1.1.9-2 2-2h3l1.5 1.5H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"
                     fill="currentColor"
@@ -214,73 +196,76 @@ export default function DMSSignIn() {
                 </svg>
               )}
             </div>
-            <div className="text-left">
-              <h1 className="text-4xl font-extrabold text-slate-900 leading-none" style={{ color: branding.primaryColor }}>
+            
+            <div>
+              <h1 
+                className="text-4xl font-black tracking-tight leading-none text-slate-900 drop-shadow-sm"
+                style={{ color: branding.primaryColor }}
+              >
                 {branding.companyName || "DMS"}
               </h1>
-              {/* <p className="text-sm text-slate-500 mt-1">
-                {companySlug ? `Workspace: ${companySlug.toUpperCase()}` : "Document Management System"}
-              </p> */}
+              <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase mt-2">
+                {companySlug ? `Workspace: ${companySlug}` : "Document Hub"}
+              </p>
             </div>
           </div>
-          <p className="mt-4 text-base font-medium" style={{ color: branding.primaryColor }}>
-            Secure. Organized. Accessible.
-            <br />
-            All Your Documents, One Place.
-          </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-blue-900/10 border border-slate-100 p-8 sm:p-10">
-          <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
-          <p className="text-slate-500 text-sm mt-1 mb-6">
-            Enter your details or select a quick-login profile below
-          </p>
+        {/* 3D Glass Card */}
+        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-white p-8 sm:p-10 shadow-[0_20px_50px_rgba(15,23,42,0.06)] hover:shadow-[0_30px_60px_rgba(15,23,42,0.12)] hover:-translate-y-1 transition-all duration-500">
+          <div className="mb-8">
+            <h2 className="text-2xl font-extrabold text-slate-900">Sign In</h2>
+            <p className="text-slate-500 text-sm mt-1">
+              Enter your credentials to access your workspace
+            </p>
+          </div>
 
           {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-750 text-xs rounded-xl backdrop-blur-md animate-pulse">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Email Address
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500" />
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
                 <input
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-slate-800 placeholder:text-slate-400 transition"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white border border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none text-slate-800 placeholder:text-slate-400 transition-all font-medium text-sm shadow-sm"
                   disabled={loading}
                 />
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-slate-800">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Password
                 </label>
                 <Link
                   to={`${slugPrefix}/forgot-password`}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                  className="text-xs font-bold text-violet-600 hover:text-violet-500 transition-colors"
                 >
                   Forgot Password?
                 </Link>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500" />
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
                 <input
                   type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-slate-800 placeholder:text-slate-400 transition"
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white border border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none text-slate-800 placeholder:text-slate-400 transition-all font-medium text-sm shadow-sm"
                   disabled={loading}
                 />
               </div>
@@ -289,24 +274,31 @@ export default function DMSSignIn() {
             <button
               type="submit"
               disabled={loading}
-              style={{ backgroundColor: branding.primaryColor }}
-              className="w-full text-white font-semibold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition hover:opacity-90 disabled:opacity-70 cursor-pointer"
+              style={{
+                background: `linear-gradient(135deg, ${branding.primaryColor}, ${branding.primaryColor}dd)`,
+                boxShadow: `0 10px 25px ${branding.primaryColor}30`
+              }}
+              className="w-full text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] disabled:opacity-50 cursor-pointer text-sm"
             >
-              {loading ? "Signing In..." : "Sign In to Account"}
-              {!loading && <ArrowRight className="w-5 h-5" />}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <span>Signing In...</span>
+                </div>
+              ) : (
+                <>
+                  <span>Access Workspace</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="text-center mt-7 space-y-2">
-            <p className="text-sm text-slate-500">
-              Need a new company or user profile?{" "}
-              <a href="#" className="text-blue-600 font-semibold hover:underline">
-                Register here
-              </a>
-            </p>
-            <p className="text-xs text-slate-400">
-              Are you a system administrator?{" "}
-              <Link to="/superadminlogin" className="text-blue-500 hover:font-semibold hover:underline transition">
+          {/* Super Admin Portal link */}
+          <div className="text-center mt-8 pt-6 border-t border-slate-100">
+            <p className="text-xs text-slate-500">
+              System Administrator?{" "}
+              <Link to="/superadminlogin" className="text-violet-600 hover:text-violet-500 font-bold transition-colors">
                 Super Admin Portal
               </Link>
             </p>

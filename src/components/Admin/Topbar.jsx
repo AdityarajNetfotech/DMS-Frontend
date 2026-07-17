@@ -1,10 +1,11 @@
 // src/components/Admin/Topbar.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Search,
   Menu,
+  Calendar,
+  Clock,
 } from "lucide-react";
 
 export default function Topbar({ onMenuToggle = () => {} }) {
@@ -12,16 +13,28 @@ export default function Topbar({ onMenuToggle = () => {} }) {
   const { companySlug } = useParams();
   const slugPrefix = companySlug ? `/${companySlug}` : "";
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`${slugPrefix}/manager/search-filters?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate(`${slugPrefix}/manager/search-filters`);
-    }
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedDate = currentTime.toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  const formattedTime = currentTime.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
 
   const handleProfileClick = () => {
     navigate(`${slugPrefix}/admin/profile`);
@@ -40,20 +53,17 @@ export default function Topbar({ onMenuToggle = () => {} }) {
             <Menu size={20} />
           </button>
 
-          <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-[280px] lg:w-[420px]">
-            <Search
-              size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-
-            <input
-              type="text"
-              placeholder="Search systems..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 w-full rounded-xl border border-gray-300 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </form>
+          {/* Time & Date Display */}
+          <div className="flex items-center gap-3 select-none">
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-600 shadow-sm text-sm font-semibold transition-all hover:bg-slate-100/80">
+              <Calendar size={16} className="text-blue-600" />
+              <span>{formattedDate}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-blue-50/60 border border-blue-100 rounded-xl px-4 py-2 text-blue-800 shadow-sm text-sm font-bold transition-all hover:bg-blue-50/90 justify-center tabular-nums">
+              <Clock size={16} className="text-blue-600 animate-pulse" />
+              <span>{formattedTime}</span>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

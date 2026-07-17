@@ -294,7 +294,7 @@ export default function DashboardContent() {
 
       {/* Dashboard Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <RestoredFromTrash count={dashData?.restoredCount || 0} />
+        <RestoredFromTrash count={dashData?.restoredCount || 0} showButton={false} />
         <RecentActivity activities={activities} />
         <TeamMembers members={teamMembers} />
       </div>
