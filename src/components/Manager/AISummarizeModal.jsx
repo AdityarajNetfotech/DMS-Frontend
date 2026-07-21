@@ -73,9 +73,41 @@ export default function AISummarizeModal({ isOpen, onClose, item, companySlug })
 
   const handleCopy = () => {
     if (!summary) return;
-    navigator.clipboard.writeText(summary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(summary)
+        .then(() => {
+          setCopied(true);
+          alert("Summary copied to clipboard!");
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(err => {
+          console.error('Clipboard API failed, using fallback:', err);
+          fallbackCopy(summary);
+        });
+    } else {
+      fallbackCopy(summary);
+    }
+  };
+
+  const fallbackCopy = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopied(true);
+      alert("Summary copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      alert("Failed to copy summary. Please copy manually.");
+    }
+    document.body.removeChild(textArea);
   };
 
   const handleSaveKeys = (e) => {

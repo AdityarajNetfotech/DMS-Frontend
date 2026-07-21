@@ -243,7 +243,7 @@ export default function DashboardContent() {
       {/* Header */}
       <PageHeader
         title="Admin Dashboard"
-        subtitle="Welcome back. Here's a summary of organization status and activities."
+        subtitle="Welcome. Here's a summary of organization status and activities."
         buttonText="Invite User"
         icon={Upload}
         onButtonClick={() => navigate(`/${companySlug}/admin/user-management`)}

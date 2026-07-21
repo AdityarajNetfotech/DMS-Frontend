@@ -387,7 +387,7 @@ export default function MyDocument() {
               Showing 1 to {filteredDocuments.length} of {filteredDocuments.length} results
             </p>
 
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
                 <ChevronLeft size={19} />
               </button>
@@ -403,7 +403,7 @@ export default function MyDocument() {
               <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
                 <ChevronRight size={19} />
               </button>
-            </div>
+            </div> */}
           </div>
         </section>
       </div>

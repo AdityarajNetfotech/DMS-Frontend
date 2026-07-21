@@ -24,7 +24,10 @@ import {
   Share2,
   Edit3,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  PenTool,
+  UserCheck,
+  Check
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
@@ -261,6 +264,7 @@ export default function FolderExployer() {
         setConvertConfig({ isOpen: true, item });
         return;
       } else if (action === 'summarize') {
+        setSummarizeConfig({ isOpen: true, item: null });
         setSummarizeConfig({ isOpen: true, item });
         return;
       }
@@ -376,8 +380,8 @@ export default function FolderExployer() {
           onClick={() => fetchFolderDetails(folder._id)}
           style={{ paddingLeft: `${depth * 20 + 12}px` }}
           className={`flex w-full items-center gap-3 rounded-lg py-2.5 pr-3 text-left text-sm font-semibold transition ${currentFolder?._id === folder._id
-              ? "bg-blue-50 text-blue-700"
-              : "text-slate-700 hover:bg-slate-50"
+            ? "bg-blue-50 text-blue-700"
+            : "text-slate-700 hover:bg-slate-50"
             }`}
         >
           {folder.children?.length > 0 ? (

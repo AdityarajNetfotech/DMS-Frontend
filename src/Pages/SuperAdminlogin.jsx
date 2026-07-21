@@ -165,8 +165,8 @@ const SuperAdminlogin = () => {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-800/80 text-center">
-            <Link to="/login" className="text-slate-400 hover:text-white text-xs font-semibold hover:underline transition">
-              ← Return to Tenant Portal
+            <Link to="/" className="text-slate-400 hover:text-white text-xs font-semibold hover:underline transition">
+              ← Return to Home Page
             </Link>
           </div>
         </div>

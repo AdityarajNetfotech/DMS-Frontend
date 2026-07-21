@@ -884,7 +884,7 @@ const STEPS = [
 /* ------------------------------------------------------------------ */
 
 function ContactForm() {
-  const [form, setForm] = useState({ name: "", email: "", subject: "Inquiry from Landing Page", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "Inquiry for DMS Project ", message: "" });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({ loading: false, message: "", type: "" });
   const [submitted, setSubmitted] = useState(false);
@@ -918,7 +918,7 @@ function ContactForm() {
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
-        setForm({ name: "", email: "", subject: "Inquiry from Landing Page", message: "" });
+        setForm({ name: "", email: "", subject: "Inquiry for DMS Project", message: "" });
         setStatus({ loading: false, message: "", type: "" });
       } else {
         setStatus({ loading: false, message: data.message || "Failed to send message.", type: "error" });
@@ -1377,13 +1377,13 @@ export default function DMSHomepage() {
             <button onClick={() => window.location.href = "/superadminlogin"} className="btn-primary rounded-xl px-7 py-3.5 flex items-center gap-2" style={{ fontSize: 15, fontWeight: 600 }}>
               Get Started <ArrowRight size={17} />
             </button>
-            <button
+            {/* <button
               onClick={() => window.location.href = "/superadminlogin"}
               className="rounded-xl px-7 py-3.5"
               style={{ fontSize: 15, fontWeight: 500, color: "#fff", border: "1px solid rgba(255,255,255,0.25)", background: "transparent", cursor: "pointer" }}
             >
               Talk to sales
-            </button>
+            </button> */}
           </div>
         </div>
       </section>

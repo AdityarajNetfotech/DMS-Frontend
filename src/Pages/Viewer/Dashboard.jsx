@@ -393,7 +393,7 @@ export default function ViewerDashboard() {
               </div>
               <div>
                 <h1 className="text-3xl font-extrabold tracking-tight">
-                  Welcome back, {accountHolderName || "Viewer"}!
+                  Welcome, {accountHolderName || "Viewer"}!
                 </h1>
                 <p className="text-1xl font-extrabold tracking-tight">
                   You have view access to {totalDocuments} documents across the tenant's workspace. Discover and preview shared content.

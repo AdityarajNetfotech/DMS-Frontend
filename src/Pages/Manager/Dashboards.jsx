@@ -159,7 +159,7 @@ export default function Dashboard() {
         {/* Header */}
         <PageHeader
           title="Dashboard"
-          subtitle="Welcome back. Here's an overview of your workspace."
+          subtitle="Welcome. Here's an overview of your workspace."
           buttonText="Upload Document"
           icon={Upload}
           onButtonClick={() => navigate(`/${companySlug}/manager/folder-explorer`)}

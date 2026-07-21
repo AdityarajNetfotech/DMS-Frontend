@@ -69,7 +69,7 @@ const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
-  
+
   let interval = Math.floor(seconds / 31536000);
   if (interval >= 1) return interval + (interval === 1 ? ' year ago' : ' years ago');
   interval = Math.floor(seconds / 2592000);
@@ -235,7 +235,7 @@ export default function SearchPage() {
     const totalDocs = documents.length;
     const foldersSet = new Set(documents.map(d => d.folder));
     const ownersSet = new Set(documents.map(d => d.sharedBy));
-    
+
     // Count recently added (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -274,7 +274,7 @@ export default function SearchPage() {
   }, [documents]);
 
   const typeOptions = ["All Types", "PDF", "DOCX", "PPTX", "XLSX"];
-  
+
   const ownerOptions = useMemo(() => {
     const owners = new Set(documents.map(d => d.sharedBy));
     return ["All Owners", ...Array.from(owners)];
@@ -449,19 +449,19 @@ export default function SearchPage() {
 
                         <td className="py-5 pl-5">
                           <div className="flex items-center justify-end gap-4 text-slate-700">
-                            <button 
+                            <button
                               onClick={() => handlePreview(document._id)}
                               className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
                             >
                               <Eye size={18} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDownload(document._id)}
                               className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
                             >
                               <Download size={18} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleFavoriteToggle(document._id)}
                               className="rounded-md p-1 transition hover:bg-slate-100 hover:text-amber-500 cursor-pointer text-amber-500"
                               title="Remove from favorites"
@@ -487,7 +487,7 @@ export default function SearchPage() {
               Showing 1 to {filteredDocuments.length} of {filteredDocuments.length} results
             </p>
 
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
                 <ChevronLeft size={19} />
               </button>
@@ -503,7 +503,7 @@ export default function SearchPage() {
               <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
                 <ChevronRight size={19} />
               </button>
-            </div>
+            </div> */}
           </div>
         </section>
       </div>

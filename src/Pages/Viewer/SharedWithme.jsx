@@ -70,7 +70,7 @@ const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
-  
+
   let interval = Math.floor(seconds / 31536000);
   if (interval >= 1) return interval + (interval === 1 ? ' year ago' : ' years ago');
   interval = Math.floor(seconds / 2592000);
@@ -249,7 +249,7 @@ export default function SharedWithme() {
     const totalDocs = documents.length;
     const foldersSet = new Set(documents.filter(d => !d.isFolder).map(d => d.folder));
     const ownersSet = new Set(documents.map(d => d.sharedBy));
-    
+
     // Count recently shared (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -288,7 +288,7 @@ export default function SharedWithme() {
   }, [documents]);
 
   const typeOptions = ["All Types", "Folder", "PDF", "DOCX", "PPTX", "XLSX"];
-  
+
   const ownerOptions = useMemo(() => {
     const owners = new Set(documents.map(d => d.sharedBy));
     return ["All Owners", ...Array.from(owners)];
@@ -333,7 +333,7 @@ export default function SharedWithme() {
 
   const handleExportList = () => {
     if (!filteredDocuments.length) return;
-    
+
     const headers = ["Name", "Type", "Shared By", "Folder", "Shared On"];
     const rows = filteredDocuments.map(doc => [
       `"${doc.name.replace(/"/g, '""')}"`,
@@ -342,12 +342,12 @@ export default function SharedWithme() {
       `"${doc.folder}"`,
       `"${doc.date} ${doc.time}"`
     ]);
-    
+
     const csvContent = [
       headers.join(","),
       ...rows.map(e => e.join(","))
     ].join("\n");
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -371,7 +371,7 @@ export default function SharedWithme() {
             </p>
           </div>
 
-          <button 
+          <button
             onClick={handleExportList}
             className="inline-flex h-12 items-center justify-center gap-3 rounded-lg border border-blue-300 bg-white px-6 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50"
           >
@@ -523,7 +523,7 @@ export default function SharedWithme() {
                           <div className="flex items-center justify-end gap-4 text-slate-700">
                             {document.isFolder ? (
                               document.uploadPermission && (
-                                <button 
+                                <button
                                   onClick={() => handleOpenUpload(document._id)}
                                   title="Upload file into this folder"
                                   className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
@@ -533,14 +533,14 @@ export default function SharedWithme() {
                               )
                             ) : (
                               <>
-                                <button 
+                                <button
                                   onClick={() => handlePreview(document._id)}
                                   className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
                                 >
                                   <Eye size={18} />
                                 </button>
                                 {document.downloadPermission && (
-                                  <button 
+                                  <button
                                     onClick={() => handleDownload(document._id)}
                                     className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
                                   >
