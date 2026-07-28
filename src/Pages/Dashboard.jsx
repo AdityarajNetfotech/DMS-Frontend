@@ -79,12 +79,12 @@ const metricCards = [
 ];
 
 const documentsOverTime = [
-  { month: "Jan", documents: 11000 },
-  { month: "Feb", documents: 22000 },
-  { month: "Mar", documents: 25000 },
-  { month: "Apr", documents: 33000 },
-  { month: "May", documents: 37500 },
-  { month: "Jun", documents: 47000 },
+  { month: "Jan", documents: 50 },
+  { month: "Feb", documents: 100 },
+  { month: "Mar", documents: 150 },
+  { month: "Apr", documents: 200 },
+  { month: "May", documents: 250 },
+  { month: "Jun", documents: 300 },
 ];
 
 const documentTypes = [
@@ -226,7 +226,7 @@ export default function Dashboard() {
   const baseActivity = stats?.recentActivity || activity;
 
   const dynamicCompanies = useMemo(() => {
-    return baseCompanies.filter(([name]) => 
+    return baseCompanies.filter(([name]) =>
       !searchTerm || name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [baseCompanies, searchTerm]);
@@ -234,9 +234,9 @@ export default function Dashboard() {
   const dynamicDocumentTypes = stats?.documentTypes || documentTypes;
 
   const dynamicRecentDocuments = useMemo(() => {
-    return baseRecentDocuments.filter(([name, company]) => 
-      !searchTerm || 
-      name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    return baseRecentDocuments.filter(([name, company]) =>
+      !searchTerm ||
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       company.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [baseRecentDocuments, searchTerm]);
@@ -245,7 +245,7 @@ export default function Dashboard() {
   const dynamicDocumentsOverTime = stats?.documentsOverTime || documentsOverTime;
 
   const dynamicActivity = useMemo(() => {
-    return baseActivity.filter((item) => 
+    return baseActivity.filter((item) =>
       !searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [baseActivity, searchTerm]);
@@ -261,7 +261,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 relative pb-10">
       {/* Dynamic styling for premium transitions and 3D effects */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fadeSlideUp {
           from {
             opacity: 0;
@@ -372,7 +373,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-[1.25fr_1.1fr_1.15fr]">
-        
+
         {/* Documents Over Time 3D Curve */}
         <Card className="p-6" delay="150ms">
           <SectionHeader title="Documents Growth Status">
@@ -382,19 +383,21 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dynamicDocumentsOverTime} margin={{ left: -15, right: 10, top: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(val) => `${val / 1000}K`}
+                  domain={[0, 300]}
+                  ticks={[50, 100, 150, 200, 250, 300]}
+                  tickFormatter={(val) => `${val}`}
                   tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
                 />
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       return (
@@ -444,11 +447,11 @@ export default function Dashboard() {
                     onMouseLeave={onPieLeave}
                   >
                     {dynamicDocumentTypes.map((entry, index) => (
-                      <Cell 
-                        key={entry.name} 
-                        fill={entry.color} 
+                      <Cell
+                        key={entry.name}
+                        fill={entry.color}
                         filter="url(#pieShadow3d)"
-                        stroke="#fff" 
+                        stroke="#fff"
                         strokeWidth={activeIndex === index ? 3 : 1}
                         style={{
                           transition: "all 0.3s ease",
@@ -459,7 +462,7 @@ export default function Dashboard() {
                       />
                     ))}
                   </Pie>
-                  <Tooltip 
+                  <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         return (
@@ -475,34 +478,34 @@ export default function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            
+
             {/* Styled progress items */}
             <div className="space-y-3 bg-slate-50/50 p-4 rounded-xl border border-slate-100/80">
               {dynamicDocumentTypes.map((type, index) => (
-                <div 
-                  key={type.name} 
+                <div
+                  key={type.name}
                   className="space-y-1 group cursor-pointer"
                   onMouseEnter={() => setActiveIndex(index)}
                   onMouseLeave={() => setActiveIndex(null)}
                 >
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="flex items-center gap-2 text-slate-700">
-                      <span 
-                        className="h-2.5 w-2.5 rounded-full transition-transform duration-200 group-hover:scale-125 shadow-sm" 
-                        style={{ backgroundColor: type.color }} 
+                      <span
+                        className="h-2.5 w-2.5 rounded-full transition-transform duration-200 group-hover:scale-125 shadow-sm"
+                        style={{ backgroundColor: type.color }}
                       />
                       {type.name}
                     </span>
                     <span className="text-slate-600 font-bold">{type.value}%</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-500" 
-                      style={{ 
-                        backgroundColor: type.color, 
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        backgroundColor: type.color,
                         width: `${type.value}%`,
                         opacity: activeIndex === null || activeIndex === index ? 1 : 0.4
-                      }} 
+                      }}
                     />
                   </div>
                 </div>
@@ -523,10 +526,10 @@ export default function Dashboard() {
                 barCategoryGap={16}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis 
-                  type="number" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  type="number"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 600 }}
                 />
                 <YAxis
@@ -537,7 +540,7 @@ export default function Dashboard() {
                   width={110}
                   tick={{ fill: "#475569", fontSize: 10, fontWeight: 700 }}
                 />
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
@@ -550,10 +553,10 @@ export default function Dashboard() {
                     return null;
                   }}
                 />
-                <Bar 
-                  dataKey="value" 
-                  fill="url(#barGrad3d)" 
-                  radius={[0, 8, 8, 0]} 
+                <Bar
+                  dataKey="value"
+                  fill="url(#barGrad3d)"
+                  radius={[0, 8, 8, 0]}
                   filter="url(#barShadow3d)"
                   barSize={12}
                 />
@@ -590,11 +593,10 @@ export default function Dashboard() {
                     </td>
                     <td className="px-3 py-3.5">
                       <span
-                        className={`rounded-full px-3 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
-                          status === "Active"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200/50"
-                            : "bg-red-50 text-red-600 border border-red-200/50"
-                        }`}
+                        className={`rounded-full px-3 py-0.5 text-[10px] font-bold tracking-wide uppercase ${status === "Active"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/50"
+                          : "bg-red-50 text-red-600 border border-red-200/50"
+                          }`}
                       >
                         {status}
                       </span>
@@ -649,8 +651,8 @@ export default function Dashboard() {
         </div>
         <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
           {dynamicActivity.map((item, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="group relative rounded-xl border border-slate-100 bg-slate-50/40 p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:border-slate-200 hover:shadow-lg"
             >
               <div className="mb-3 flex items-center justify-between">
@@ -667,7 +669,7 @@ export default function Dashboard() {
                 <Clock size={11} />
                 {item.meta}
               </div>
-              
+
               <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             </div>
           ))}

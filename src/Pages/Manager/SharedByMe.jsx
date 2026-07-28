@@ -50,7 +50,7 @@ function DocumentIcon({ kind }) {
   );
 }
 
-export default function SharedWithMe() {
+export default function SharedByMe() {
   const { companySlug } = useParams();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");

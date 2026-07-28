@@ -14,6 +14,9 @@ import {
   TrendingUp,
   LayoutDashboard,
   User,
+  CreditCard,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
@@ -210,6 +213,44 @@ export default function Sidebar({
     return () => window.removeEventListener("branding-update", handleUpdate);
   }, [companySlug]);
 
+  const [subscriptionInfo, setSubscriptionInfo] = useState({
+    plan: 'Trial',
+    daysLeft: 7,
+    isExpired: false,
+    isAccessLocked: false
+  });
+
+  useEffect(() => {
+    const fetchSubStatus = async () => {
+      try {
+        if (!companySlug) return;
+        const res = await fetch(`${API_BASE_URL}/api/tenant/subscription/status/${companySlug}`);
+        const data = await res.json();
+        if (data.success) {
+          const now = new Date();
+          const plan = data.subscription?.plan || 'Trial';
+          const targetDate = plan === 'Trial' ? new Date(data.trialEndsAt) : new Date(data.subscription?.expiresAt);
+          
+          let daysLeft = 0;
+          if (targetDate && !isNaN(targetDate)) {
+            const diffTime = targetDate - now;
+            daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+          }
+
+          setSubscriptionInfo({
+            plan,
+            daysLeft,
+            isExpired: plan === 'Trial' ? data.trialEnded : data.planExpired,
+            isAccessLocked: data.isAccessLocked
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch subscription status in admin sidebar", err);
+      }
+    };
+    fetchSubStatus();
+  }, [companySlug]);
+
   const menuItems = [
     {
       icon: <LayoutDashboard size={18} />,
@@ -235,6 +276,11 @@ export default function Sidebar({
       icon: <Settings2 size={18} />,
       label: "Workspace Configuration",
       path: `${slugPrefix}/admin/workspace-configuration`,
+    },
+    {
+      icon: <CreditCard size={18} />,
+      label: "Subscription & Billing",
+      path: `${slugPrefix}/admin/subscription`,
     },
   ];
 
@@ -309,6 +355,55 @@ export default function Sidebar({
                 <span className="truncate">{item.label}</span>
               </NavLink>
             ))}
+
+            {/* Subscription & Trial Countdown Widget */}
+            <div className={`mt-4 p-3.5 rounded-2xl shadow-md border transition-all ${
+              subscriptionInfo.isExpired
+                ? 'bg-gradient-to-br from-red-950 to-red-905 text-white border-red-700/60'
+                : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                  subscriptionInfo.isExpired
+                    ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                    : subscriptionInfo.plan === 'Trial' 
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                }`}>
+                  {subscriptionInfo.isExpired 
+                    ? 'Trial Expired' 
+                    : subscriptionInfo.plan === 'Trial' 
+                      ? '7-Day Free Trial' 
+                      : `${subscriptionInfo.plan} Plan`}
+                </span>
+                <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
+              </div>
+
+              <div className="mt-2.5">
+                <p className="text-[11px] text-slate-300 font-medium">Subscription Status</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-xl font-black text-white">
+                    {subscriptionInfo.isExpired ? '0' : subscriptionInfo.daysLeft}
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold">
+                    {subscriptionInfo.isExpired ? 'Days / Expired' : 'Days Remaining'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate(`${slugPrefix}/admin/subscription`);
+                }}
+                style={subscriptionInfo.isExpired ? { backgroundColor: '#ef4444' } : { backgroundColor: branding.primaryColor }}
+                className="w-full mt-3 py-2 px-3 rounded-xl font-bold text-xs text-white shadow-sm hover:brightness-110 transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Zap size={14} />
+                <span>{subscriptionInfo.isExpired ? 'Upgrade Now' : subscriptionInfo.plan === 'Trial' ? 'Activate Subscription' : 'Manage Subscription'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Footer */}
@@ -323,7 +418,9 @@ export default function Sidebar({
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-slate-900 font-bold truncate">Tenant Admin</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Enterprise</p>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                  {subscriptionInfo.plan === 'Trial' ? 'Free Trial' : `${subscriptionInfo.plan} Plan`}
+                </p>
               </div>
             </div>
 

@@ -27,10 +27,11 @@ import {
   Sparkles,
   PenTool,
   UserCheck,
-  Check
+  Check,
+  History
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../layout/MainLayout";
 import { API_BASE_URL } from "../../config/api";
 import CreateFolderModal from "../../components/Manager/CreateFolderModal";
@@ -86,6 +87,9 @@ function ItemIcon({ kind }) {
 
 export default function FolderExployer() {
   const { companySlug } = useParams();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const folderIdParam = searchParams.get('folderId');
   const [search, setSearch] = useState("");
   const [folderTree, setFolderTree] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null); // null means root
@@ -103,6 +107,38 @@ export default function FolderExployer() {
   const [convertConfig, setConvertConfig] = useState({ isOpen: false, item: null });
   const [summarizeConfig, setSummarizeConfig] = useState({ isOpen: false, item: null });
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [subStatus, setSubStatus] = useState({
+    plan: 'Trial',
+    isAccessLocked: false,
+    aiCount: 0
+  });
+
+  const fetchSubStatus = useCallback(async () => {
+    try {
+      if (!companySlug) return;
+      const res = await fetch(`${API_BASE_URL}/api/tenant/subscription/status/${companySlug}`);
+      const data = await res.json();
+      if (data.success) {
+        setSubStatus({
+          plan: data.subscription?.plan || 'Trial',
+          isAccessLocked: data.isAccessLocked,
+          aiCount: data.aiUsage?.count || 0
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch sub status in folder explorer", err);
+    }
+  }, [companySlug]);
+
+  useEffect(() => {
+    fetchSubStatus();
+  }, [fetchSubStatus]);
+
+  useEffect(() => {
+    if (!summarizeConfig.isOpen) {
+      fetchSubStatus();
+    }
+  }, [summarizeConfig.isOpen, fetchSubStatus]);
   const dropdownRef = useRef(null);
 
   const getAuthHeaders = () => ({
@@ -152,8 +188,8 @@ export default function FolderExployer() {
 
   useEffect(() => {
     fetchFolderTree();
-    fetchFolderDetails(null);
-  }, [fetchFolderTree, fetchFolderDetails]);
+    fetchFolderDetails(folderIdParam || null);
+  }, [fetchFolderTree, fetchFolderDetails, folderIdParam]);
 
   // Handle outside click for dropdown
   useEffect(() => {
@@ -450,30 +486,71 @@ export default function FolderExployer() {
               </button>
             </div> */}
 
-            <button
-              onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-800"
-              title="Summarize current folder contents"
-            >
-              <Sparkles size={19} />
-              AI Summarize
-            </button>
+            {(() => {
+              const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
+              if (subStatus.plan !== 'Trial') {
+                return (
+                  <button
+                    onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-800"
+                    title="Summarize current folder contents"
+                  >
+                    <Sparkles size={19} />
+                    AI Summarize
+                  </button>
+                );
+              }
 
-            <button
-              onClick={() => setIsCreateFolderOpen(true)}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
-            >
-              <Plus size={19} />
-              New Folder
-            </button>
+              return (
+                <div className="flex flex-col items-start gap-1 justify-center shrink-0">
+                  <button
+                    onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
+                    disabled={isAiLimitReached}
+                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition ${
+                      isAiLimitReached 
+                        ? 'opacity-40 cursor-not-allowed select-none' 
+                        : 'hover:from-violet-700 hover:to-indigo-800'
+                    }`}
+                    title={isAiLimitReached ? "You free limit is hit" : "Summarize current folder contents"}
+                  >
+                    <Sparkles size={19} />
+                    AI Summarize
+                  </button>
+                  <span className={`text-[10px] font-bold px-1 ${isAiLimitReached ? 'text-red-500 animate-pulse' : 'text-slate-500'}`}>
+                    {isAiLimitReached ? 'You free limit is hit' : `AI Limit: ${subStatus.aiCount}/5 Used`}
+                  </span>
+                </div>
+              );
+            })()}
 
-            <button
-              onClick={() => setIsUploadOpen(true)}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-            >
-              <UploadCloud size={19} />
-              Upload
-            </button>
+            {(() => {
+              const uploadAllowed = !currentFolder || currentFolder.uploadAllowed === true;
+              return (
+                <>
+                  <button
+                    onClick={() => setIsCreateFolderOpen(true)}
+                    disabled={!uploadAllowed}
+                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition ${
+                      !uploadAllowed ? 'opacity-40 cursor-not-allowed' : 'hover:bg-blue-800'
+                    }`}
+                  >
+                    <Plus size={19} />
+                    New Folder
+                  </button>
+
+                  <button
+                    onClick={() => setIsUploadOpen(true)}
+                    disabled={!uploadAllowed}
+                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition ${
+                      !uploadAllowed ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-800'
+                    }`}
+                  >
+                    <UploadCloud size={19} />
+                    Upload
+                  </button>
+                </>
+              );
+            })()}
           </div>
         </section>
 
@@ -531,11 +608,11 @@ export default function FolderExployer() {
                       >
                         <td className="px-7 py-5">
                           <div
-                            className="flex items-center gap-4 cursor-pointer"
+                            className="flex items-center gap-4 cursor-pointer min-w-0"
                             onClick={() => item.kind === 'folder' ? fetchFolderDetails(item._id) : handleAction('preview', item)}
                           >
                             <ItemIcon kind={item.kind} />
-                            <div className="flex flex-col">
+                            <div className="flex flex-col min-w-0">
                               <span className="truncate group-hover:text-blue-700 transition-colors">
                                 {item.name || item.title}
                               </span>
@@ -575,13 +652,23 @@ export default function FolderExployer() {
 
                         <td className="px-7 py-5 relative">
                           <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleAction('summarize', item)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 transition hover:bg-violet-50 hover:text-violet-700"
-                              title="AI Summarize"
-                            >
-                              <Sparkles size={18} />
-                            </button>
+                            {(() => {
+                              const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
+                              return (
+                                <button
+                                  onClick={() => handleAction('summarize', item)}
+                                  disabled={isAiLimitReached}
+                                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 transition ${
+                                    isAiLimitReached 
+                                      ? 'opacity-30 cursor-not-allowed select-none' 
+                                      : 'hover:bg-violet-50 hover:text-violet-700'
+                                  }`}
+                                  title={isAiLimitReached ? "You free limit is hit" : "AI Summarize"}
+                                >
+                                  <Sparkles size={18} />
+                                </button>
+                              );
+                            })()}
                             <button
                               onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200"
@@ -591,18 +678,36 @@ export default function FolderExployer() {
 
                             {activeDropdown === item._id && (
                               <div ref={dropdownRef} className="absolute right-12 top-10 z-10 w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
-                                <button onClick={() => handleAction('summarize', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50">
-                                  <Sparkles size={16} className="text-violet-600" /> AI Summarize
-                                </button>
+                                {(() => {
+                                  const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
+                                  return (
+                                    <button 
+                                      onClick={() => handleAction('summarize', item)} 
+                                      disabled={isAiLimitReached}
+                                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                                        isAiLimitReached 
+                                          ? 'text-slate-400 opacity-50 cursor-not-allowed select-none' 
+                                          : 'text-violet-700 hover:bg-violet-50'
+                                      }`}
+                                    >
+                                      <Sparkles size={16} className={isAiLimitReached ? "text-slate-400" : "text-violet-600"} /> AI Summarize
+                                    </button>
+                                  );
+                                })()}
                                 <hr className="my-1 border-slate-100" />
                                 <button onClick={() => handleAction('download', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <Download size={16} /> Download
                                 </button>
-                                {item.kind !== 'folder' && (
-                                  <button onClick={() => handleAction('preview', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                    <Eye size={16} /> View File
-                                  </button>
-                                )}
+                                 {item.kind !== 'folder' && (
+                                   <button onClick={() => navigate(`/${companySlug}/manager/document-version-history?documentId=${item._id}`)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                     <History size={16} /> Version History
+                                   </button>
+                                 )}
+                                 {item.kind !== 'folder' && (
+                                   <button onClick={() => handleAction('preview', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                                     <Eye size={16} /> View File
+                                   </button>
+                                 )}
                                 <button onClick={() => handleAction('share', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <Share2 size={16} /> Share
                                 </button>
@@ -625,11 +730,6 @@ export default function FolderExployer() {
                                 <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                                   <Edit3 size={16} /> Rename
                                 </button>
-                                {item.kind !== 'folder' && (
-                                  <button onClick={() => handleAction('convert', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                    <RefreshCw size={16} /> Convert Format
-                                  </button>
-                                )}
                                 <hr className="my-1 border-slate-100" />
                                 <button onClick={() => handleAction('delete', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50">
                                   <Trash2 size={16} /> Move to Trash

@@ -35,7 +35,9 @@ import Permission from "./Pages/Manager/Permission";
 import Activitylogs from "./Pages/Manager/Activitylogs";
 import ProfileSettings from "./Pages/Manager/ProfileSettings";
 import Trash from "./Pages/Manager/Trash";
-import SharedWithMe from "./Pages/Manager/SharedWithMe";
+import SharedByMe from "./Pages/Manager/SharedByMe";
+import SharedWithMeManager from "./Pages/Manager/SharedWithMeManager";
+import SharedFolderDetailManager from "./Pages/Manager/SharedFolderDetailManager";
 import RecentDocuments from "./Pages/Manager/RecentDocuments";
 import ViewerDashboard from "./Pages/Viewer/Dashboard";
 import ViewerMyDocument from "./Pages/Viewer/MyDocument";
@@ -47,6 +49,7 @@ import Profilepage from "./Pages/Viewer/Profilepage";
 // import SearchResult from "./Pages/Viewer/SearchPage";
 // import SharedWithMe from "./Pages/Manager/SharedWithMe";
 import ViewerSharedWithMe from "./Pages/Viewer/SharedWithme";
+import PricingPlansPage from "./Pages/PricingPlans";
 const SharedWithme = ViewerSharedWithMe;
 import LandingPage from "./components/LandingPage/landingpage";
 import Sidebar from "./components/Sidebar";
@@ -222,8 +225,10 @@ function App() {
       <Route path="/:companySlug/document-version-history" element={<Documentversionhistory />} />
       <Route path="/:companySlug/manager/search-filters" element={<Searchandfilter />} />
       <Route path="/:companySlug/search" element={<Searchandfilter />} />
-      <Route path="/:companySlug/manager/shared-with-me" element={<SharedWithMe />} />
-      <Route path="/:companySlug/shared" element={<SharedWithMe />} />
+      <Route path="/:companySlug/manager/shared-by-me" element={<SharedByMe />} />
+      <Route path="/:companySlug/manager/shared-with-me" element={<SharedWithMeManager />} />
+      <Route path="/:companySlug/shared" element={<SharedWithMeManager />} />
+      <Route path="/:companySlug/manager/shared-folders/:folderId" element={<SharedFolderDetailManager />} />
       <Route path="/:companySlug/manager/recent-documents" element={<RecentDocuments />} />
       <Route path="/:companySlug/recent-documents" element={<RecentDocuments />} />
       <Route path="/:companySlug/manager/permissions" element={<Permission />} />
@@ -246,8 +251,10 @@ function App() {
       <Route path="/document-version-history" element={<Documentversionhistory />} />
       <Route path="/manager/search-filters" element={<Searchandfilter />} />
       <Route path="/search" element={<Searchandfilter />} />
-      <Route path="/manager/shared-with-me" element={<SharedWithMe />} />
-      <Route path="/shared" element={<SharedWithMe />} />
+      <Route path="/manager/shared-by-me" element={<SharedByMe />} />
+      <Route path="/manager/shared-with-me" element={<SharedWithMeManager />} />
+      <Route path="/shared" element={<SharedWithMeManager />} />
+      <Route path="/manager/shared-folders/:folderId" element={<SharedFolderDetailManager />} />
       <Route path="/manager/recent-documents" element={<RecentDocuments />} />
       <Route path="/recent-documents" element={<RecentDocuments />} />
       <Route path="/manager/permissions" element={<Permission />} />
@@ -279,6 +286,10 @@ function App() {
       <Route path="/viewer/recent" element={<SharedWithme />} />
       <Route path="/viewer/shared-folders/:folderId" element={<ViewerSharedFolderDetail />} />
       <Route path="/viewer/trash" element={<ViewerTrash />} />
+
+      {/* Subscription routes */}
+      <Route path="/:companySlug/subscription" element={<PricingPlansPage />} />
+      <Route path="/:companySlug/admin/subscription" element={<PricingPlansPage />} />
 
     </Routes>
   )

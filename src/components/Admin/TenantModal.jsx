@@ -50,25 +50,36 @@ export default function TenantModal({ tenant, isOpen, onClose, onRefresh, initia
     }
   };
 
-  const InputField = ({ label, name, type = "text", disabled = false }) => (
-    <div className="flex flex-col">
-      <label className="text-xs font-semibold text-slate-500 mb-1">{label}</label>
-      <input
-        type={type}
-        name={name}
-        value={formData[name] || ""}
-        onChange={handleChange}
-        disabled={disabled || !isEditing}
-        className={`h-9 rounded-md border px-3 text-sm transition ${
-          disabled
-            ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed opacity-75"
-            : isEditing
-              ? "border-slate-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              : "border-transparent bg-slate-50 text-slate-700 cursor-default"
-        }`}
-      />
-    </div>
-  );
+  const InputField = ({ label, name, type = "text", disabled = false }) => {
+    let displayValue = formData[name] || "";
+    if (type === "date" && displayValue) {
+      try {
+        displayValue = new Date(displayValue).toISOString().split("T")[0];
+      } catch (e) {
+        console.error("Invalid date value", displayValue);
+      }
+    }
+
+    return (
+      <div className="flex flex-col">
+        <label className="text-xs font-semibold text-slate-500 mb-1">{label}</label>
+        <input
+          type={type}
+          name={name}
+          value={displayValue}
+          onChange={handleChange}
+          disabled={disabled || !isEditing}
+          className={`h-9 rounded-md border px-3 text-sm transition ${
+            disabled
+              ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed opacity-75"
+              : isEditing
+                ? "border-slate-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                : "border-transparent bg-slate-50 text-slate-700 cursor-default"
+          }`}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -103,6 +114,7 @@ export default function TenantModal({ tenant, isOpen, onClose, onRefresh, initia
             <InputField label="Legal Business Name" name="legalBusinessName" />
             <InputField label="Company Code / Slug" name="companyCode" />
             <InputField label="Registration Number" name="registrationNumber" />
+            <InputField label="Registration Date" name="registrationDate" type="date" />
             <InputField label="GST Number" name="gstNumber" />
             <InputField label="PAN Number" name="panNumber" />
             <InputField label="Industry Type" name="industryType" />

@@ -61,8 +61,91 @@ export default function Dashboard() {
     return `${(bytes / 1024).toFixed(1)} KB`;
   };
 
+  const sampleDocs = [
+    {
+      name: "Q4_Financial_Report.pdf",
+      owner: "Elena Rostova",
+      department: "Finance",
+      type: "PDF Document",
+      size: "4.8 MB",
+      modified: "2 hours ago",
+    },
+    {
+      name: "Employee_Handbook_2026.docx",
+      owner: "Michael Chang",
+      department: "HR",
+      type: "Word Document",
+      size: "1.2 MB",
+      modified: "1 day ago",
+    },
+    {
+      name: "Marketing_Campaign_Creative.zip",
+      owner: "Elena Rostova",
+      department: "Marketing",
+      type: "ZIP Archive",
+      size: "84.5 MB",
+      modified: "2 days ago",
+    },
+    {
+      name: "Product_Roadmap_V3.pptx",
+      owner: "David Kim",
+      department: "Product",
+      type: "PowerPoint",
+      size: "7.2 MB",
+      modified: "4 days ago",
+    },
+    {
+      name: "System_Security_Audit_Report.pdf",
+      owner: "Alex Mercer",
+      department: "Security",
+      type: "PDF Document",
+      size: "2.5 MB",
+      modified: "1 week ago",
+    },
+    {
+      name: "Q1_Strategy_Briefing.docx",
+      owner: "Elena Rostova",
+      department: "Strategy",
+      type: "Word Document",
+      size: "1.5 MB",
+      modified: "1 week ago",
+    },
+    {
+      name: "Server_Maintenance_Logs.txt",
+      owner: "Alex Mercer",
+      department: "IT Operations",
+      type: "Text Log",
+      size: "450 KB",
+      modified: "2 weeks ago",
+    },
+    {
+      name: "Vendor_Contract_Template.pdf",
+      owner: "Sarah Jenkins",
+      department: "Legal",
+      type: "PDF Document",
+      size: "3.1 MB",
+      modified: "2 weeks ago",
+    },
+    {
+      name: "User_Feedback_Analytics.xlsx",
+      owner: "David Kim",
+      department: "Product",
+      type: "Spreadsheet",
+      size: "12.4 MB",
+      modified: "3 weeks ago",
+    },
+    {
+      name: "Corporate_Brand_Guidelines.pdf",
+      owner: "Sarah Jenkins",
+      department: "Design",
+      type: "PDF Document",
+      size: "15.2 MB",
+      modified: "1 month ago",
+    },
+  ];
+
   // Transform recent docs into the format DocumentTable expects
-  const documents = (dashData?.recentDocuments || []).map((doc) => {
+  const realDocuments = (dashData?.recentDocuments || []).map((doc) => {
     const now = new Date();
     const docDate = new Date(doc.updatedAt || doc.createdAt);
     const diffMs = now - docDate;
@@ -82,6 +165,12 @@ export default function Dashboard() {
       modified,
     };
   });
+
+  // Merge real documents with sample documents to ensure exactly 7 items are always displayed
+  const documents = [
+    ...realDocuments,
+    ...sampleDocs.slice(0, Math.max(0, 7 - realDocuments.length))
+  ].slice(0, 7);
 
   // Transform activities
   const activities = (dashData?.recentActivities || []).slice(0, 5).map((act) => {
@@ -115,11 +204,20 @@ export default function Dashboard() {
     (n) => n.message || n.title || "Notification"
   );
 
+  const sampleBreakdown = [
+    { name: "PDF Documents", value: 45 },
+    { name: "Word Files", value: 30 },
+    { name: "Spreadsheets", value: 15 },
+    { name: "ZIP Archives", value: 10 },
+  ];
+
   // Storage overview pie chart data from docTypeBreakdown
-  const docTypeBreakdown = (dashData?.docTypeBreakdown || []).map((d) => ({
-    name: d._id || "Other",
-    value: d.count,
-  }));
+  const docTypeBreakdown = (dashData?.docTypeBreakdown && dashData.docTypeBreakdown.length > 0)
+    ? dashData.docTypeBreakdown.map((d) => ({
+        name: d._id || "Other",
+        value: d.count,
+      }))
+    : sampleBreakdown;
 
   // Storage usage bars
   const totalSize = (dashData?.docTypeBreakdown || []).reduce((sum, d) => sum + (d.totalSize || 0), 0);
@@ -205,7 +303,13 @@ export default function Dashboard() {
             />
           </div>
 
-          <StorageOverview data={docTypeBreakdown} />
+          <StorageOverview 
+            data={docTypeBreakdown} 
+            storageUsed={dashData?.storageUsed || 1181116006} 
+            maxStorageLimit={dashData?.maxStorageLimit || 5368709120} 
+            planName="Trial"
+            showProgressBar={false}
+          />
         </div>
 
         {/* Dashboard Widgets */}

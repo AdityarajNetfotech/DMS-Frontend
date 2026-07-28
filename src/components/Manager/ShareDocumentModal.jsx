@@ -27,7 +27,11 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
           });
           const data = await res.json();
           if (data.success) {
-            const list = data.data.filter(u => u.role === 'Viewer');
+            const currentUserEmail = localStorage.getItem("userEmail");
+            const list = data.data.filter(u => 
+              (u.role === 'Viewer' || u.role === 'Manager') && 
+              u.email !== currentUserEmail
+            );
             setViewers(list);
             // Default to all selected
             setSelectedViewers(list.map(v => v._id));
@@ -306,7 +310,7 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
             {sharingType === 'Internal' && (
               <div className="mt-3 space-y-2 border-t pt-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">Select Viewers</span>
+                  <span className="text-sm font-semibold text-slate-700">Select Users</span>
                   <label className="flex items-center gap-1.5 text-xs text-blue-600 font-medium cursor-pointer">
                     <input
                       type="checkbox"
@@ -320,16 +324,16 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
                       }}
                       className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                     />
-                    Select All Viewers
+                    Select All Users
                   </label>
                 </div>
                 
                 <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200 p-2.5 space-y-2 bg-slate-50/50">
                   {viewers.length === 0 ? (
-                    <p className="text-xs text-slate-500 py-2 text-center">No viewers found in company.</p>
+                    <p className="text-xs text-slate-500 py-2 text-center">No users found in company.</p>
                   ) : (
                     viewers.map(v => (
-                      <label key={v._id} className="flex items-center gap-2.5 text-xs text-slate-700 font-medium cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors">
+                      <label key={v._id} className="flex items-center gap-2.5 text-xs text-slate-700 font-medium cursor-pointer hover:bg-slate-100/50 p-1 rounded transition-colors w-full">
                         <input
                           type="checkbox"
                           checked={selectedViewers.includes(v._id)}
@@ -342,8 +346,15 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
                           }}
                           className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <div className="flex flex-col">
-                          <span>{v.name}</span>
+                        <div className="flex flex-col w-full">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-slate-800">{v.name}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+                              v.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {v.role}
+                            </span>
+                          </div>
                           <span className="text-[10px] text-slate-400 font-normal">{v.email}</span>
                         </div>
                       </label>
@@ -363,7 +374,7 @@ export default function ShareDocumentModal({ isOpen, onClose, onShare, document,
                   className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 <label htmlFor="allowUpload" className="text-sm text-slate-700 font-medium">
-                  Allow viewer to upload files into this folder
+                  Allow shared users to upload files into this folder
                 </label>
               </div>
             )}

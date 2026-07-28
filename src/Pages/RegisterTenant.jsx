@@ -48,11 +48,20 @@ function FormInput({ placeholder, type = "text", value, onChange, error, ...prop
   );
 }
 
+const getTodayDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const initialFormState = {
   companyName: "",
   legalBusinessName: "",
   companyCode: "",
   registrationNumber: "",
+  registrationDate: getTodayDateString(),
   gstNumber: "",
   panNumber: "",
   industryType: "",
@@ -106,7 +115,21 @@ export default function RegisterTenant() {
     if (name === "postalCode") {
       value = value.replace(/[a-zA-Z]/g, "");
     }
-    setForm({ ...form, [name]: value });
+    if (name === "companySize") {
+      value = value.replace(/[^0-9]/g, "");
+    }
+
+    let updatedForm = { ...form, [name]: value };
+    if (name === "companyName") {
+      const year = new Date().getFullYear();
+      const formattedCompanyName = value
+        .toUpperCase()
+        .replace(/[^A-Z0-9_-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      updatedForm.companyCode = formattedCompanyName ? `COM-${year}-${formattedCompanyName}` : "";
+    }
+    setForm(updatedForm);
   };
 
   const handleSubmit = async (e) => {
@@ -115,15 +138,24 @@ export default function RegisterTenant() {
     const newErrors = {};
     if (!form.companyName.trim()) newErrors.companyName = "Company Name is required.";
     
-    if (!form.companyCode.trim()) newErrors.companyCode = "Company Code is required.";
-    else if (!/^[A-Z0-9_-]+$/i.test(form.companyCode)) newErrors.companyCode = "Alphanumeric, dashes, and underscores only.";
+    if (!form.companyCode.trim()) {
+      newErrors.companyCode = "Company Code is required.";
+    } else if (!/^COM-\d{4}-[A-Z0-9_-]+$/i.test(form.companyCode)) {
+      newErrors.companyCode = "Company Code must follow format: COM-YYYY-COMPANY-NAME (Alphanumeric, dashes, and underscores only).";
+    }
     
-    if (form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(form.gstNumber.trim())) {
+    if (!form.gstNumber.trim()) {
+      newErrors.gstNumber = "GST Number is required.";
+    } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(form.gstNumber.trim())) {
       newErrors.gstNumber = "Invalid GST Number format (e.g. 22AAAAA0000A1Z1).";
     }
-    if (form.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(form.panNumber.trim())) {
+
+    if (!form.panNumber.trim()) {
+      newErrors.panNumber = "PAN Number is required.";
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(form.panNumber.trim())) {
       newErrors.panNumber = "Invalid PAN Number format (e.g. ABCDE1234F).";
     }
+
     if (form.website && !/^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(form.website.trim())) {
       newErrors.website = "Invalid website URL.";
     }
@@ -150,8 +182,23 @@ export default function RegisterTenant() {
     }
     
     if (!form.adminName.trim()) newErrors.adminName = "Tenant Admin Full Name is required.";
-    if (!form.adminEmail.trim()) newErrors.adminEmail = "Admin Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.adminEmail.trim())) newErrors.adminEmail = "Invalid email address.";
+    
+    if (!form.adminEmail.trim()) {
+      newErrors.adminEmail = "Admin Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.adminEmail.trim())) {
+      newErrors.adminEmail = "Invalid email address.";
+    } else {
+      const email = form.adminEmail.trim().toLowerCase();
+      const domain = email.split("@")[1] || "";
+      const companyNameSanitized = form.companyName.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+      
+      if (!companyNameSanitized) {
+        newErrors.adminEmail = "Please enter Company Name first.";
+      } else if (!domain.includes(companyNameSanitized)) {
+        newErrors.adminEmail = `Admin email domain must contain the company name (e.g. name@${companyNameSanitized}.com or name@${companyNameSanitized}.in).`;
+      }
+    }
+
     if (form.adminMobile) {
       if (form.adminMobile.length < 10) {
         newErrors.adminMobile = "Mobile number must be exactly 10 digits.";
@@ -191,6 +238,7 @@ export default function RegisterTenant() {
           legalBusinessName: form.legalBusinessName,
           companyCode: form.companyCode,
           registrationNumber: form.registrationNumber,
+          registrationDate: form.registrationDate,
           gstNumber: form.gstNumber,
           panNumber: form.panNumber,
           industryType: form.industryType,
@@ -287,11 +335,15 @@ export default function RegisterTenant() {
                 <FormInput name="registrationNumber" value={form.registrationNumber} onChange={handleChange} placeholder="Registration No" />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <FormLabel>GST Number (Optional)</FormLabel>
+                <FormLabel>Registration Date (Today)</FormLabel>
+                <FormInput name="registrationDate" type="date" value={form.registrationDate} onChange={handleChange} />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <FormLabel required>GST Number</FormLabel>
                 <FormInput name="gstNumber" value={form.gstNumber} onChange={handleChange} error={errors.gstNumber} placeholder="GST No" />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <FormLabel>PAN Number (Optional)</FormLabel>
+                <FormLabel required>PAN Number</FormLabel>
                 <FormInput name="panNumber" value={form.panNumber} onChange={handleChange} error={errors.panNumber} placeholder="PAN No" />
               </div>
               <div className="col-span-2 sm:col-span-1">
@@ -300,7 +352,7 @@ export default function RegisterTenant() {
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>Company Size</FormLabel>
-                <FormInput name="companySize" value={form.companySize} onChange={handleChange} placeholder="1-50, 51-200, etc." />
+                <FormInput name="companySize" value={form.companySize} onChange={handleChange} placeholder="e.g. 100" />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>Company Website</FormLabel>

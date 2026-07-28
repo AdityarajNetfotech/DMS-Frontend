@@ -119,7 +119,7 @@ function RecentDocuments({ documents }) {
   );
 }
 
-function StorageOverview({ storageRows, totalSizeFormatted }) {
+function StorageOverview({ storageRows, totalSizeFormatted, totalSizeValue = 0, maxStorageLimit = 5368709120 }) {
   const generateConicGradient = (rows) => {
     if (!rows || rows.length === 0) return 'conic-gradient(#e2e8f0 0 100%)';
     let gradientParts = [];
@@ -138,8 +138,19 @@ function StorageOverview({ storageRows, totalSizeFormatted }) {
     return `conic-gradient(${gradientParts.join(', ')})`;
   };
 
+  const storageUsed = totalSizeValue;
+  const remaining = Math.max(0, maxStorageLimit - storageUsed);
+  const percentUsed = Math.min(100, Math.round((storageUsed / maxStorageLimit) * 100));
+
+  const formatBytesLocal = (bytes) => {
+    if (!bytes || bytes === 0) return "0 B";
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
+    return `${mb.toFixed(1)} MB`;
+  };
+
   return (
-    <Panel title="Storage Breakdown">
+    <Panel title="Storage Breakdown" className="h-full">
       <div className="flex flex-col items-center gap-6 md:flex-row xl:flex-col 2xl:flex-row w-full justify-center">
         <div
           className="relative grid h-40 w-40 sm:h-48 sm:w-48 shrink-0 place-items-center rounded-full shadow-sm"

@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   Search,
+  Sparkles,
 } from "lucide-react";
 
 import { NavLink, useParams, useNavigate } from "react-router-dom";
@@ -179,6 +180,16 @@ export default function Sidebar() {
     return { logo: "", primaryColor: "#2563eb", companyName: "" };
   });
 
+  const [subscriptionInfo, setSubscriptionInfo] = useState({
+    plan: 'Trial',
+    daysLeft: 7,
+    isExpired: false,
+    isAccessLocked: false
+  });
+
+  const userRole = localStorage.getItem("userRole");
+  const isAdmin = userRole === "Tenant Admin" || userRole === "Company Admin";
+
   useEffect(() => {
     const fetchBranding = async () => {
       try {
@@ -197,8 +208,38 @@ export default function Sidebar() {
         console.error("Failed to load branding in sidebar", err);
       }
     };
+
+    const fetchSubStatus = async () => {
+      try {
+        if (!companySlug) return;
+        const res = await fetch(`${API_BASE_URL}/api/tenant/subscription/status/${companySlug}`);
+        const data = await res.json();
+        if (data.success) {
+          const now = new Date();
+          const plan = data.subscription?.plan || 'Trial';
+          const targetDate = plan === 'Trial' ? new Date(data.trialEndsAt) : new Date(data.subscription?.expiresAt);
+          
+          let daysLeft = 0;
+          if (targetDate && !isNaN(targetDate)) {
+            const diffTime = targetDate - now;
+            daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+          }
+
+          setSubscriptionInfo({
+            plan,
+            daysLeft,
+            isExpired: plan === 'Trial' ? data.trialEnded : data.planExpired,
+            isAccessLocked: data.isAccessLocked
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch subscription status in manager sidebar", err);
+      }
+    };
+
     if (companySlug) {
       fetchBranding();
+      fetchSubStatus();
     }
 
     // Listen for custom events to refresh branding in real-time
@@ -229,9 +270,14 @@ export default function Sidebar() {
       path: `${slugPrefix}/manager/search-filters`,
     },
     {
-      name: "Shared by my",
+      name: "Shared with me",
       icon: Share2,
       path: `${slugPrefix}/manager/shared-with-me`,
+    },
+    {
+      name: "Shared by me",
+      icon: Share2,
+      path: `${slugPrefix}/manager/shared-by-me`,
     },
     {
       name: "Archive Document",
@@ -313,10 +359,56 @@ export default function Sidebar() {
                 );
               })}
             </nav>
+
+            {/* Subscription & Trial Countdown Widget */}
+            <div className={`mt-4 p-3.5 rounded-2xl shadow-md border transition-all ${
+              subscriptionInfo.isExpired
+                ? 'bg-gradient-to-br from-red-950 to-red-900 text-white border-red-700/60'
+                : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                  subscriptionInfo.isExpired
+                    ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                    : subscriptionInfo.plan === 'Trial' 
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                }`}>
+                  {subscriptionInfo.isExpired 
+                    ? 'Trial Expired' 
+                    : subscriptionInfo.plan === 'Trial' 
+                      ? '7-Day Free Trial' 
+                      : `${subscriptionInfo.plan} Plan`}
+                </span>
+                <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
+              </div>
+
+              <div className="mt-2.5">
+                <p className="text-[11px] text-slate-300 font-medium">Subscription Status</p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-xl font-black text-white">
+                    {subscriptionInfo.isExpired ? '0' : subscriptionInfo.daysLeft}
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold">
+                    {subscriptionInfo.isExpired ? 'Days / Expired' : 'Days Remaining'}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Bottom */}
           <div className="border-t p-3 space-y-1 bg-white/40">
+            {isAdmin && (
+              <NavLink
+                to={`${slugPrefix}/admin/dashboard`}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 hover:text-blue-800"
+              >
+                <ShieldCheck size={18} />
+                Admin Dashboard
+              </NavLink>
+            )}
+
             <NavLink
               to={`${slugPrefix}/manager/profile-settings`}
               style={({ isActive }) =>

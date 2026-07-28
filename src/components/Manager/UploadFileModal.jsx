@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, UploadCloud, File, Loader2 } from 'lucide-react';
 
-export default function UploadFileModal({ isOpen, onClose, onUpload, currentFolderId }) {
+export default function UploadFileModal({ isOpen, onClose, onUpload, currentFolderId, folderId }) {
   const [files, setFiles] = useState([]);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,12 +46,13 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
 
     setLoading(true);
     try {
+      const activeFolderId = currentFolderId || folderId;
       for (const fileItem of files) {
         const formData = new FormData();
         formData.append('file', fileItem);
         formData.append('name', fileItem.name);
         if (description) formData.append('description', description);
-        if (currentFolderId) formData.append('folderId', currentFolderId);
+        if (activeFolderId) formData.append('folderId', activeFolderId);
 
         await onUpload(formData);
       }

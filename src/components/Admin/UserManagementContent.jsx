@@ -437,7 +437,17 @@ export default function UserManagementContent() {
           </form>
 
           {statusMessage && (
-            <p className="mt-4 text-sm text-blue-650 font-medium">{statusMessage}</p>
+            <p className={`mt-4 text-sm font-semibold ${
+              statusMessage.toLowerCase().includes("limit") || 
+              statusMessage.toLowerCase().includes("fail") || 
+              statusMessage.toLowerCase().includes("unable") ||
+              statusMessage.toLowerCase().includes("error") ||
+              statusMessage.toLowerCase().includes("expired")
+                ? "text-red-650 text-red-600" 
+                : "text-blue-650"
+            }`}>
+              {statusMessage}
+            </p>
           )}
         </div>
       )}
