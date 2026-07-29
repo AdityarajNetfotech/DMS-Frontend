@@ -19,6 +19,7 @@ export default function UserManagementContent() {
   const [users, setUsers] = useState([]);
   const [editingUserId, setEditingUserId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [companyName, setCompanyName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -125,10 +126,23 @@ export default function UserManagementContent() {
     }
   };
 
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/${companySlug}/branding`);
+      const data = await response.json();
+      if (data.success && data.data) {
+        setCompanyName(data.data.companyName || "");
+      }
+    } catch (err) {
+      console.error("Failed to fetch branding", err);
+    }
+  };
+
   useEffect(() => {
     if (companySlug) {
       fetchUsers();
       fetchDepartments();
+      fetchBranding();
     }
   }, [companySlug]);
 
@@ -228,6 +242,24 @@ export default function UserManagementContent() {
     if (!formData.name || !formData.email || (!editingUserId && !formData.password)) {
       setStatusMessage("Please fill in the name, email, and password.");
       return;
+    }
+
+    if (formData.email) {
+      const email = formData.email.trim().toLowerCase();
+      const domain = email.split("@")[1] || "";
+      
+      const genericDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "aol.com", "icloud.com"];
+      if (genericDomains.includes(domain)) {
+        setStatusMessage("Generic email domains (like gmail.com) are not allowed. Please use your company domain.");
+        return;
+      }
+
+      const targetName = companyName || companySlug;
+      const companyNameSanitized = targetName.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (companyNameSanitized && !domain.includes(companyNameSanitized)) {
+        setStatusMessage(`Email domain must contain the company name (e.g. name@${companyNameSanitized}.com or name@${companyNameSanitized}.in).`);
+        return;
+      }
     }
 
     try {

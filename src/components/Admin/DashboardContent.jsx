@@ -278,11 +278,8 @@ export default function DashboardContent() {
     };
   });
 
-  // Merge real documents with sample documents to ensure exactly 7 items are always displayed
-  const documents = [
-    ...realDocuments,
-    ...sampleDocs.slice(0, Math.max(0, 7 - realDocuments.length))
-  ].slice(0, 7);
+  // Only show real documents from the database (no static data fallback)
+  const documents = realDocuments;
 
   // Transform activities
   const activities = (dashData?.recentActivities || []).slice(0, 5).map((act) => {
@@ -323,13 +320,13 @@ export default function DashboardContent() {
     { name: "ZIP Archives", value: 10 },
   ];
 
-  // Storage overview pie chart data from docTypeBreakdown
+  // Storage overview pie chart data from docTypeBreakdown (no static data fallback)
   const docTypeBreakdown = (dashData?.docTypeBreakdown && dashData.docTypeBreakdown.length > 0)
     ? dashData.docTypeBreakdown.map((d) => ({
         name: d._id || "Other",
         value: d.count,
       }))
-    : sampleBreakdown;
+    : [];
 
   // Storage usage bars
   const totalSize = (dashData?.docTypeBreakdown || []).reduce((sum, d) => sum + (d.totalSize || 0), 0);

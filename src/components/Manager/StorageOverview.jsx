@@ -48,10 +48,10 @@ export default function StorageOverview({ data = [], storageUsed = 0, maxStorage
                 outerRadius={90}
                 dataKey="value"
               >
-                {displayData.map((_, index) => (
+                {displayData.map((item, index) => (
                   <Cell
                     key={index}
-                    fill={COLORS[index % COLORS.length]}
+                    fill={item.name === "No Data" ? "#E2E8F0" : COLORS[index % COLORS.length]}
                   />
                 ))}
               </Pie>
@@ -60,21 +60,25 @@ export default function StorageOverview({ data = [], storageUsed = 0, maxStorage
         </div>
 
         <div className="space-y-3 mt-4">
-          {displayData.map((item, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                <span>{item.name}</span>
-              </div>
+          {data.length > 0 ? (
+            displayData.map((item, index) => (
+              <div
+                key={index}
+                className="flex justify-between items-center"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                  <span>{item.name}</span>
+                </div>
 
-              <span className="font-semibold">
-                {item.value}
-              </span>
-            </div>
-          ))}
+                <span className="font-semibold">
+                  {item.value}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-sm text-slate-400 italic">No operational uploads yet</p>
+          )}
         </div>
       </div>
 

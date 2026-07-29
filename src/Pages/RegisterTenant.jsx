@@ -94,6 +94,7 @@ export default function RegisterTenant() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [tenants, setTenants] = useState([]);
 
   useEffect(() => {
     if (toast) {
@@ -101,6 +102,21 @@ export default function RegisterTenant() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  useEffect(() => {
+    const fetchTenants = async () => {
+      try {
+        const res = await fetch(API_BASE, { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          setTenants(data.tenants || []);
+        }
+      } catch (err) {
+        console.error("Error fetching tenants:", err);
+      }
+    };
+    fetchTenants();
+  }, []);
 
   const handleChange = (e) => {
     let value = e.target.value;
@@ -148,21 +164,41 @@ export default function RegisterTenant() {
       newErrors.gstNumber = "GST Number is required.";
     } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(form.gstNumber.trim())) {
       newErrors.gstNumber = "Invalid GST Number format (e.g. 22AAAAA0000A1Z1).";
+    } else {
+      const isGstDuplicate = tenants.some(
+        (t) => t.gstNumber && t.gstNumber.trim().toUpperCase() === form.gstNumber.trim().toUpperCase()
+      );
+      if (isGstDuplicate) {
+        newErrors.gstNumber = "GST Number must be unique. This GST number is already registered.";
+      }
     }
 
     if (!form.panNumber.trim()) {
       newErrors.panNumber = "PAN Number is required.";
     } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(form.panNumber.trim())) {
       newErrors.panNumber = "Invalid PAN Number format (e.g. ABCDE1234F).";
+    } else {
+      const isPanDuplicate = tenants.some(
+        (t) => t.panNumber && t.panNumber.trim().toUpperCase() === form.panNumber.trim().toUpperCase()
+      );
+      if (isPanDuplicate) {
+        newErrors.panNumber = "PAN Number must be unique. This PAN number is already registered.";
+      }
+    }
+
+    if (!form.registrationDate) {
+      newErrors.registrationDate = "Registration date is required.";
+    } else if (form.registrationDate < getTodayDateString()) {
+      newErrors.registrationDate = "Registration date cannot be in the past.";
     }
 
     if (form.website && !/^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(form.website.trim())) {
       newErrors.website = "Invalid website URL.";
     }
-    if (form.phone) {
-      if (form.phone.length < 10) {
-        newErrors.phone = "Contact number must be exactly 10 digits.";
-      }
+    if (!form.phone || !form.phone.trim()) {
+      newErrors.phone = "Contact number is required.";
+    } else if (form.phone.length < 10) {
+      newErrors.phone = "Contact number must be exactly 10 digits.";
     }
     if (form.alternatePhone) {
       if (form.alternatePhone.length < 10) {
@@ -336,7 +372,7 @@ export default function RegisterTenant() {
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel>Registration Date (Today)</FormLabel>
-                <FormInput name="registrationDate" type="date" value={form.registrationDate} onChange={handleChange} />
+                <FormInput name="registrationDate" type="date" value={form.registrationDate} onChange={handleChange} min={getTodayDateString()} error={errors.registrationDate} />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <FormLabel required>GST Number</FormLabel>
@@ -377,7 +413,7 @@ export default function RegisterTenant() {
             <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider bg-slate-50 p-2 rounded mb-3">Contact Details</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
-                <FormLabel>Contact Number</FormLabel>
+                <FormLabel required>Contact Number</FormLabel>
                 <FormInput name="phone" type="tel" value={form.phone} onChange={handleChange} error={errors.phone} placeholder="Main Phone" />
               </div>
               <div className="col-span-2 sm:col-span-1">

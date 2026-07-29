@@ -178,11 +178,22 @@ export default function Sidebar() {
     return { logo: "", primaryColor: "#2563eb", companyName: "" };
   });
 
-  const [subscriptionInfo, setSubscriptionInfo] = useState({
-    plan: 'Trial',
-    daysLeft: 7,
-    isExpired: false,
-    isAccessLocked: false
+  const [subscriptionInfo, setSubscriptionInfo] = useState(() => {
+    const cached = localStorage.getItem(`sub_${companySlug}`);
+    if (cached && cached !== "null" && cached !== "undefined") {
+      try {
+        const data = JSON.parse(cached);
+        if (data) return data;
+      } catch (e) {
+        console.error("Failed to parse cached subscription info", e);
+      }
+    }
+    return {
+      plan: 'Trial',
+      daysLeft: 7,
+      isExpired: false,
+      isAccessLocked: false
+    };
   });
 
   const userRole = localStorage.getItem("userRole");
@@ -223,12 +234,15 @@ export default function Sidebar() {
             daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
           }
 
-          setSubscriptionInfo({
+          const info = {
             plan,
             daysLeft,
             isExpired: plan === 'Trial' ? data.trialEnded : data.planExpired,
             isAccessLocked: data.isAccessLocked
-          });
+          };
+
+          setSubscriptionInfo(info);
+          localStorage.setItem(`sub_${companySlug}`, JSON.stringify(info));
         }
       } catch (err) {
         console.error("Failed to fetch subscription status in viewer sidebar", err);

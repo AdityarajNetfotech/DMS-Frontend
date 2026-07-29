@@ -43,42 +43,50 @@ export default function DocumentTable({
           </thead>
 
           <tbody>
-            {data.map((doc, index) => (
-              <tr
-                key={index}
-                className="border-t hover:bg-slate-50"
-              >
-                <td className="p-4">
-                  {doc.name}
-                </td>
-
-                <td className="p-4 text-slate-700 font-medium">
-                  {doc.owner}
-                </td>
-
-                <td className="p-4 text-slate-700">
-                  {doc.department !== "Global" ? (
-                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                      {doc.department}
-                    </span>
-                  ) : (
-                    <span className="text-slate-400 italic text-xs">Global</span>
-                  )}
-                </td>
-
-                <td className="p-4">
-                  {doc.type}
-                </td>
-
-                <td className="p-4">
-                  {doc.size}
-                </td>
-
-                <td className="p-4">
-                  {doc.modified}
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="text-center p-8 text-slate-400 italic">
+                  No recent documents found
                 </td>
               </tr>
-            ))}
+            ) : (
+              data.map((doc, index) => (
+                <tr
+                  key={index}
+                  className="border-t hover:bg-slate-50"
+                >
+                  <td className="p-4">
+                    {doc.name}
+                  </td>
+
+                  <td className="p-4 text-slate-700 font-medium">
+                    {doc.owner}
+                  </td>
+
+                  <td className="p-4 text-slate-700">
+                    {doc.department !== "Global" ? (
+                      <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                        {doc.department}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic text-xs">Global</span>
+                    )}
+                  </td>
+
+                  <td className="p-4">
+                    {doc.type}
+                  </td>
+
+                  <td className="p-4">
+                    {doc.size}
+                  </td>
+
+                  <td className="p-4">
+                    {doc.modified}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

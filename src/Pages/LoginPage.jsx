@@ -392,12 +392,12 @@ export default function DMSSignIn() {
             {/* Super Admin Portal link */}
             <div className="text-center mt-8 pt-6 border-t border-slate-100">
               <p className="text-xs text-slate-500 font-medium">
-                System Administrator?{" "}
+                Manage DMS globally?{" "}
                 <Link
                   to="/superadminlogin"
                   className="font-bold text-slate-900 hover:underline transition-colors"
                 >
-                  Super Admin Portal
+                  Visit Super Admin Portal
                 </Link>
               </p>
             </div>
