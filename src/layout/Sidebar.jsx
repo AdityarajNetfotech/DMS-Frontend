@@ -156,10 +156,22 @@ function SidebarThreeBg({ accentColor = 0x2563eb }) {
   );
 }
 
+import { useTranslation } from "../i18n/useTranslation";
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const { companySlug } = useParams();
   const slugPrefix = companySlug ? `/${companySlug}` : "";
+
+  const { t, language } = useTranslation();
+
+  // Force sidebar refresh on language event dispatch
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    const handleLangChange = () => forceUpdate({});
+    window.addEventListener("language-change", handleLangChange);
+    return () => window.removeEventListener("language-change", handleLangChange);
+  }, []);
 
   const [branding, setBranding] = useState(() => {
     const cached = localStorage.getItem(`branding_${companySlug}`);
@@ -264,42 +276,42 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      name: "Dashboard",
+      name: t("dashboard"),
       icon: LayoutDashboard,
       path: `${slugPrefix}/manager/dashboard`,
     },
     {
-      name: "My Documents",
+      name: t("myDocuments"),
       icon: FolderOpen,
       path: `${slugPrefix}/manager/my-documents`,
     },
     {
-      name: "Folder Explorer",
+      name: t("folderExplorer"),
       icon: FolderTree,
       path: `${slugPrefix}/manager/folder-explorer`,
     },
     {
-      name: "Search & Filters",
+      name: t("searchFilters"),
       icon: Search,
       path: `${slugPrefix}/manager/search-filters`,
     },
     {
-      name: "Document Shared with me",
+      name: t("sharedWithMe"),
       icon: Share2,
       path: `${slugPrefix}/manager/shared-with-me`,
     },
     {
-      name: "Document Shared by me",
+      name: t("sharedByMe"),
       icon: Share2,
       path: `${slugPrefix}/manager/shared-by-me`,
     },
     {
-      name: "Archive Document",
+      name: t("archiveDocument"),
       icon: Archive,
       path: `${slugPrefix}/manager/recent-documents`,
     },
     {
-      name: "Trash",
+      name: t("trash"),
       icon: Trash2,
       path: `${slugPrefix}/manager/trash`,
     },
@@ -413,13 +425,13 @@ export default function Sidebar() {
 
           {/* Bottom */}
           <div className="border-t p-3 space-y-1 bg-white/40">
-            {isAdmin && (
+             {isAdmin && (
               <NavLink
                 to={`${slugPrefix}/admin/dashboard`}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 hover:text-blue-800"
               >
                 <ShieldCheck size={18} />
-                Admin Dashboard
+                {t("adminDashboard")}
               </NavLink>
             )}
 
@@ -437,7 +449,7 @@ export default function Sidebar() {
               }
             >
               <User size={18} />
-              Profile Settings
+              {t("profileSettings")}
             </NavLink>
 
             <button
@@ -455,7 +467,7 @@ export default function Sidebar() {
               type="button"
             >
               <LogOut size={18} />
-              Logout
+              {t("logout")}
             </button>
           </div>
         </div>

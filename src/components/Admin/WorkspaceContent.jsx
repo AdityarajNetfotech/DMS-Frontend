@@ -5,101 +5,14 @@ import {
   Upload,
 } from "lucide-react";
 import { API_BASE_URL } from "../../config/api";
-
-const translations = {
-  English: {
-    title: "Workspace Customization",
-    subtitle: "Customize the look, branding identity, and logo theme of your document workspace.",
-    discard: "Discard Changes",
-    save: "Save Branding",
-    saving: "Saving...",
-    brandingTheme: "Branding & Theme",
-    brandingThemeDesc: "Configure your organization's logo and color palette.",
-    orgName: "Organization Name",
-    workspaceLogo: "Workspace Logo",
-    uploadNew: "Upload new logo",
-    uploadReplace: "Upload replacement logo",
-    supportedFormats: "Supported formats: SVG, PNG, JPG (max. 2MB)",
-    primaryColor: "Primary Brand Color",
-    fontFamily: "Workspace Font Family",
-    defaultLanguage: "Workspace Default Language",
-    livePreview: "Live Theme Preview",
-    previewDesc: "See how your logo and buttons will look to users.",
-    sampleButtons: "Sample Buttons",
-    primaryBtn: "Primary Button",
-    secondaryBtn: "Secondary Button",
-    activeNav: "Active Navigation highlight",
-    selectedLink: "Selected Sidebar Link",
-    loading: "Loading settings...",
-    successMsg: "Branding updated successfully! Refreshing dynamic theme...",
-    errorMsg: "Failed to update branding settings",
-    networkError: "Network error: Failed to save configuration",
-    logoError: "Logo size must be less than 2MB"
-  },
-  Spanish: {
-    title: "Personalización del espacio de trabajo",
-    subtitle: "Personalice la apariencia, la identidad de marca y el tema del logotipo de su espacio de trabajo de documentos.",
-    discard: "Descartar cambios",
-    save: "Guardar marca",
-    saving: "Guardando...",
-    brandingTheme: "Marca y tema",
-    brandingThemeDesc: "Configure el logotipo y la paleta de colores de su organización.",
-    orgName: "Nombre de la organización",
-    workspaceLogo: "Logotipo del espacio de trabajo",
-    uploadNew: "Subir nuevo logotipo",
-    uploadReplace: "Subir logotipo de reemplazo",
-    supportedFormats: "Formatos admitidos: SVG, PNG, JPG (máx. 2 MB)",
-    primaryColor: "Color de marca primario",
-    fontFamily: "Familia de fuentes del espacio de trabajo",
-    defaultLanguage: "Idioma predeterminado del espacio de trabajo",
-    livePreview: "Vista previa del tema en vivo",
-    previewDesc: "Vea cómo se verán su logotipo y sus botones para los usuarios.",
-    sampleButtons: "Botones de muestra",
-    primaryBtn: "Botón primario",
-    secondaryBtn: "Botón secundario",
-    activeNav: "Destacado de navegación activa",
-    selectedLink: "Enlace de barra lateral seleccionado",
-    loading: "Cargando configuración...",
-    successMsg: "¡Marca actualizada con éxito! Actualizando tema dinámico...",
-    errorMsg: "Error al actualizar la configuración de marca",
-    networkError: "Error de red: No se pudo guardar la configuración",
-    logoError: "El tamaño del logotipo debe ser inferior a 2 MB"
-  },
-  Bengali: {
-    title: "ওয়ার্কস্পেস কাস্টমাইজেশন",
-    subtitle: "আপনার ডকুমেন্ট ওয়ার্কস্পেসের চেহারা, ব্র্যান্ডিং পরিচয় এবং লোগো থিম কাস্টমাইজ করুন।",
-    discard: "পরিবর্তনগুলি বাতিল করুন",
-    save: "ব্র্যান্ডিং সংরক্ষণ করুন",
-    saving: "সংরক্ষণ করা হচ্ছে...",
-    brandingTheme: "ব্র্যান্ডিং এবং থিম",
-    brandingThemeDesc: "আপনার সংস্থার লোগো এবং রঙের প্যালেট কনফিগার করুন।",
-    orgName: "প্রতিষ্ঠানের নাম",
-    workspaceLogo: "ওয়ার্কস্পেস লোগো",
-    uploadNew: "নতুন লোগো আপলোড করুন",
-    uploadReplace: "প্রতিস্থাপন লোগো আপলোড করুন",
-    supportedFormats: "সমর্থিত ফর্ম্যাট: SVG, PNG, JPG (সর্বোচ্চ ২ মেগাবাইট)",
-    primaryColor: "প্রাথমিক ব্র্যান্ডের রঙ",
-    fontFamily: "ওয়ার্কস্পেস ফন্ট ফ্যামিলি",
-    defaultLanguage: "ওয়ার্কস্পেসের ডিফল্ট ভাষা",
-    livePreview: "লাইভ থিম প্রিভিউ",
-    previewDesc: "ব্যবহারকারীদের কাছে আপনার লোগো এবং বোতামগুলি কেমন দেখাবে তা দেখুন।",
-    sampleButtons: "নমুনা বোতাম",
-    primaryBtn: "প্রাথমিক বোতাম",
-    secondaryBtn: "মাধ্যমিক বোতাম",
-    activeNav: "সক্রিয় নেভিগেশন হাইলাইট",
-    selectedLink: "নির্বাচিত সাইডবার লিঙ্ক",
-    loading: "সেটিংস লোড হচ্ছে...",
-    successMsg: "ব্র্যান্ডিং সফলভাবে আপডেট করা হয়েছে! ডাইনামিক থিম রিফ্রেশ করা হচ্ছে...",
-    errorMsg: "ব্র্যান্ডিং সেটিংস আপডেট করতে ব্যর্থ হয়েছে",
-    networkError: "নেটওয়ার্ক ত্রুটি: কনফিগারেশন সংরক্ষণ করতে ব্যর্থ হয়েছে",
-    logoError: "লোগোর আকার অবশ্যই ২ মেগাবাইটের কম হতে হবে"
-  }
-};
+import { useTranslation } from "../../i18n/useTranslation";
 
 export default function WorkspaceContent() {
   const { companySlug } = useParams();
   const fileInputRef = useRef(null);
   const colorInputRef = useRef(null);
+
+  const { t, setLanguage } = useTranslation();
 
   const [selectedColor, setSelectedColor] = useState("#0B2C87");
   const [fontFamily, setFontFamily] = useState("Inter");
@@ -119,7 +32,6 @@ export default function WorkspaceContent() {
     "#0F172A",
   ];
 
-  const t = translations[defaultLanguage] || translations.English;
 
   // Fetch current branding configuration
   useEffect(() => {
@@ -204,7 +116,7 @@ export default function WorkspaceContent() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#F5F7FB] min-h-screen">
-        <p className="text-gray-500 font-medium">{t.loading}</p>
+        <p className="text-gray-500 font-medium">{t("loading")}</p>
       </div>
     );
   }
@@ -216,29 +128,29 @@ export default function WorkspaceContent() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            {t.title}
+            {t("title")}
           </h1>
 
           <p className="text-gray-500 mt-1 text-sm">
-            {t.subtitle}
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="px-5 py-2.5 border border-gray-300 rounded-xl bg-white font-medium text-sm text-gray-700 hover:bg-gray-50 transition cursor-pointer"
           >
-            {t.discard}
+            {t("discard")}
           </button>
 
-          <button 
+          <button
             onClick={handleSave}
             disabled={saving}
             style={{ backgroundColor: selectedColor }}
             className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 shadow-sm transition disabled:opacity-50 cursor-pointer"
           >
-            {saving ? t.saving : t.save}
+            {saving ? t("saving") : t("save")}
           </button>
         </div>
       </div>
@@ -258,15 +170,15 @@ export default function WorkspaceContent() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Palette className="w-5 h-5" style={{ color: selectedColor }} />
-              <h2 className="text-xl font-bold text-gray-900">{t.brandingTheme}</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("brandingTheme")}</h2>
             </div>
-            <p className="text-xs text-gray-500">{t.brandingThemeDesc}</p>
+            <p className="text-xs text-gray-500">{t("brandingThemeDesc")}</p>
           </div>
 
           {/* Organization Name */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
-              {t.orgName}
+              {t("orgName")}
             </label>
             <input
               type="text"
@@ -279,16 +191,16 @@ export default function WorkspaceContent() {
           {/* Upload Logo */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
-              {t.workspaceLogo}
+              {t("workspaceLogo")}
             </label>
-            <input 
+            <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleFileChange}
             />
-            <div 
+            <div
               onClick={handleLogoUploadClick}
               className="border-2 border-dashed border-gray-200 hover:border-gray-300 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-5 hover:bg-gray-50/50 cursor-pointer transition"
             >
@@ -304,7 +216,7 @@ export default function WorkspaceContent() {
                   {logo ? t.uploadReplace : t.uploadNew}
                 </h4>
                 <p className="text-xs text-gray-500 mt-1">
-                  {t.supportedFormats}
+                  {t("supportedFormats")}
                 </p>
               </div>
             </div>
@@ -313,7 +225,8 @@ export default function WorkspaceContent() {
           {/* Brand Colors */}
           <div className="space-y-3">
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
-              {t.primaryColor}
+              {t("primaryColor")}
+              {/* {t("defaultLanguage")} */}
             </label>
             <div className="flex flex-wrap items-center gap-3">
               {colors.map((color) => (
@@ -321,16 +234,15 @@ export default function WorkspaceContent() {
                   key={color}
                   onClick={() => setSelectedColor(color)}
                   className={`w-10 h-10 rounded-full border-4 transition-all duration-200 cursor-pointer hover:scale-105
-                    ${
-                      selectedColor.toLowerCase() === color.toLowerCase()
-                        ? "border-gray-400 scale-105"
-                        : "border-transparent"
+                    ${selectedColor.toLowerCase() === color.toLowerCase()
+                      ? "border-gray-400 scale-105"
+                      : "border-transparent"
                     }`}
                   style={{ backgroundColor: color }}
                 />
               ))}
 
-              <input 
+              <input
                 ref={colorInputRef}
                 type="color"
                 value={selectedColor}
@@ -338,7 +250,7 @@ export default function WorkspaceContent() {
                 className="hidden"
               />
 
-              <button 
+              <button
                 onClick={() => colorInputRef.current?.click()}
                 className="w-10 h-10 rounded-full border border-gray-300 bg-gray-55 flex items-center justify-center text-lg font-bold text-gray-500 hover:bg-gray-100 transition cursor-pointer"
               >
@@ -350,7 +262,8 @@ export default function WorkspaceContent() {
           {/* Workspace Font Family */}
           <div className="space-y-3 pt-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
-              {t.fontFamily}
+              {t("fontFamily")}
+              {/* {t("defaultLanguage")} */}
             </label>
             <select
               value={fontFamily}
@@ -367,18 +280,36 @@ export default function WorkspaceContent() {
             </select>
           </div>
 
+          {/* Workspace Default Language */}
+          {/* <div className="space-y-3 pt-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
+              {t("defaultLanguage")}
+            </label>
+            <select
+              value={defaultLanguage}
+              onChange={(e) => {
+                setDefaultLanguage(e.target.value);
+                setLanguage(e.target.value);
+              }}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition bg-white font-medium"
+            >
+              <option value="English">English</option>
+              <option value="Khmer">Khmer (ភាសាខ្មែរ)</option>
+            </select>
+          </div> */}
+
         </div>
 
         {/* Right Side: Live Theme Preview */}
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">{t.livePreview}</h3>
-            <p className="text-xs text-gray-500 mb-6">{t.previewDesc}</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t("livePreview")}</h3>
+            <p className="text-xs text-gray-500 mb-6">{t("previewDesc")}</p>
 
             <div className="border border-gray-100 rounded-xl p-5 bg-gray-50/50 space-y-6">
               {/* Dynamic Header Preview */}
               <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <div 
+                <div
                   style={!logo ? { backgroundColor: selectedColor } : {}}
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold overflow-hidden"
                 >
@@ -398,29 +329,29 @@ export default function WorkspaceContent() {
 
               {/* Dynamic Button Previews */}
               <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t.sampleButtons}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t("sampleButtons")}</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <button 
+                  <button
                     style={{ backgroundColor: selectedColor }}
                     className="w-full py-2.5 text-white font-semibold text-xs rounded-lg shadow-sm hover:opacity-90 transition cursor-default"
                   >
-                    {t.primaryBtn}
+                    {t("primaryBtn")}
                   </button>
-                  <button 
+                  <button
                     style={{ borderColor: selectedColor, color: selectedColor }}
                     className="w-full py-2.5 bg-white border font-semibold text-xs rounded-lg hover:bg-slate-50 transition cursor-default"
                   >
-                    {t.secondaryBtn}
+                    {t("secondaryBtn")}
                   </button>
                 </div>
               </div>
 
               {/* Dynamic Active Tab Preview */}
               <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t.activeNav}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t("activeNav")}</p>
                 <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-white font-semibold text-xs" style={{ backgroundColor: selectedColor }}>
                   <div className="w-2.5 h-2.5 rounded-full bg-white/40" />
-                  <span>{t.selectedLink}</span>
+                  <span>{t("selectedLink")}</span>
                 </div>
               </div>
             </div>

@@ -1,0 +1,52 @@
+export const km = {
+  // Sidebar General
+  dashboard: "ផ្ទាំងគ្រប់គ្រង",
+  profileSettings: "ការកំណត់ប្រវត្តិរូប",
+  userManagement: "ការគ្រប់គ្រងអ្នកប្រើប្រាស់",
+  managerActivity: "សកម្មភាពអ្នកគ្រប់គ្រង",
+  workspaceConfiguration: "ការកំណត់រចនាសម្ព័ន្ធកន្លែងធ្វើការ",
+  subscriptionBilling: "ការជាវ និងការបង់ប្រាក់",
+  logout: "ចាកចេញ",
+  selectLanguage: "ភាសា",
+  adminDashboard: "ផ្ទាំងគ្រប់គ្រងអ្នកគ្រប់គ្រង",
+
+  // Sidebars additional links
+  myDocuments: "ឯកសាររបស់ខ្ញុំ",
+  folderExplorer: "កម្មវិធីរុករកថតឯកសារ",
+  searchFilters: "ស្វែងរក និងតម្រង",
+  sharedWithMe: "ចែករំលែកជាមួយខ្ញុំ",
+  sharedByMe: "ចែករំលែកដោយខ្ញុំ",
+  archiveDocument: "បណ្ណសារឯកសារ",
+  trash: "ធុងសំរាម",
+  myFavorite: "សំណព្វរបស់ខ្ញុំ",
+
+  // Workspace Configuration (Direct support for original keys in WorkspaceContent.jsx)
+  title: "ការកែសម្រួលកន្លែងធ្វើការ",
+  subtitle: "កែសម្រួលរូបរាង អត្តសញ្ញាណម៉ាក និងរូបសញ្ញានៃកន្លែងធ្វើការឯកសាររបស់អ្នក។",
+  discard: "បោះបង់ការផ្លាស់ប្តូរ",
+  save: "រក្សាទុកម៉ាកសញ្ញា",
+  saving: "កំពុងរក្សាទុក...",
+  brandingTheme: "ម៉ាកសញ្ញា និងស្បែក",
+  brandingThemeDesc: "កំណត់រចនាសម្ព័ន្ធរូបសញ្ញាក្រុមហ៊ុន និងក្ដារលាយពណ៌របស់ស្ថាប័នអ្នក។",
+  orgName: "ឈ្មោះស្ថាប័ន",
+  workspaceLogo: "រូបសញ្ញាកន្លែងធ្វើការ",
+  uploadNew: "ផ្ទុកឡើងរូបសញ្ញាថ្មី",
+  uploadReplace: "ផ្ទុកឡើងរូបសញ្ញាជំនួស",
+  supportedFormats: "ទម្រង់ដែលគាំទ្រ៖ SVG, PNG, JPG (អតិបរមា 2MB)",
+  primaryColor: "ពណ៌ចម្បងរបស់ម៉ាកសញ្ញា",
+  fontFamily: "ប្រភេទពុម្ពអក្សរកន្លែងធ្វើការ",
+  defaultLanguage: "ភាសាលំនាំដើមរបស់កន្លែងធ្វើការ",
+  livePreview: "ការមើលសាកល្បងស្បែកបន្តផ្ទាល់",
+  previewDesc: "មើលថាតើរូបសញ្ញា និងប៊ូតុងរបស់អ្នកនឹងបង្ហាញដល់អ្នកប្រើប្រាស់យ៉ាងដូចម្តេច។",
+  sampleButtons: "គំរូប៊ូតុង",
+  primaryBtn: "ប៊ូតុងចម្មង",
+  secondaryBtn: "ប៊ូតុងបន្ទាប់បន្សំ",
+  activeNav: "ការរំលេចការរុករកសកម្ម",
+  selectedLink: "តំណភ្ជាប់របារចំហៀងដែលបានជ្រើសរើស",
+  loading: "កំពុងផ្ទុកការកំណត់...",
+  successMsg: "ការធ្វើបច្ចុប្បន្នភាពម៉ាកសញ្ញាបានជោគជ័យ! កំពុងដំណើរការស្បែកឡើងវិញ...",
+  errorMsg: "មិនអាចធ្វើបច្ចុប្បន្នភាពការកំណត់ម៉ាកសញ្ញាបានទេ",
+  networkError: "កំហុសបណ្តាញ៖ មិនអាចរក្សាទុកការកំណត់រចនាសម្ព័ន្ធបានទេ",
+  logoError: "ទំហំរូបសញ្ញាត្រូវតែតិចជាង 2MB"
+};
+export default km;

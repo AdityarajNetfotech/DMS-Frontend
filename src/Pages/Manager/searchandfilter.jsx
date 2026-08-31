@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -12,6 +12,7 @@ import {
   Eye,
   FileSpreadsheet,
   FileText,
+  Check,
   Filter,
   Folder,
   Presentation,
@@ -264,13 +265,192 @@ function Avatar({ value }) {
   );
 }
 
+function IdPickerDropdown({ companySlug, selectedIds, setSelectedIds }) {
+  const PAGE_SIZE = 5;
+  const [isOpen, setIsOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [documents, setDocuments] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [searchFilter, setSearchFilter] = useState("");
+  const dropdownRef = useRef(null);
+
+  const fetchDocumentIds = async (pageNum, search) => {
+    setLoadingDocs(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      let url = `${API_BASE_URL}/api/${companySlug}/manager/search/document-ids?page=${pageNum}&limit=${PAGE_SIZE}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDocuments(data.data.documents);
+        setTotalPages(data.data.pagination.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Failed to fetch document IDs", err);
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchDocumentIds(page, searchFilter);
+    }
+  }, [isOpen, page, searchFilter]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleId = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchFilter(e.target.value);
+    setPage(1);
+  };
+
+  return (
+    <div className="relative w-full lg:w-[280px]" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        className={`inline-flex h-11 w-full items-center justify-between gap-2 rounded-lg border px-4 text-sm font-semibold transition ${
+          selectedIds.length > 0
+            ? "border-blue-600 bg-blue-50 text-blue-700"
+            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+        }`}
+      >
+        <span className="flex items-center gap-2 truncate">
+          <FileText size={17} />
+          {selectedIds.length > 0
+            ? `${selectedIds.length} Doc ID${selectedIds.length > 1 ? "s" : ""} selected`
+            : "Select Document IDs"}
+        </span>
+        <ChevronDown size={17} className={`shrink-0 transition ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-30 mt-2 w-full min-w-[340px] rounded-lg border border-slate-200 bg-white shadow-lg">
+          <div className="p-2 border-b border-slate-100">
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={handleSearchChange}
+              placeholder="Search documents..."
+              className="h-9 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+            />
+          </div>
+
+          <div className="max-h-[300px] overflow-y-auto p-2 space-y-1">
+            {loadingDocs ? (
+              <p className="px-3 py-4 text-center text-sm text-slate-400">Loading...</p>
+            ) : documents.length === 0 ? (
+              <p className="px-3 py-4 text-center text-sm text-slate-400">No documents found</p>
+            ) : (
+              documents.map((doc) => {
+                const isSelected = selectedIds.includes(doc._id);
+                return (
+                  <button
+                    key={doc._id}
+                    type="button"
+                    onClick={() => toggleId(doc._id)}
+                    className={`flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition ${
+                      isSelected
+                        ? "bg-blue-50 text-blue-700 font-semibold"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${
+                        isSelected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-slate-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && <Check size={13} />}
+                    </span>
+                    <span className="flex flex-col min-w-0">
+                      <span className="font-medium truncate">{doc.name || doc.originalFileName}</span>
+                      <span className="text-xs text-slate-400 font-mono truncate">{doc._id}</span>
+                    </span>
+                    <span className="ml-auto shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 uppercase">
+                      {doc.fileType}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-slate-100 px-3 py-2">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-xs font-medium text-slate-500">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+
+          {selectedIds.length > 0 && (
+            <div className="border-t border-slate-100 px-3 py-2 flex items-center justify-between">
+              <span className="text-xs text-slate-500">{selectedIds.length} selected</span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds([])}
+                className="text-xs font-medium text-red-600 hover:text-red-700 transition"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Searchandfilter() {
   const { companySlug } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialQuery = searchParams.get("q") || "";
+  const initialCF = searchParams.get("cf") || "";
+  const initialIds = searchParams.get("ids") ? searchParams.get("ids").split(",") : [];
+
   const [searchTerm, setSearchTerm] = useState(initialQuery);
+  const [customerOrFilename, setCustomerOrFilename] = useState(initialCF);
+  const [selectedIds, setSelectedIds] = useState(initialIds);
+
   const [filters, setFilters] = useState(defaultFilters);
   const [openFilter, setOpenFilter] = useState(null);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
@@ -281,6 +461,8 @@ export default function Searchandfilter() {
   const [loading, setLoading] = useState(false);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [debouncedCustomerOrFilename, setDebouncedCustomerOrFilename] = useState(customerOrFilename);
+  const [debouncedSelectedIds, setDebouncedSelectedIds] = useState(selectedIds);
 
   const [users, setUsers] = useState([]);
 
@@ -323,26 +505,28 @@ export default function Searchandfilter() {
     },
   ], [users]);
 
-  // Sync state if q param in URL changes (e.g. from navbar search)
+  // Sync state if param in URL changes (e.g. from navbar search)
   useEffect(() => {
-    const q = searchParams.get("q") || "";
-    setSearchTerm(q);
+    setSearchTerm(searchParams.get("q") || "");
+    setCustomerOrFilename(searchParams.get("cf") || "");
+    const idsParam = searchParams.get("ids");
+    setSelectedIds(idsParam ? idsParam.split(",") : []);
   }, [searchParams]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      setDebouncedCustomerOrFilename(customerOrFilename);
+      setDebouncedSelectedIds(selectedIds);
       setSearchParams((prev) => {
-        if (searchTerm) {
-          prev.set("q", searchTerm);
-        } else {
-          prev.delete("q");
-        }
+        if (searchTerm) prev.set("q", searchTerm); else prev.delete("q");
+        if (customerOrFilename) prev.set("cf", customerOrFilename); else prev.delete("cf");
+        if (selectedIds.length > 0) prev.set("ids", selectedIds.join(",")); else prev.delete("ids");
         return prev;
       }, { replace: true });
     }, 500);
     return () => clearTimeout(handler);
-  }, [searchTerm, setSearchParams]);
+  }, [searchTerm, customerOrFilename, selectedIds, setSearchParams]);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -351,6 +535,13 @@ export default function Searchandfilter() {
         const token = localStorage.getItem("accessToken");
 
         let url = `${API_BASE_URL}/api/${companySlug}/manager/search?query=${encodeURIComponent(debouncedSearchTerm)}`;
+
+        if (debouncedCustomerOrFilename) {
+          url += `&customerOrFilename=${encodeURIComponent(debouncedCustomerOrFilename)}`;
+        }
+        if (debouncedSelectedIds.length > 0) {
+          url += `&idQuery=${encodeURIComponent(debouncedSelectedIds.join(","))}`;
+        }
 
         let apiSortBy = 'name';
         let apiOrder = 'desc';
@@ -386,7 +577,7 @@ export default function Searchandfilter() {
     };
 
     fetchResults();
-  }, [companySlug, debouncedSearchTerm, sortBy, starredOnly, filters]);
+  }, [companySlug, debouncedSearchTerm, debouncedCustomerOrFilename, debouncedSelectedIds, sortBy, starredOnly, filters]);
 
   const filteredResults = useMemo(() => {
     let list = searchResults;
@@ -423,6 +614,8 @@ export default function Searchandfilter() {
 
   const handleReset = () => {
     setSearchTerm("");
+    setCustomerOrFilename("");
+    setSelectedIds([]);
     setFilters(defaultFilters);
     setOpenFilter(null);
     setStarredOnly(false);
@@ -447,8 +640,8 @@ export default function Searchandfilter() {
         </section>
 
         <section className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="relative block sm:w-[500px]">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center w-full">
+            <label className="relative block w-full lg:w-[350px]">
               <Search
                 size={19}
                 className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
@@ -457,27 +650,52 @@ export default function Searchandfilter() {
                 type="search"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search documents..."
+                placeholder="Search text / content..."
                 className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-12 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </label>
 
-            <button
-              type="button"
-              onClick={() => setSearchTerm((current) => current.trim())}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
-            >
-              <Search size={17} />
-              Search
-            </button>
+            <label className="relative block w-full lg:w-[250px]">
+              <Search
+                size={19}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+              />
+              <input
+                type="search"
+                value={customerOrFilename}
+                onChange={(event) => setCustomerOrFilename(event.target.value)}
+                placeholder="Customer or Filename..."
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-12 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+            </label>
 
-            <button
-              type="button"
-              onClick={handleReset}
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
-            >
-              Clear
-            </button>
+            <IdPickerDropdown
+              companySlug={companySlug}
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+            />
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm((current) => current.trim());
+                  setCustomerOrFilename((current) => current.trim());
+                }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-700 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+              >
+                <Search size={17} />
+                Search
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              >
+                Clear
+              </button>
+            </div>
           </div>
 
           {/* <button className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">

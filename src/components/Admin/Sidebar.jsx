@@ -158,6 +158,8 @@ function SidebarThreeBg({ accentColor = 0x072B86 }) {
   );
 }
 
+import { useTranslation } from "../../i18n/useTranslation";
+
 export default function Sidebar({
   isOpen = false,
   onClose = () => {},
@@ -165,6 +167,16 @@ export default function Sidebar({
   const navigate = useNavigate();
   const { companySlug } = useParams();
   const slugPrefix = companySlug ? `/${companySlug}` : "";
+
+  const { t, language, setLanguage } = useTranslation();
+
+  // Listen for language changes globally to sync state dynamically
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    const handleLangChange = () => forceUpdate({});
+    window.addEventListener("language-change", handleLangChange);
+    return () => window.removeEventListener("language-change", handleLangChange);
+  }, []);
 
   const [branding, setBranding] = useState(() => {
     const cached = localStorage.getItem(`branding_${companySlug}`);
@@ -268,32 +280,32 @@ export default function Sidebar({
   const menuItems = [
     {
       icon: <LayoutDashboard size={18} />,
-      label: "Dashboard",
+      label: t("dashboard"),
       path: `${slugPrefix}/admin/dashboard`,
     },
     {
       icon: <User size={18} />,
-      label: "Profile Settings",
+      label: t("profileSettings"),
       path: `${slugPrefix}/admin/profile`,
     },
     {
       icon: <Users size={18} />,
-      label: "User Management",
+      label: t("userManagement"),
       path: `${slugPrefix}/admin/user-management`,
     },
     {
       icon: <TrendingUp size={18} />,
-      label: "Manager Activity",
+      label: t("managerActivity"),
       path: `${slugPrefix}/admin/manager-activity`,
     },
     {
       icon: <Settings2 size={18} />,
-      label: "Workspace Configuration",
+      label: t("workspaceConfiguration"),
       path: `${slugPrefix}/admin/workspace-configuration`,
     },
     {
       icon: <CreditCard size={18} />,
-      label: "Subscription & Billing",
+      label: t("subscriptionBilling"),
       path: `${slugPrefix}/admin/subscription`,
     },
   ];
@@ -438,6 +450,19 @@ export default function Sidebar({
               </div>
             </div>
 
+            {/* Language Selection */}
+            <div className="flex items-center gap-3 px-3 py-1 bg-white/50 border border-slate-100/80 rounded-xl mb-1.5 text-xs text-slate-600">
+              <span className="font-semibold">{t("selectLanguage")}:</span>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="bg-transparent border-none outline-none font-bold text-slate-800 cursor-pointer ml-auto"
+              >
+                <option value="English">English</option>
+                <option value="Khmer">Khmer (ភាសាខ្មែរ)</option>
+              </select>
+            </div>
+
             <NavLink
               to="/admin/help-center"
               onClick={onClose}
@@ -471,7 +496,7 @@ export default function Sidebar({
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50/50 font-medium cursor-pointer"
             >
               <LogOut size={18} />
-              <span>Logout</span>
+              <span>{t("logout")}</span>
             </button>
           </div>
         </div>

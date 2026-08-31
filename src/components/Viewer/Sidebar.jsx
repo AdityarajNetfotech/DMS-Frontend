@@ -154,10 +154,22 @@ function SidebarThreeBg({ accentColor = 0x2563eb }) {
   );
 }
 
+import { useTranslation } from "../../i18n/useTranslation";
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const { companySlug } = useParams();
   const slugPrefix = companySlug ? `/${companySlug}` : "";
+
+  const { t, language } = useTranslation();
+
+  // Force sidebar refresh on language event dispatch
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    const handleLangChange = () => forceUpdate({});
+    window.addEventListener("language-change", handleLangChange);
+    return () => window.removeEventListener("language-change", handleLangChange);
+  }, []);
 
   const [branding, setBranding] = useState(() => {
     const cached = localStorage.getItem(`branding_${companySlug}`);
@@ -261,10 +273,10 @@ export default function Sidebar() {
   }, [companySlug]);
 
   const navItems = [
-    { name: "Dashboard", icon: Home, path: `${slugPrefix}/viewer/dashboard` },
-    { name: "My Documents", icon: FileText, path: `${slugPrefix}/viewer/my-documents` },
-    { name: "Shared With Me", icon: Users, path: `${slugPrefix}/viewer/shared-with-me` },
-    { name: "My Favorite", icon: Star, path: `${slugPrefix}/viewer/my-access` },
+    { name: t("dashboard"), icon: Home, path: `${slugPrefix}/viewer/dashboard` },
+    { name: t("myDocuments"), icon: FileText, path: `${slugPrefix}/viewer/my-documents` },
+    { name: t("sharedWithMe"), icon: Users, path: `${slugPrefix}/viewer/shared-with-me` },
+    { name: t("myFavorite"), icon: Star, path: `${slugPrefix}/viewer/my-access` },
   ];
 
   const primaryColorStr = branding?.primaryColor || "#2563eb";
@@ -368,7 +380,7 @@ export default function Sidebar() {
               className="flex items-center gap-4 px-8 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 hover:text-blue-800 transition rounded-lg mx-2"
             >
               <ShieldCheck size={20} />
-              Admin Dashboard
+              {t("adminDashboard")}
             </NavLink>
           )}
 
@@ -387,7 +399,7 @@ export default function Sidebar() {
             }}
           >
             <ChevronLeft size={20} />
-            Logout
+            {t("logout")}
           </button>
         </div>
       </div>
