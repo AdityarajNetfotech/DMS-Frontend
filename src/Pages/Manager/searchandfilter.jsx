@@ -1,24 +1,21 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   ArrowUpDown,
-  Bookmark,
   Calendar,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Eye,
   FileSpreadsheet,
   FileText,
   Check,
-  Filter,
   Folder,
   Presentation,
   Search,
-  SlidersHorizontal,
-  Tag,
+  RefreshCw,
+  Sparkles,
   UserRound,
 } from "lucide-react";
 
@@ -459,6 +456,8 @@ export default function Searchandfilter() {
 
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillResult, setBackfillResult] = useState(null);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [debouncedCustomerOrFilename, setDebouncedCustomerOrFilename] = useState(customerOrFilename);
@@ -622,6 +621,35 @@ export default function Searchandfilter() {
     setSortBy("Relevance");
   };
 
+  const handleBackfill = async () => {
+    setBackfilling(true);
+    setBackfillResult(null);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_BASE_URL}/api/${companySlug}/manager/documents/backfill-text`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setBackfillResult(data);
+    } catch (err) {
+      setBackfillResult({ success: false, message: "Backfill failed: " + err.message });
+    } finally {
+      setBackfilling(false);
+    }
+  };
+
+  // Highlight occurrences of the search term inside a snippet string
+  const highlightSnippet = (snippet, term) => {
+    if (!term || !snippet) return snippet;
+    const parts = snippet.split(new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+    return parts.map((part, i) =>
+      part.toLowerCase() === term.toLowerCase()
+        ? <mark key={i} className="bg-yellow-200 text-yellow-900 rounded px-0.5">{part}</mark>
+        : part
+    );
+  };
+
   const handleFilterChange = (key, value) => {
     setFilters((current) => ({ ...current, [key]: value }));
     setOpenFilter(null);
@@ -630,13 +658,32 @@ export default function Searchandfilter() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <section>
-          <h1 className="text-3xl font-bold tracking-normal text-slate-950">
-            Search & Filters
-          </h1>
-          <p className="mt-3 text-base text-slate-500">
-            Find documents quickly with advanced filters.
-          </p>
+        <section className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-normal text-slate-950">
+              Search &amp; Filters
+            </h1>
+            <p className="mt-3 text-base text-slate-500">
+              Find documents quickly — searches file names, tags, descriptions, and <strong>document content</strong>.
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleBackfill}
+              disabled={backfilling}
+              title="Re-index older documents so their text content can be searched"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            >
+              {backfilling ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {backfilling ? "Indexing..." : "Re-index Documents"}
+            </button>
+            {backfillResult && (
+              <p className={`text-xs font-medium ${backfillResult.success ? "text-emerald-600" : "text-red-500"}`}>
+                {backfillResult.message}
+              </p>
+            )}
+          </div>
         </section>
 
         <section className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -786,9 +833,21 @@ export default function Searchandfilter() {
                       className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
                     >
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <ResultIcon kind={result.kind} />
-                          <span className="truncate">{result.name || result.originalFileName}</span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-3">
+                            <ResultIcon kind={result.kind} />
+                            <span className="truncate font-semibold">{result.name || result.originalFileName}</span>
+                            {result.contentSnippet && (
+                              <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-yellow-50 border border-yellow-200 px-2 py-0.5 text-[10px] font-semibold text-yellow-700">
+                                <Search size={10} /> Content match
+                              </span>
+                            )}
+                          </div>
+                          {result.contentSnippet && (
+                            <p className="ml-11 text-xs text-slate-500 leading-relaxed line-clamp-2">
+                              {highlightSnippet(result.contentSnippet, debouncedSearchTerm)}
+                            </p>
+                          )}
                         </div>
                       </td>
                       <td className="px-5 py-4">
