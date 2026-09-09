@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
+import DashboardLoader from "../common/DashboardLoader";
 
 import PageHeader from "../Manager/PageHeader";
 import StatCard from "../Manager/StatCard";
@@ -275,6 +276,7 @@ export default function DashboardContent() {
       type: doc.fileType || "File",
       size: formatBytes(doc.fileSize),
       modified,
+      rawDate: doc.createdAt || doc.updatedAt,
     };
   });
 
@@ -337,8 +339,12 @@ export default function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#F5F7FB] min-h-screen">
-        <p className="text-gray-500 text-lg">Loading dashboard...</p>
+      <div className="flex-1 flex items-center justify-center bg-[#F5F7FB] min-h-screen p-4 sm:p-6 lg:p-8">
+        <DashboardLoader
+          role="admin"
+          title="Loading Enterprise Admin Dashboard..."
+          subtitle="Fetching tenant storage metrics, department allocations & security policies..."
+        />
       </div>
     );
   }

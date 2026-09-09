@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 
 import MainLayout from "../../layout/MainLayout";
+import Pagination from "../../components/common/Pagination";
 import UploadFileModal from "../../components/Manager/UploadFileModal";
 import { API_BASE_URL } from "../../config/api";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
 
 const typeColors = {
   PDF: "bg-red-50 text-red-600",
@@ -161,6 +163,13 @@ export default function SharedWithMeManager() {
   const [dateFilter, setDateFilter] = useState("Date Shared");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, ownerFilter, dateFilter]);
 
   const fetchSharedDocuments = async () => {
     setLoading(true);
@@ -173,7 +182,7 @@ export default function SharedWithMeManager() {
       });
       const resData = await response.json();
       if (resData.success) {
-        const formatted = resData.data.map(doc => {
+        const formatted = resData.data.map((doc) => {
           const sizeStr = doc.isFolder ? "Folder" : formatBytes(doc.fileSize);
           const timeStr = formatTimeAgo(doc.createdAt);
           return {
@@ -192,12 +201,14 @@ export default function SharedWithMeManager() {
             uploadPermission: doc.uploadPermission || false,
             shareLinkToken: doc.shareLinkToken,
             createdAt: doc.createdAt,
-            isFolder: doc.isFolder || false
+            isFolder: doc.isFolder || false,
+            fileSize: doc.fileSize,
+            fileType: doc.fileType
           };
         });
         setDocuments(formatted);
       } else {
-        setError(resData.message || "Failed to load shared documents.");
+        setError(resData.message || "Failed to fetch shared documents.");
       }
     } catch (err) {
       console.error(err);
@@ -218,9 +229,9 @@ export default function SharedWithMeManager() {
     window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/download?token=${token}`, "_blank");
   };
 
-  const handlePreview = (documentId) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/preview?token=${token}`, "_blank");
+  const handlePreview = (docItem) => {
+    const docData = docItem.documentId || docItem;
+    setPreviewDoc(docData);
   };
 
   const stats = useMemo(() => {
@@ -292,14 +303,20 @@ export default function SharedWithMeManager() {
       return matchesSearch && matchesType && matchesOwner;
     });
 
-    if (dateFilter === "Newest") {
-      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (dateFilter === "Oldest") {
+    if (dateFilter === "Oldest") {
       docs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else {
+      // Default / Newest: always show latest first
+      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     return docs;
   }, [documents, searchTerm, typeFilter, ownerFilter, dateFilter]);
+
+  const paginatedDocuments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredDocuments.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredDocuments, currentPage]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -436,7 +453,7 @@ export default function SharedWithMeManager() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-200">
-                    {filteredDocuments.map((document) => (
+                    {paginatedDocuments.map((document) => (
                       <tr
                         key={document._id}
                         className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
@@ -506,9 +523,9 @@ export default function SharedWithMeManager() {
                             )}
                             {!document.isFolder && (
                               <button
-                                onClick={() => handlePreview(document._id)}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
-                                title="Preview"
+                                onClick={() => handlePreview(document)}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-100 hover:text-blue-600 cursor-pointer"
+                                title="Preview Document"
                               >
                                 <Eye size={18} />
                               </button>
@@ -528,27 +545,28 @@ export default function SharedWithMeManager() {
                   </tbody>
                 </table>
 
-                <div className="flex flex-col gap-4 border-t border-slate-200 py-5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-slate-500">
-                    Showing {filteredDocuments.length} of {documents.length} results
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition hover:bg-slate-50">
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-sm font-bold text-white shadow-sm">
-                      1
-                    </button>
-                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition hover:bg-slate-50">
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
+                {filteredDocuments.length > 0 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalItems={filteredDocuments.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    itemName="shared documents"
+                  />
+                )}
               </>
             )}
           </div>
         </section>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        folderName={previewDoc?.folder || ''}
+      />
     </MainLayout>
   );
 }

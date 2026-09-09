@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, Eye, EyeOff, User, Lock, FileSignature } from "lucide-react";
 
 import MainLayout from "../../layout/MainLayout";
 import { API_BASE_URL } from "../../config/api";
+import ElectronicSignatureSettings from "../../components/ElectronicSignatureSettings";
 
 function Field({ label, value, onChange, type = "text", disabled = false }) {
   return (
@@ -53,10 +54,16 @@ function PasswordField({ label, placeholder, hint, value, onChange }) {
 }
 
 export default function ProfileSettings() {
-  const { companySlug } = useParams();
-  const [activeTab, setActiveTab] = useState("profile");
-  const isProfileTab = activeTab === "profile";
+  const { companySlug: urlSlug } = useParams();
+  const fallbackSlug = localStorage.getItem("companySlug") || "default";
+  const companySlug = urlSlug || fallbackSlug;
 
+  const [activeTab, setActiveTab] = useState("profile"); // 'profile' | 'signature' | 'password'
+  const isProfileTab = activeTab === "profile";
+  const isSignatureTab = activeTab === "signature";
+  const isPasswordTab = activeTab === "password";
+
+  const [userProfile, setUserProfile] = useState({});
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -81,6 +88,7 @@ export default function ProfileSettings() {
         });
         const data = await response.json();
         if (data.success) {
+          setUserProfile(data.data || {});
           setName(data.data.name || "");
           setEmail(data.data.email || "");
           setPhone(data.data.phone || "");
@@ -117,6 +125,7 @@ export default function ProfileSettings() {
       const data = await response.json();
       if (data.success) {
         setSuccessMessage("Profile updated successfully.");
+        setUserProfile(data.data || { ...userProfile, name, email, phone });
         localStorage.setItem("userEmail", email);
         localStorage.setItem("userName", name);
       } else {
@@ -187,7 +196,7 @@ export default function ProfileSettings() {
             Profile Settings
           </h1>
           <p className="mt-3 text-base text-slate-500">
-            Update your profile information and security settings.
+            Manage your personal profile, digital electronic signature, and account security.
           </p>
         </section>
 
@@ -204,7 +213,7 @@ export default function ProfileSettings() {
         )}
 
         <section className="border-b border-slate-200">
-          <div className="flex gap-8 px-1">
+          <div className="flex gap-6 sm:gap-8 px-1 overflow-x-auto">
             <button
               type="button"
               onClick={() => {
@@ -212,17 +221,39 @@ export default function ProfileSettings() {
                 setError("");
                 setSuccessMessage("");
               }}
-              className={`relative pb-4 text-sm transition ${
+              className={`relative pb-4 text-sm transition flex items-center gap-2 cursor-pointer shrink-0 ${
                 isProfileTab
                   ? "font-bold text-blue-700"
                   : "font-semibold text-slate-500 hover:text-slate-900"
               }`}
             >
-              Profile Information
+              <User size={16} />
+              <span>Profile Information</span>
               {isProfileTab ? (
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
               ) : null}
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("signature");
+                setError("");
+                setSuccessMessage("");
+              }}
+              className={`relative pb-4 text-sm transition flex items-center gap-2 cursor-pointer shrink-0 ${
+                isSignatureTab
+                  ? "font-bold text-blue-700"
+                  : "font-semibold text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              <FileSignature size={16} />
+              <span>E-Signature</span>
+              {isSignatureTab ? (
+                <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
+              ) : null}
+            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -230,21 +261,22 @@ export default function ProfileSettings() {
                 setError("");
                 setSuccessMessage("");
               }}
-              className={`relative pb-4 text-sm transition ${
-                !isProfileTab
+              className={`relative pb-4 text-sm transition flex items-center gap-2 cursor-pointer shrink-0 ${
+                isPasswordTab
                   ? "font-bold text-blue-700"
                   : "font-semibold text-slate-500 hover:text-slate-900"
               }`}
             >
-              Change Password
-              {!isProfileTab ? (
+              <Lock size={16} />
+              <span>Change Password</span>
+              {isPasswordTab ? (
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
               ) : null}
             </button>
           </div>
         </section>
 
-        {isProfileTab ? (
+        {isProfileTab && (
           <form onSubmit={handleSaveProfile} className="max-w-5xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-7">
             <h2 className="text-xl font-bold text-slate-950">
               Profile Information
@@ -264,26 +296,43 @@ export default function ProfileSettings() {
                 type="email"
                 disabled={loading}
               />
+              <Field
+                label="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                type="tel"
+                disabled={loading}
+              />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-7 inline-flex h-13 min-w-[225px] items-center justify-center rounded-lg bg-blue-700 px-8 text-base font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50"
+              className="mt-7 inline-flex h-12 min-w-[200px] items-center justify-center rounded-xl bg-blue-700 px-8 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>
           </form>
-        ) : (
+        )}
+
+        {isSignatureTab && (
+          <ElectronicSignatureSettings
+            companySlug={companySlug}
+            userProfile={userProfile}
+            onProfileUpdated={(updated) => setUserProfile(updated)}
+          />
+        )}
+
+        {isPasswordTab && (
           <form onSubmit={handleChangePassword} className="max-w-5xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-7">
             <h2 className="text-xl font-bold text-slate-950">
               Change Password
             </h2>
-            <p className="mt-3 text-base text-slate-500">
+            <p className="mt-2 text-sm text-slate-500">
               Update your password to keep your account secure.
             </p>
 
-            <div className="mt-9 space-y-8">
+            <div className="mt-6 space-y-5">
               <PasswordField
                 label="Current Password"
                 placeholder="Enter current password"
@@ -308,7 +357,7 @@ export default function ProfileSettings() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-8 inline-flex h-13 min-w-[215px] items-center justify-center rounded-lg bg-blue-700 px-8 text-base font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50"
+              className="mt-7 inline-flex h-12 min-w-[200px] items-center justify-center rounded-xl bg-blue-700 px-8 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Updating..." : "Update Password"}
             </button>
@@ -318,3 +367,4 @@ export default function ProfileSettings() {
     </MainLayout>
   );
 }
+

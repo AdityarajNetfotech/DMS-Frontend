@@ -14,6 +14,7 @@ import {
 
 import Viewer from "../../components/Viewer/Viewer";
 import UploadFileModal from "../../components/Manager/UploadFileModal";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
 import { API_BASE_URL } from "../../config/api";
 
 const typeColors = {
@@ -88,6 +89,7 @@ export default function SharedFolderDetail() {
   const [error, setError] = useState("");
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const uploadPermission = queryParams.get("uploadAllowed") === "true";
@@ -143,14 +145,8 @@ export default function SharedFolderDetail() {
     }
   }, [companySlug, folderId]);
 
-  const handleDownload = (documentId, name) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/download?token=${token}`, "_blank");
-  };
-
-  const handlePreview = (documentId) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/preview?token=${token}`, "_blank");
+  const handlePreview = (doc) => {
+    setPreviewDoc(doc);
   };
 
   const handleUploadFile = async (formData) => {
@@ -289,22 +285,13 @@ export default function SharedFolderDetail() {
                                 Open
                               </button>
                             ) : (
-                              <>
-                                <button
-                                  onClick={() => handlePreview(item._id)}
-                                  title="Preview document"
-                                  className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                                >
-                                  <Eye size={18} />
-                                </button>
-                                <button
-                                  onClick={() => handleDownload(item._id)}
-                                  title="Download document"
-                                  className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                                >
-                                  <Download size={18} />
-                                </button>
-                              </>
+                              <button
+                                onClick={() => handlePreview(item)}
+                                title="Preview document"
+                                className="rounded-md p-1.5 transition hover:bg-blue-50 text-slate-600 hover:text-blue-700 cursor-pointer"
+                              >
+                                <Eye size={18} />
+                              </button>
                             )}
                           </div>
                         </td>
@@ -331,6 +318,15 @@ export default function SharedFolderDetail() {
         }}
         companySlug={companySlug}
         currentFolderId={folderId}
+      />
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        folderName={folder?.name || ''}
+        initialTab="preview"
       />
     </Viewer>
   );

@@ -1,14 +1,14 @@
+import { useState, useMemo } from "react";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Info,
   Trash2,
 } from "lucide-react";
 
 import Viewer from "../../components/Viewer/Viewer";
+import Pagination from "../../components/common/Pagination";
 
-const deletedDocuments = [
+const initialDeletedDocuments = [
   {
     name: "Old Project Plan.docx",
     deletedOn: "May 10, 2025 10:30 AM",
@@ -44,14 +44,47 @@ function FileIcon({ type, color }) {
 }
 
 export default function Trash() {
+  const [deletedDocuments, setDeletedDocuments] = useState(initialDeletedDocuments);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Always show latest deleted documents 1st
+  const sortedDocuments = useMemo(() => {
+    return [...deletedDocuments].sort((a, b) => {
+      const timeA = new Date(a.deletedOn || 0).getTime();
+      const timeB = new Date(b.deletedOn || 0).getTime();
+      return timeB - timeA;
+    });
+  }, [deletedDocuments]);
+
+  // Paginate 10 documents per page
+  const paginatedDocuments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedDocuments.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedDocuments, currentPage]);
+
+  const handleEmptyTrash = () => {
+    if (window.confirm("Are you sure you want to permanently delete all items in trash?")) {
+      setDeletedDocuments([]);
+    }
+  };
+
+  const handleRestore = (docName) => {
+    setDeletedDocuments(prev => prev.filter(d => d.name !== docName));
+  };
+
+  const handleDeletePermanent = (docName) => {
+    setDeletedDocuments(prev => prev.filter(d => d.name !== docName));
+  };
+
   return (
     <Viewer>
-      <div className="space-y-6">
+      <div className="mx-auto max-w-[1500px] space-y-6">
         <section>
           <h1 className="text-2xl font-bold tracking-normal text-slate-950 md:text-3xl">
-            12. Trash
+            Trash Bin
           </h1>
-          <p className="mt-3 text-base text-slate-500">
+          <p className="mt-3 text-base font-medium text-slate-500">
             Manage your deleted documents.
           </p>
         </section>
@@ -61,12 +94,17 @@ export default function Trash() {
           <p>Items in trash will be permanently deleted after 30 days.</p>
         </section>
 
-        <section className="flex justify-end">
-          <button className="inline-flex h-12 items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-7 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-red-50 hover:text-red-600">
-            <Trash2 size={19} className="text-red-600" />
-            Empty Trash
-          </button>
-        </section>
+        {deletedDocuments.length > 0 && (
+          <section className="flex justify-end">
+            <button
+              onClick={handleEmptyTrash}
+              className="inline-flex h-12 items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-7 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-red-50 hover:text-red-600 cursor-pointer"
+            >
+              <Trash2 size={19} className="text-red-600" />
+              Empty Trash
+            </button>
+          </section>
+        )}
 
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
@@ -86,64 +124,60 @@ export default function Trash() {
               </thead>
 
               <tbody className="divide-y divide-slate-200">
-                {deletedDocuments.map((document) => (
-                  <tr
-                    key={document.name}
-                    className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
-                  >
-                    <td className="px-6 py-6">
-                      <div className="flex items-center gap-4">
-                        <FileIcon type={document.type} color={document.color} />
-                        <span>{document.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-6">{document.deletedOn}</td>
-                    <td className="px-5 py-6">{document.size}</td>
-                    <td className="px-5 py-6">
-                      <div className="flex items-center justify-center gap-6">
-                        <button className="inline-flex h-11 min-w-[118px] items-center justify-center rounded-lg border border-blue-300 bg-white px-5 text-sm font-bold text-blue-700 transition hover:bg-blue-50">
-                          Restore
-                        </button>
-                        <button
-                          className="inline-flex h-11 w-[70px] items-center justify-center rounded-lg border border-slate-200 bg-white text-red-600 transition hover:bg-red-50"
-                          aria-label={`Delete ${document.name} permanently`}
-                        >
-                          <Trash2 size={19} />
-                        </button>
-                      </div>
+                {paginatedDocuments.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center text-slate-500 font-medium">
+                      Trash bin is empty.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedDocuments.map((document) => (
+                    <tr
+                      key={document.name}
+                      className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <FileIcon type={document.type} color={document.color} />
+                          <span className="font-semibold text-slate-900">{document.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-6 text-slate-600">{document.deletedOn}</td>
+                      <td className="px-5 py-6 text-slate-600">{document.size}</td>
+                      <td className="px-5 py-6">
+                        <div className="flex items-center justify-center gap-4">
+                          <button
+                            onClick={() => handleRestore(document.name)}
+                            className="inline-flex h-9 min-w-[90px] items-center justify-center rounded-lg border border-blue-300 bg-white px-4 text-xs font-bold text-blue-700 transition hover:bg-blue-50 cursor-pointer"
+                          >
+                            Restore
+                          </button>
+                          <button
+                            onClick={() => handleDeletePermanent(document.name)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-red-600 transition hover:bg-red-50 cursor-pointer"
+                            aria-label={`Delete ${document.name} permanently`}
+                            title="Delete Permanently"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-slate-500">
-              Showing 1 to 3 of 3 results
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-300 transition hover:bg-slate-50"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={19} />
-              </button>
-              <button
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-700 bg-blue-700 text-sm font-semibold text-white shadow-sm"
-                aria-label="Page 1"
-              >
-                1
-              </button>
-              <button
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-300 transition hover:bg-slate-50"
-                aria-label="Next page"
-              >
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          </div>
+          {sortedDocuments.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedDocuments.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="deleted documents"
+            />
+          )}
         </section>
       </div>
     </Viewer>

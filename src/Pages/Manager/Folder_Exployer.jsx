@@ -28,7 +28,9 @@ import {
   PenTool,
   UserCheck,
   Check,
-  History
+  History,
+  Database,
+  ShieldCheck
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
@@ -41,6 +43,10 @@ import ShareDocumentModal from "../../components/Manager/ShareDocumentModal";
 import RenameModal from "../../components/Manager/RenameModal";
 import ConvertFormatModal from "../../components/Manager/ConvertFormatModal";
 import AISummarizeModal from "../../components/Manager/AISummarizeModal";
+import DocumentMetadataModal from "../../components/Manager/DocumentMetadataModal";
+import ApprovalHistoryModal from "../../components/Manager/ApprovalHistoryModal";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
+import Pagination from "../../components/common/Pagination";
 
 const iconStyles = {
   folder: "bg-amber-100 text-amber-500",
@@ -96,6 +102,12 @@ export default function FolderExployer() {
   const [items, setItems] = useState([]); // combined folders and files
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, currentFolder]);
 
   // Modals state
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
@@ -106,6 +118,9 @@ export default function FolderExployer() {
   const [renameConfig, setRenameConfig] = useState({ isOpen: false, item: null });
   const [convertConfig, setConvertConfig] = useState({ isOpen: false, item: null });
   const [summarizeConfig, setSummarizeConfig] = useState({ isOpen: false, item: null });
+  const [metadataConfig, setMetadataConfig] = useState({ isOpen: false, item: null, initialEditMode: false });
+  const [approvalHistoryConfig, setApprovalHistoryConfig] = useState({ isOpen: false, document: null });
+  const [previewConfig, setPreviewConfig] = useState({ isOpen: false, document: null, initialTab: 'preview' });
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [subStatus, setSubStatus] = useState({
     plan: 'Trial',
@@ -257,7 +272,7 @@ export default function FolderExployer() {
       }
 
       if (action === 'preview') {
-        window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${item._id}/preview?token=${token}`, '_blank');
+        setPreviewConfig({ isOpen: true, document: item, initialTab: 'preview' });
         return;
       }
 
@@ -302,6 +317,15 @@ export default function FolderExployer() {
       } else if (action === 'summarize') {
         setSummarizeConfig({ isOpen: true, item: null });
         setSummarizeConfig({ isOpen: true, item });
+        return;
+      } else if (action === 'metadata') {
+        setPreviewConfig({ isOpen: true, document: item, initialTab: 'metadata' });
+        return;
+      } else if (action === 'edit-details') {
+        setPreviewConfig({ isOpen: true, document: item, initialTab: 'edit' });
+        return;
+      } else if (action === 'approval-history') {
+        setApprovalHistoryConfig({ isOpen: true, document: item });
         return;
       }
 
@@ -393,6 +417,19 @@ export default function FolderExployer() {
 
   const filteredItems = items.filter((item) =>
     (item.name || item.title || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (a.kind === 'folder' && b.kind !== 'folder') return -1;
+    if (a.kind !== 'folder' && b.kind === 'folder') return 1;
+    const timeA = new Date(a.createdAt || a.updatedAt || 0).getTime();
+    const timeB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+    return timeB - timeA;
+  });
+
+  const paginatedItems = sortedItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const formatSize = (bytes, isFolder) => {
@@ -600,8 +637,10 @@ export default function FolderExployer() {
                         </div>
                       </td>
                     </tr>
-                  ) : filteredItems.length > 0 ? (
-                    filteredItems.map((item) => (
+                  ) : sortedItems.length > 0 ? (
+                    paginatedItems.map((item, index) => {
+                      const isNearBottom = index >= Math.max(3, paginatedItems.length - 3);
+                      return (
                       <tr
                         key={item._id}
                         className="text-sm font-medium text-slate-900 transition hover:bg-slate-50 group"
@@ -613,15 +652,42 @@ export default function FolderExployer() {
                           >
                             <ItemIcon kind={item.kind} />
                             <div className="flex flex-col min-w-0">
-                              <span className="truncate group-hover:text-blue-700 transition-colors">
-                                {item.name || item.title}
-                              </span>
-                              {(item.isLocked || item.isArchived) && (
-                                <div className="flex items-center gap-2 mt-1">
-                                  {item.isLocked && <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"><Lock size={10} /> Locked</span>}
-                                  {item.isArchived && <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><Archive size={10} /> Archived</span>}
-                                </div>
-                              )}
+                              <div className="flex items-center gap-2">
+                                <span className="truncate group-hover:text-blue-700 transition-colors font-semibold">
+                                  {item.name || item.title}
+                                </span>
+                                {item.kind === 'folder' && item.folderCategory === 'Legal' && (
+                                  <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200 shrink-0">
+                                    Legal
+                                  </span>
+                                )}
+                                {item.kind === 'folder' && item.folderCategory === 'Compliance' && (
+                                  <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shrink-0">
+                                    Compliance
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                {item.kind !== 'folder' && item.approvalStatus && (
+                                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                                    item.approvalStatus === 'Approved'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : item.approvalStatus === 'Rejected'
+                                      ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                                  }`}>
+                                    {item.approvalStatus === 'Approved' ? '✓ Approved' :
+                                     item.approvalStatus === 'Rejected' ? '✕ Rejected' :
+                                     item.approvalStatus === 'Pending_Dual_Approval' ? '⏳ Pending Dual Approval' :
+                                     item.approvalStatus === 'Pending_Legal_Approval' ? '⏳ Pending Legal' :
+                                     item.approvalStatus === 'Pending_Compliance_Approval' ? '⏳ Pending Compliance' :
+                                     '⏳ Pending Approval'}
+                                  </span>
+                                )}
+                                {item.isLocked && <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"><Lock size={10} /> Locked</span>}
+                                {item.isArchived && <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><Archive size={10} /> Archived</span>}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -640,18 +706,18 @@ export default function FolderExployer() {
                           )}
                         </td>
 
-                        <td className="px-6 py-5 text-slate-800">
+                        <td className="px-6 py-5 text-slate-700 font-medium">
                           {formatDate(item.updatedAt || item.createdAt)}
                         </td>
 
-                        <td className="px-6 py-5">{formatSize(item.fileSize, item.kind === 'folder')}</td>
+                        <td className="px-6 py-5 text-slate-700 font-medium">{formatSize(item.fileSize, item.kind === 'folder')}</td>
 
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-5 text-slate-700 font-medium">
                           <span className="capitalize">{item.type}</span>
                         </td>
 
-                        <td className="px-7 py-5 relative">
-                          <div className="flex justify-end gap-2">
+                        <td className="px-7 py-5">
+                          <div className="flex justify-end gap-2 relative">
                             {(() => {
                               const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
                               return (
@@ -661,7 +727,7 @@ export default function FolderExployer() {
                                   className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 transition ${
                                     isAiLimitReached 
                                       ? 'opacity-30 cursor-not-allowed select-none' 
-                                      : 'hover:bg-violet-50 hover:text-violet-700'
+                                      : 'hover:bg-violet-50 hover:text-violet-700 cursor-pointer'
                                   }`}
                                   title={isAiLimitReached ? "You free limit is hit" : "AI Summarize"}
                                 >
@@ -671,75 +737,121 @@ export default function FolderExployer() {
                             })()}
                             <button
                               onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200 cursor-pointer"
                             >
                               <MoreVertical size={20} />
                             </button>
 
                             {activeDropdown === item._id && (
-                              <div ref={dropdownRef} className="absolute right-12 top-10 z-10 w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                              <div
+                                ref={dropdownRef}
+                                className={`absolute right-0 z-50 w-52 sm:w-56 max-h-60 sm:max-h-72 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl transition-all [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 [&::-webkit-scrollbar-track]:bg-transparent ${
+                                  isNearBottom ? 'bottom-11 origin-bottom-right' : 'top-11 origin-top-right'
+                                }`}
+                              >
                                 {(() => {
                                   const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
                                   return (
                                     <button 
                                       onClick={() => handleAction('summarize', item)} 
                                       disabled={isAiLimitReached}
-                                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold transition ${
                                         isAiLimitReached 
                                           ? 'text-slate-400 opacity-50 cursor-not-allowed select-none' 
-                                          : 'text-violet-700 hover:bg-violet-50'
+                                          : 'text-violet-700 hover:bg-violet-50 cursor-pointer'
                                       }`}
                                     >
-                                      <Sparkles size={16} className={isAiLimitReached ? "text-slate-400" : "text-violet-600"} /> AI Summarize
+                                      <Sparkles size={16} className={`shrink-0 ${isAiLimitReached ? "text-slate-400" : "text-violet-600"}`} />
+                                      <span className="truncate">AI Summarize</span>
                                     </button>
                                   );
                                 })()}
-                                <hr className="my-1 border-slate-100" />
-                                <button onClick={() => handleAction('download', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  <Download size={16} /> Download
-                                </button>
-                                 {item.kind !== 'folder' && (
-                                   <button onClick={() => navigate(`/${companySlug}/manager/document-version-history?documentId=${item._id}`)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                     <History size={16} /> Version History
-                                   </button>
-                                 )}
-                                 {item.kind !== 'folder' && (
-                                   <button onClick={() => handleAction('preview', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                     <Eye size={16} /> View File
-                                   </button>
-                                 )}
-                                <button onClick={() => handleAction('share', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  <Share2 size={16} /> Share
-                                </button>
-                                <button onClick={() => handleAction('archive', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  <Archive size={16} /> Archive
+                                {item.kind !== 'folder' && (
+                                  <button 
+                                    onClick={() => handleAction('preview', item)} 
+                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                                  >
+                                    <Eye size={16} className="text-blue-600 shrink-0" />
+                                    <span className="truncate">Preview Document</span>
+                                  </button>
+                                )}
+                                {item.kind !== 'folder' && (
+                                  <button 
+                                    onClick={() => handleAction('approval-history', item)} 
+                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition cursor-pointer"
+                                  >
+                                    <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
+                                    <span className="truncate">Approval History</span>
+                                  </button>
+                                )}
+                                {item.kind !== 'folder' && (
+                                  <>
+                                    <button 
+                                      onClick={() => handleAction('edit-details', item)} 
+                                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                                    >
+                                      <Edit3 size={16} className="text-slate-500 shrink-0" />
+                                      <span className="truncate">Edit Details</span>
+                                    </button>
+                                    <button 
+                                      onClick={() => handleAction('metadata', item)} 
+                                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                                    >
+                                      <Database size={16} className="text-slate-500 shrink-0" />
+                                      <span className="truncate">Metadata & OCR</span>
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={() => handleAction('download', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                  <Download size={16} className="text-slate-500 shrink-0" />
+                                  <span className="truncate">Download</span>
                                 </button>
                                 {item.kind !== 'folder' && (
-                                  <button onClick={() => handleAction('copy', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                    <Copy size={16} /> Copy
+                                  <button onClick={() => navigate(`/${companySlug}/manager/document-version-history?documentId=${item._id}`)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                    <History size={16} className="text-slate-500 shrink-0" />
+                                    <span className="truncate">Version History</span>
+                                  </button>
+                                )}
+                                <button onClick={() => handleAction('share', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                  <Share2 size={16} className="text-slate-500 shrink-0" />
+                                  <span className="truncate">Share</span>
+                                </button>
+                                <button onClick={() => handleAction('archive', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                  <Archive size={16} className="text-slate-500 shrink-0" />
+                                  <span className="truncate">Archive</span>
+                                </button>
+                                {item.kind !== 'folder' && (
+                                  <button onClick={() => handleAction('copy', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                    <Copy size={16} className="text-slate-500 shrink-0" />
+                                    <span className="truncate">Copy</span>
                                   </button>
                                 )}
                                 {item.kind === 'folder' && (
-                                  <button onClick={() => handleAction('upload', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                    <UploadCloud size={16} /> Add File
+                                  <button onClick={() => handleAction('upload', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                    <UploadCloud size={16} className="text-slate-500 shrink-0" />
+                                    <span className="truncate">Add File</span>
                                   </button>
                                 )}
-                                <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  <FolderOutput size={16} /> Move
+                                <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                  <FolderOutput size={16} className="text-slate-500 shrink-0" />
+                                  <span className="truncate">Move</span>
                                 </button>
-                                <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                                  <Edit3 size={16} /> Rename
+                                <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                  <Edit3 size={16} className="text-slate-500 shrink-0" />
+                                  <span className="truncate">Rename</span>
                                 </button>
                                 <hr className="my-1 border-slate-100" />
-                                <button onClick={() => handleAction('delete', item)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50">
-                                  <Trash2 size={16} /> Move to Trash
+                                <button onClick={() => handleAction('delete', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer">
+                                  <Trash2 size={16} className="text-red-500 shrink-0" />
+                                  <span className="truncate">Move to Trash</span>
                                 </button>
                               </div>
                             )}
                           </div>
                         </td>
                       </tr>
-                    ))
+                    );
+                  })
                   ) : (
                     <tr>
                       <td
@@ -756,11 +868,13 @@ export default function FolderExployer() {
               </table>
             </div>
 
-            <div className="border-t border-slate-200 px-7 py-4 bg-slate-50/50 mt-auto">
-              <p className="text-sm text-slate-500">
-                Showing {filteredItems.length} items
-              </p>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedItems.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="items"
+            />
           </section>
         </section>
       </div>
@@ -815,6 +929,39 @@ export default function FolderExployer() {
         onClose={() => setSummarizeConfig({ isOpen: false, item: null })}
         item={summarizeConfig.item}
         companySlug={companySlug}
+      />
+
+      <DocumentMetadataModal
+        isOpen={metadataConfig.isOpen}
+        onClose={() => setMetadataConfig({ isOpen: false, item: null, initialEditMode: false })}
+        document={metadataConfig.item}
+        initialEditMode={metadataConfig.initialEditMode}
+        companySlug={companySlug}
+        onUpdated={() => {
+          if (currentFolder?._id) fetchFolderDetails(currentFolder._id);
+          else fetchRootContents();
+        }}
+      />
+
+      <ApprovalHistoryModal
+        isOpen={approvalHistoryConfig.isOpen}
+        onClose={() => setApprovalHistoryConfig({ isOpen: false, document: null })}
+        document={approvalHistoryConfig.document}
+        companySlug={companySlug}
+      />
+
+      <DocumentPreviewModal
+        isOpen={previewConfig.isOpen}
+        onClose={() => setPreviewConfig({ isOpen: false, document: null, initialTab: 'preview' })}
+        document={previewConfig.document}
+        initialTab={previewConfig.initialTab || 'preview'}
+        companySlug={companySlug}
+        folderName={currentFolder?.name || ''}
+        folderCategory={currentFolder?.folderCategory || ''}
+        onUpdated={() => {
+          if (currentFolder?._id) fetchFolderDetails(currentFolder._id);
+          else fetchRootContents();
+        }}
       />
     </MainLayout>
   );

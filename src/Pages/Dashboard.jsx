@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { useState, useEffect, useMemo } from "react";
 import { API_BASE_URL } from "../config/api";
+import DashboardLoader from "../components/common/DashboardLoader";
 import {
   Building2,
   File,
@@ -186,6 +187,7 @@ function DocumentIcon({ type }) {
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeIndex, setActiveIndex] = useState(null);
 
@@ -200,6 +202,8 @@ export default function Dashboard() {
         if (data.success) setStats(data);
       } catch (err) {
         console.error("Failed to fetch dashboard stats", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
@@ -257,6 +261,16 @@ export default function Dashboard() {
   const onPieLeave = () => {
     setActiveIndex(null);
   };
+
+  if (loading) {
+    return (
+      <DashboardLoader
+        role="super-admin"
+        title="Loading Super Admin Master Dashboard..."
+        subtitle="Aggregating global company stats, tenant health & multi-tenant storage metrics..."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 relative pb-10">

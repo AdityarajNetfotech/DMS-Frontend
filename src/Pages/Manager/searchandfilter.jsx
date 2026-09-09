@@ -21,6 +21,8 @@ import {
 
 import MainLayout from "../../layout/MainLayout";
 import { API_BASE_URL } from "../../config/api";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
+import Pagination from "../../components/common/Pagination";
 
 const defaultFilters = {
   documentType: "All Types",
@@ -458,6 +460,7 @@ export default function Searchandfilter() {
   const [loading, setLoading] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
   const [backfillResult, setBackfillResult] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [debouncedCustomerOrFilename, setDebouncedCustomerOrFilename] = useState(customerOrFilename);
@@ -610,6 +613,33 @@ export default function Searchandfilter() {
 
     return list;
   }, [searchResults, filters.uploadedBy, filters.dateRange]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, customerOrFilename, selectedIds, filters, sortBy, starredOnly]);
+
+  const sortedResults = useMemo(() => {
+    return [...filteredResults].sort((a, b) => {
+      if (sortBy === 'Oldest') {
+        const timeA = new Date(a.createdAt || a.modified || 0).getTime();
+        const timeB = new Date(b.createdAt || b.modified || 0).getTime();
+        return timeA - timeB;
+      }
+      if (sortBy === 'Name') {
+        return (a.name || a.title || '').localeCompare(b.name || b.title || '');
+      }
+      const timeA = new Date(a.createdAt || a.modified || 0).getTime();
+      const timeB = new Date(b.createdAt || b.modified || 0).getTime();
+      return timeB - timeA;
+    });
+  }, [filteredResults, sortBy]);
+
+  const paginatedResults = useMemo(() => {
+    return sortedResults.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [sortedResults, currentPage]);
 
   const handleReset = () => {
     setSearchTerm("");
@@ -826,8 +856,8 @@ export default function Searchandfilter() {
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-slate-500">Loading results...</td>
                   </tr>
-                ) : filteredResults.length > 0 ? (
-                  filteredResults.map((result) => (
+                ) : sortedResults.length > 0 ? (
+                  paginatedResults.map((result) => (
                     <tr
                       key={result._id || result.id || result.name}
                       className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
@@ -885,11 +915,10 @@ export default function Searchandfilter() {
                               if (result.kind === 'folder') {
                                 navigate(`/${companySlug}/manager/folder-explorer?folderId=${result._id}`);
                               } else {
-                                const token = localStorage.getItem('accessToken');
-                                window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${result._id}/preview?token=${token}`, '_blank');
+                                setPreviewDoc(result);
                               }
                             }}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-800 transition hover:bg-slate-100"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-800 transition hover:bg-slate-100 hover:text-blue-600 cursor-pointer"
                             aria-label={`Preview ${result.name || result.originalFileName}`}
                           >
                             <Eye size={18} />
@@ -906,37 +935,24 @@ export default function Searchandfilter() {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
-              Showing {filteredResults.length > 0 ? 1 : 0} to {filteredResults.length} of {filteredResults.length} results
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition hover:bg-slate-50"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={19} />
-              </button>
-              {[1].map((page) => (
-                <button
-                  key={page}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-semibold transition border-blue-700 bg-blue-700 text-white"
-                  aria-label={`Page ${page}`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50"
-                aria-label="Next page"
-              >
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={sortedResults.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            itemName="results"
+          />
         </section>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        folderName={previewDoc?.folderId?.name || ''}
+        folderCategory={previewDoc?.folderId?.folderCategory || ''}
+      />
     </MainLayout>
   );
 }

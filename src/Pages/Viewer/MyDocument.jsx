@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
-  Download,
   Eye,
   Filter,
   Grid2X2,
@@ -13,7 +12,9 @@ import {
 } from "lucide-react";
 
 import Viewer from "../../components/Viewer/Viewer";
+import Pagination from "../../components/common/Pagination";
 import { API_BASE_URL } from "../../config/api";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
 
 const typeColors = {
   PDF: "bg-red-600",
@@ -87,15 +88,14 @@ function FileIcon({ type, color }) {
   );
 }
 
-function DocumentCard({ document, companySlug, onFavoriteToggle }) {
-  const handleDownload = () => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${document._id}/download?token=${token}`, "_blank");
-  };
-
+function DocumentCard({ document, companySlug, onFavoriteToggle, onPreview }) {
   const handlePreview = () => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${document._id}/preview?token=${token}`, "_blank");
+    if (onPreview) {
+      onPreview(document);
+    } else {
+      const token = localStorage.getItem("accessToken");
+      window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${document._id}/preview?token=${token}`, "_blank");
+    }
   };
 
   return (
@@ -131,22 +131,15 @@ function DocumentCard({ document, companySlug, onFavoriteToggle }) {
         </p>
       </div>
 
-      <div className="mt-5 flex items-center justify-start gap-3">
+      <div className="mt-5 flex items-center justify-start">
         <button
           onClick={handlePreview}
-          className="inline-flex h-9 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+          className="w-full inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-bold text-xs transition hover:bg-blue-600 hover:text-white hover:border-blue-600 cursor-pointer"
           aria-label={`Preview ${document.name}`}
         >
-          <Eye size={18} />
+          <Eye size={16} />
+          <span>Preview</span>
         </button>
-        <button
-          onClick={handleDownload}
-          className="inline-flex h-9 w-10 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-100 cursor-pointer"
-          aria-label={`Download ${document.name}`}
-        >
-          <Download size={18} />
-        </button>
-
       </div>
     </article>
   );
@@ -161,6 +154,13 @@ export default function MyDocument() {
   const [dateFilter, setDateFilter] = useState("Date Modified");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, folderFilter, dateFilter]);
 
   const fetchDocuments = async () => {
     setLoading(true);
@@ -259,14 +259,20 @@ export default function MyDocument() {
       return matchesSearch && matchesType && matchesFolder;
     });
 
-    if (dateFilter === "Newest") {
-      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (dateFilter === "Oldest") {
+    if (dateFilter === "Oldest") {
       docs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else {
+      // Default / Newest: always show latest first
+      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     return docs;
   }, [documents, searchTerm, typeFilter, folderFilter, dateFilter]);
+
+  const paginatedDocuments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredDocuments.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredDocuments, currentPage]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -368,12 +374,13 @@ export default function MyDocument() {
                   <p className="text-center py-10 text-slate-500 font-medium">No documents found.</p>
                 ) : (
                   <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
-                    {filteredDocuments.map((document) => (
+                    {paginatedDocuments.map((document) => (
                       <DocumentCard
                         key={document._id}
                         document={document}
                         companySlug={companySlug}
                         onFavoriteToggle={handleFavoriteToggle}
+                        onPreview={setPreviewDoc}
                       />
                     ))}
                   </div>
@@ -382,31 +389,25 @@ export default function MyDocument() {
             )}
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-slate-500">
-              Showing 1 to {filteredDocuments.length} of {filteredDocuments.length} results
-            </p>
-
-            {/* <div className="flex items-center gap-3">
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                <ChevronLeft size={19} />
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-bold text-blue-700">
-                1
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-50">
-                2
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-50">
-                3
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                <ChevronRight size={19} />
-              </button>
-            </div> */}
-          </div>
+          {filteredDocuments.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredDocuments.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="documents"
+            />
+          )}
         </section>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        folderName={previewDoc?.folder || ''}
+      />
     </Viewer>
   );
 }

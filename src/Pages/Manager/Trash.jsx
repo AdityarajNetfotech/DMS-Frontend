@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import MainLayout from "../../layout/MainLayout";
+import Pagination from "../../components/common/Pagination";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
@@ -52,6 +53,8 @@ export default function Trash() {
   const { companySlug } = useParams();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchTrash = async () => {
     try {
@@ -160,6 +163,19 @@ export default function Trash() {
     }
   };
 
+  // Always show latest deleted items 1st
+  const sortedItems = (items || []).sort((a, b) => {
+    const timeA = new Date(a.deletedOn || a.createdAt || 0).getTime();
+    const timeB = new Date(b.deletedOn || b.createdAt || 0).getTime();
+    return timeB - timeA;
+  });
+
+  // Paginate 10 items per page
+  const paginatedItems = sortedItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -210,8 +226,8 @@ export default function Trash() {
                       Loading trash items...
                     </td>
                   </tr>
-                ) : items.length > 0 ? (
-                  items.map((item) => (
+                ) : paginatedItems.length > 0 ? (
+                  paginatedItems.map((item) => (
                     <tr
                       key={item._id}
                       className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
@@ -273,32 +289,15 @@ export default function Trash() {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-slate-500">
-              Showing {items.length} results
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-300 transition hover:bg-slate-50"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={19} />
-              </button>
-              <button
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-700 bg-blue-700 text-sm font-semibold text-white shadow-sm"
-                aria-label="Page 1"
-              >
-                1
-              </button>
-              <button
-                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-300 transition hover:bg-slate-50"
-                aria-label="Next page"
-              >
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          </div>
+          {sortedItems.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedItems.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="deleted items"
+            />
+          )}
         </section>
       </div>
     </MainLayout>

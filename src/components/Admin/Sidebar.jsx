@@ -162,7 +162,7 @@ import { useTranslation } from "../../i18n/useTranslation";
 
 export default function Sidebar({
   isOpen = false,
-  onClose = () => {},
+  onClose = () => { },
 }) {
   const navigate = useNavigate();
   const { companySlug } = useParams();
@@ -253,7 +253,7 @@ export default function Sidebar({
           const now = new Date();
           const plan = data.subscription?.plan || 'Trial';
           const targetDate = plan === 'Trial' ? new Date(data.trialEndsAt) : new Date(data.subscription?.expiresAt);
-          
+
           let daysLeft = 0;
           if (targetDate && !isNaN(targetDate)) {
             const diffTime = targetDate - now;
@@ -328,9 +328,8 @@ export default function Sidebar({
 
       {/* Sidebar - layout/styling matching the manager sidebar exactly */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-[250px] bg-white/65 backdrop-blur-md border-r border-slate-200 flex flex-col transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 overflow-hidden`}
+        className={`fixed top-0 left-0 z-50 h-screen w-[250px] bg-white/65 backdrop-blur-md border-r border-slate-200 flex flex-col transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0 overflow-hidden`}
       >
         <SidebarThreeBg accentColor={numericAccentColor} />
 
@@ -338,7 +337,7 @@ export default function Sidebar({
           {/* Header */}
           <div className="px-6 py-5 border-b bg-white/40">
             <div className="flex items-center gap-3">
-              <div 
+              <div
                 style={!branding.logo ? { backgroundColor: branding.primaryColor } : {}}
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden border border-slate-100"
               >
@@ -370,10 +369,9 @@ export default function Sidebar({
                   isActive ? { backgroundColor: branding.primaryColor, color: '#fff' } : {}
                 }
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "shadow-sm text-white"
-                      : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                    ? "shadow-sm text-white"
+                    : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
                   }`
                 }
               >
@@ -383,23 +381,21 @@ export default function Sidebar({
             ))}
 
             {/* Subscription & Trial Countdown Widget */}
-            <div className={`mt-4 p-3.5 rounded-2xl shadow-md border transition-all ${
-              subscriptionInfo.isExpired
+            <div className={`mt-4 p-3.5 rounded-2xl shadow-md border transition-all ${subscriptionInfo.isExpired
                 ? 'bg-gradient-to-br from-red-950 to-red-905 text-white border-red-700/60'
                 : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
-            }`}>
+              }`}>
               <div className="flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                  subscriptionInfo.isExpired
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${subscriptionInfo.isExpired
                     ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                    : subscriptionInfo.plan === 'Trial' 
+                    : subscriptionInfo.plan === 'Trial'
                       ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                       : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                }`}>
-                  {subscriptionInfo.isExpired 
-                    ? 'Trial Expired' 
-                    : subscriptionInfo.plan === 'Trial' 
-                      ? '7-Day Free Trial' 
+                  }`}>
+                  {subscriptionInfo.isExpired
+                    ? 'Trial Expired'
+                    : subscriptionInfo.plan === 'Trial'
+                      ? '7-Day Free Trial'
                       : `${subscriptionInfo.plan} Plan`}
                 </span>
                 <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
@@ -436,7 +432,7 @@ export default function Sidebar({
           <div className="border-t p-3 space-y-1 bg-white/40">
             {/* User Badge Profile */}
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm bg-white/50 border border-slate-100/80 mb-2">
-              <div 
+              <div
                 style={{ backgroundColor: branding.primaryColor + '20', color: branding.primaryColor }}
                 className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center font-bold text-xs"
               >
@@ -470,10 +466,9 @@ export default function Sidebar({
                 isActive ? { backgroundColor: branding.primaryColor, color: '#fff' } : {}
               }
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? "shadow-sm text-white"
-                    : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                  ? "shadow-sm text-white"
+                  : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
                 }`
               }
             >

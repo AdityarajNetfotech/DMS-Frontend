@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import MainLayout from "../../layout/MainLayout";
+import Pagination from "../../components/common/Pagination";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
@@ -64,6 +65,12 @@ export default function RecentDocuments() {
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const handleVerifyPassword = async (e) => {
     e.preventDefault();
@@ -171,6 +178,19 @@ export default function RecentDocuments() {
     `${doc.name} ${doc.type}`
       .toLowerCase()
       .includes(search.toLowerCase())
+  );
+
+  // Always show the latest document 1st
+  const sortedDocuments = (filteredDocuments || []).sort((a, b) => {
+    const timeA = new Date(a.archivedOn || a.createdAt || 0).getTime();
+    const timeB = new Date(b.archivedOn || b.createdAt || 0).getTime();
+    return timeB - timeA;
+  });
+
+  // Paginate 10 documents per page
+  const paginatedDocuments = sortedDocuments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   if (!isUnlocked) {
@@ -285,8 +305,8 @@ export default function RecentDocuments() {
                       Loading archived items...
                     </td>
                   </tr>
-                ) : filteredDocuments.length > 0 ? (
-                  filteredDocuments.map((document) => (
+                ) : paginatedDocuments.length > 0 ? (
+                  paginatedDocuments.map((document) => (
                     <tr
                       key={document._id}
                       className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
@@ -351,22 +371,15 @@ export default function RecentDocuments() {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-slate-500">
-              Showing {filteredDocuments.length} of {items.length} results
-            </p>
-            <div className="flex items-center gap-3">
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400">
-                <ChevronLeft size={19} />
-              </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-700 text-sm font-semibold text-white">
-                1
-              </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400">
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          </div>
+          {sortedDocuments.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedDocuments.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="archived documents"
+            />
+          )}
         </section>
       </div>
     </MainLayout>

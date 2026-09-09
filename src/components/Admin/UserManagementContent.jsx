@@ -162,11 +162,17 @@ export default function UserManagementContent() {
   const getRoleColor = (role) => {
     switch (role) {
       case "Manager":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 border border-blue-200";
+      case "Reporting Manager":
+        return "bg-amber-100 text-amber-800 border border-amber-200";
+      case "Legal Team":
+        return "bg-purple-100 text-purple-700 border border-purple-200";
+      case "Compliance Team":
+        return "bg-emerald-100 text-emerald-800 border border-emerald-200";
       case "Viewer":
-        return "bg-gray-100 text-gray-700";
+        return "bg-slate-100 text-slate-700 border border-slate-200";
       case "Tenant Admin":
-        return "bg-purple-100 text-purple-700";
+        return "bg-indigo-100 text-indigo-700 border border-indigo-200";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -208,9 +214,10 @@ export default function UserManagementContent() {
     setFormData({
       name: user.name,
       email: user.email,
-      password: "", // Leave blank on edit unless they want to change it (handled by backend if supported)
+      password: "",
       role: user.role,
       departmentId: user.departmentId?._id || user.departmentId || "",
+      reportingManagerId: user.reportingManagerId?._id || user.reportingManagerId || "",
     });
     setShowForm(true);
     setStatusMessage("");
@@ -274,6 +281,7 @@ export default function UserManagementContent() {
         email: formData.email,
         role: formData.role,
         departmentId: formData.departmentId || null,
+        reportingManagerId: formData.reportingManagerId || null,
       };
 
       // Only send password if provided (for new users or changing password)
@@ -318,7 +326,7 @@ export default function UserManagementContent() {
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">User Management</h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Create manager and viewer accounts for your tenant from the admin area.
+            Register and manage Managers, Reporting Managers, Legal Team, Compliance Team, and Viewers for your tenant.
           </p>
         </div>
 
@@ -328,169 +336,195 @@ export default function UserManagementContent() {
             className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-white font-semibold text-sm hover:opacity-90 shadow-sm transition cursor-pointer"
           >
             <Plus size={18} />
-            {showForm ? "Hide Form" : "Invite User"}
+            {showForm ? "Hide Form" : "Register User"}
           </button>
         )}
       </div>
 
-      <div className="mt-6 flex gap-4 border-b border-gray-200">
-        <button
-          onClick={() => { setActiveTab("Users"); setShowForm(false); }}
-          className={`pb-4 px-2 text-sm font-medium transition-colors border-b-2 ${
-            activeTab === "Users"
-              ? "border-blue-600 text-blue-600 font-semibold"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-          }`}
-        >
-          Users
-        </button>
-        <button
-          onClick={() => { setActiveTab("Departments"); setShowForm(false); }}
-          className={`pb-4 px-2 text-sm font-medium transition-colors border-b-2 ${
-            activeTab === "Departments"
-              ? "border-blue-600 text-blue-600 font-semibold"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-          }`}
-        >
-          Departments
-        </button>
-      </div>
-
-
-      {showForm && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm mt-8 border border-gray-200">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-[#0A1F44]">Create Manager or Viewer</h3>
-              <p className="text-gray-500 text-sm mt-1">
-                Tenant admins can create either a manager or a viewer account for the selected tenant.
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition"
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition"
-                placeholder="manager@company.com"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {editingUserId ? "New password (leave blank to keep)" : "Temporary password"}
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition"
-                placeholder="Enter password"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tenant slug</label>
-              <input
-                type="text"
-                value={companySlug}
-                disabled
-                className="w-full border border-gray-200 bg-gray-55 text-gray-500 rounded-xl px-4 py-2.5 text-sm outline-none cursor-not-allowed"
-              />
-            </div>
-
-            <div className="md:col-span-2 grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition bg-white"
-                >
-                  <option value="Manager">Manager</option>
-                  <option value="Viewer">Viewer</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Department (Optional)</label>
-                <select
-                  name="departmentId"
-                  value={formData.departmentId || ""}
-                  onChange={handleChange}
-                  className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition bg-white"
-                >
-                  <option value="">No Department</option>
-                  {departments.map(dept => (
-                    <option key={dept._id} value={dept._id}>{dept.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="md:col-span-2 flex items-center gap-3">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 shadow-sm font-semibold text-sm transition cursor-pointer"
-              >
-                {editingUserId ? "Save Changes" : "Create User"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingUserId(null);
-                  setFormData({ name: "", email: "", password: "", role: "Manager" });
-                }}
-                className="border border-gray-300 px-5 py-2.5 rounded-xl hover:bg-gray-50 text-sm font-medium transition cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-
-          {statusMessage && (
-            <p className={`mt-4 text-sm font-semibold ${
-              statusMessage.toLowerCase().includes("limit") || 
-              statusMessage.toLowerCase().includes("fail") || 
-              statusMessage.toLowerCase().includes("unable") ||
-              statusMessage.toLowerCase().includes("error") ||
-              statusMessage.toLowerCase().includes("expired")
-                ? "text-red-650 text-red-600" 
-                : "text-blue-650"
-            }`}>
-              {statusMessage}
-            </p>
-          )}
+      {statusMessage && (
+        <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          {statusMessage}
         </div>
       )}
 
-      {activeTab === "Users" && (
-        <div className="mt-8 overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
-          <div className="flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="text"
-                placeholder="Search users..."
+      {/* Tabs */}
+      <div className="mt-6 border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab("Users")}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
+              activeTab === "Users"
+                ? "border-blue-600 text-blue-600 font-semibold"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Users ({users.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("Departments")}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
+              activeTab === "Departments"
+                ? "border-blue-600 text-blue-600 font-semibold"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Departments ({departments.length})
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === "Users" ? (
+        <>
+          {showForm && (
+            <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                {editingUserId ? "Edit User Details" : "Register New User"}
+              </h2>
+
+              <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g. John Doe"
+                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g. user@company.com"
+                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {editingUserId ? "New Password (leave blank to keep current)" : "Password"}
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required={!editingUserId}
+                    placeholder={editingUserId ? "••••••••" : "Temporary password"}
+                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tenant ID (Read-only)</label>
+                  <input
+                    type="text"
+                    value={companySlug}
+                    disabled
+                    className="w-full border border-gray-200 bg-gray-55 text-gray-500 rounded-xl px-4 py-2.5 text-sm outline-none cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="md:col-span-2 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition bg-white"
+                    >
+                      <option value="Manager">Manager</option>
+                      <option value="Reporting Manager">Reporting Manager</option>
+                      <option value="Legal Team">Legal Team</option>
+                      <option value="Compliance Team">Compliance Team</option>
+                      <option value="Viewer">Viewer</option>
+                    </select>
+
+                    <p className="text-xs text-blue-600 mt-1.5 font-medium">
+                      {formData.role === "Manager" && "📌 Uploads documents and requests approvals from assigned Reporting Manager."}
+                      {formData.role === "Reporting Manager" && "👔 Approves general uploads & acts as primary/secondary reviewer for Maker-Checker flows."}
+                      {formData.role === "Legal Team" && "⚖️ Approver for documents uploaded in the Legal Documents folder (Dual-Approval with RM)."}
+                      {formData.role === "Compliance Team" && "🛡️ Approver for documents uploaded in Compliance Documents folder (Dual-Approval with RM)."}
+                      {formData.role === "Viewer" && "👁️ Read-only viewer for approved company documents."}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Department (Optional)</label>
+                    <select
+                      name="departmentId"
+                      value={formData.departmentId || ""}
+                      onChange={handleChange}
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition bg-white"
+                    >
+                      <option value="">No Department</option>
+                      {departments.map(dept => (
+                        <option key={dept._id} value={dept._id}>{dept.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {formData.role === "Manager" && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Assign Reporting Manager (Approver)
+                    </label>
+                    <select
+                      name="reportingManagerId"
+                      value={formData.reportingManagerId || ""}
+                      onChange={handleChange}
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition bg-white"
+                    >
+                      <option value="">Default (Any Reporting Manager in Company)</option>
+                      {users.filter(u => u.role === "Reporting Manager" || u.role === "Tenant Admin").map(u => (
+                        <option key={u._id} value={u._id}>{u.name} ({u.role} - {u.email})</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      When this manager uploads documents, approval requests will be routed to this Reporting Manager.
+                    </p>
+                  </div>
+                )}
+
+                <div className="md:col-span-2 flex items-center gap-3 mt-2">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 shadow-sm font-semibold text-sm transition cursor-pointer"
+                  >
+                    {editingUserId ? "Save Changes" : "Create User"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      setEditingUserId(null);
+                      setFormData({ name: "", email: "", password: "", role: "Manager" });
+                    }}
+                    className="border border-gray-300 px-5 py-2.5 rounded-xl hover:bg-gray-50 text-sm font-medium transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          <div className="mt-8 overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm">
+            <div className="flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  type="text"
+                  placeholder="Search users..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 className="w-full rounded-xl border border-gray-250 px-4 py-2.5 text-sm outline-none focus:border-blue-500 transition sm:w-64"
@@ -503,6 +537,9 @@ export default function UserManagementContent() {
               >
                 <option value="All Roles">All Roles</option>
                 <option value="Manager">Manager</option>
+                <option value="Reporting Manager">Reporting Manager</option>
+                <option value="Legal Team">Legal Team</option>
+                <option value="Compliance Team">Compliance Team</option>
                 <option value="Viewer">Viewer</option>
                 <option value="Tenant Admin">Tenant Admin</option>
               </select>
@@ -620,7 +657,8 @@ export default function UserManagementContent() {
           </div>
         )}
         </div>
-      )}
+        </>
+      ) : null}
 
       {activeTab === "Departments" && (
         <div className="mt-8 overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">

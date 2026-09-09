@@ -141,22 +141,20 @@ export default function Documentversionhistory() {
   }, [document, versions]);
 
   const handleDownload = (ver) => {
+    const token = localStorage.getItem("accessToken");
     if (ver.current) {
-      const token = localStorage.getItem("accessToken");
       window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${document._id}/download?token=${token}`, "_blank");
     } else {
-      const url = ver.storageUrl.startsWith("http") ? ver.storageUrl : `${API_BASE_URL}${ver.storageUrl}`;
-      window.open(url, "_blank");
+      window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${document._id}/versions/${ver._id}/download?token=${token}`, "_blank");
     }
   };
 
   const handlePreview = (ver) => {
+    const token = localStorage.getItem("accessToken");
     if (ver.current) {
-      const token = localStorage.getItem("accessToken");
       window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${document._id}/preview?token=${token}`, "_blank");
     } else {
-      const url = ver.storageUrl.startsWith("http") ? ver.storageUrl : `${API_BASE_URL}${ver.storageUrl}`;
-      window.open(url, "_blank");
+      window.open(`${API_BASE_URL}/api/${companySlug}/manager/documents/${document._id}/versions/${ver._id}/preview?token=${token}`, "_blank");
     }
   };
 

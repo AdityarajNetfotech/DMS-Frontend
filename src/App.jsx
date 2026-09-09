@@ -23,6 +23,7 @@ import StorageReporting from "./Pages/Admin/StorageReporting";
 import Settings from "./Pages/Admin/Settings";
 import HelpCenter from "./Pages/Admin/HelpCenter";
 import ManagerActivity from "./Pages/Admin/ManagerActivity";
+import AdminAuditLogs from "./Pages/Admin/AuditLogs";
 import AdminDashboard from "./Pages/Admin/Dashboard";
 import AdminProfileSettings from "./Pages/Admin/ProfileSettings";
 import Dashboards from "./Pages/Manager/Dashboards";
@@ -33,6 +34,16 @@ import Documentversionhistory from "./Pages/Manager/Documentversionhistory";
 import Searchandfilter from "./Pages/Manager/searchandfilter";
 import Permission from "./Pages/Manager/Permission";
 import Activitylogs from "./Pages/Manager/Activitylogs";
+import ApprovalsPage from "./Pages/Manager/Approvals";
+import ReportingManagerDashboard from "./Pages/ReportingManager/ReportingManagerDashboard";
+import ReportingManagerApprovals from "./Pages/ReportingManager/ReportingManagerApprovals";
+import ReportingManagerProfileSettings from "./Pages/ReportingManager/ReportingManagerProfileSettings";
+import LegalDashboard from "./Pages/Legal/LegalDashboard";
+import LegalApprovals from "./Pages/Legal/LegalApprovals";
+import LegalProfileSettings from "./Pages/Legal/LegalProfileSettings";
+import ComplianceDashboard from "./Pages/Compliance/ComplianceDashboard";
+import ComplianceApprovals from "./Pages/Compliance/ComplianceApprovals";
+import ComplianceProfileSettings from "./Pages/Compliance/ComplianceProfileSettings";
 import ProfileSettings from "./Pages/Manager/ProfileSettings";
 import Trash from "./Pages/Manager/Trash";
 import SharedByMe from "./Pages/Manager/SharedByMe";
@@ -46,14 +57,14 @@ import ViewerSearch from "./Pages/Viewer/Search";
 import ViewerSharedFolderDetail from "./Pages/Viewer/SharedFolderDetail";
 import ViewerTrash from "./Pages/Viewer/Trash";
 import Profilepage from "./Pages/Viewer/Profilepage";
-// import SearchResult from "./Pages/Viewer/SearchPage";
-// import SharedWithMe from "./Pages/Manager/SharedWithMe";
 import ViewerSharedWithMe from "./Pages/Viewer/SharedWithme";
+import PermittedDocuments from "./Pages/Viewer/PermittedDocuments";
 import PricingPlansPage from "./Pages/PricingPlans";
 const SharedWithme = ViewerSharedWithMe;
 import LandingPage from "./components/LandingPage/landingpage";
 import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
+import InactivityTracker from "./components/InactivityTracker";
 
 function AppLayout({ children }) {
   return (
@@ -120,7 +131,15 @@ const applyBrandingTheme = (data) => {
 };
 
 const updateBrandingTheme = async (companySlug) => {
-  if (!companySlug || ['dashboard', 'tenants', 'register-tenant', 'enquiries', 'system-health', 'tenantsdetails', 'global-config', 'global-settings', 'superadminlogin', 'login'].includes(companySlug)) {
+  const ignoredSlugs = [
+    'dashboard', 'tenants', 'register-tenant', 'enquiries', 'system-health',
+    'tenantsdetails', 'global-config', 'global-settings', 'superadminlogin',
+    'login', 'reporting-manager', 'legal', 'compliance', 'manager', 'admin',
+    'viewer', 'documents', 'folders', 'upload-document', 'document-version-history',
+    'search', 'shared', 'recent-documents', 'permissions', 'logs', 'trash',
+    'approvals', 'profile', 'undefined', 'null'
+  ];
+  if (!companySlug || ignoredSlugs.includes(companySlug)) {
     // Reset to defaults
     document.documentElement.style.removeProperty('--brand-primary');
     document.documentElement.style.removeProperty('--brand-primary-hover');
@@ -170,9 +189,10 @@ function App() {
   }, [location]);
 
   return (
-    <Routes>
-      
-      <Route path="/" element={<LandingPage />} />
+    <>
+      <InactivityTracker />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
       <Route path="/superadminlogin" element={<SuperAdminlogin />} />
       <Route path="/login" element={<LoginPage />} />
 
@@ -200,6 +220,7 @@ function App() {
       <Route path="/:companySlug/admin/access-security" element={<AccessSecurity />} />
       <Route path="/:companySlug/admin/storage-reporting" element={<StorageReporting />} />
       <Route path="/:companySlug/admin/manager-activity" element={<ManagerActivity />} />
+      <Route path="/:companySlug/admin/audit-logs" element={<AdminAuditLogs />} />
       <Route path="/:companySlug/admin/settings" element={<Settings />} />
       <Route path="/:companySlug/admin/help-center" element={<HelpCenter />} />
       {/* Legacy admin routes (without slug) */}
@@ -210,6 +231,7 @@ function App() {
       <Route path="/admin/access-security" element={<AccessSecurity />} />
       <Route path="/admin/storage-reporting" element={<StorageReporting />} />
       <Route path="/admin/manager-activity" element={<ManagerActivity />} />
+      <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
       <Route path="/admin/settings" element={<Settings />} />
       <Route path="/admin/help-center" element={<HelpCenter />} />
 
@@ -237,6 +259,8 @@ function App() {
       <Route path="/:companySlug/logs" element={<Activitylogs />} />
       <Route path="/:companySlug/manager/trash" element={<Trash />} />
       <Route path="/:companySlug/trash" element={<Trash />} />
+      <Route path="/:companySlug/manager/approvals" element={<ApprovalsPage />} />
+      <Route path="/:companySlug/approvals" element={<ApprovalsPage />} />
       <Route path="/:companySlug/manager/profile-settings" element={<ProfileSettings />} />
       <Route path="/:companySlug/profile" element={<ProfileSettings />} />
       {/* Legacy manager routes (without slug) */}
@@ -263,11 +287,38 @@ function App() {
       <Route path="/logs" element={<Activitylogs />} />
       <Route path="/manager/trash" element={<Trash />} />
       <Route path="/trash" element={<Trash />} />
+      <Route path="/manager/approvals" element={<ApprovalsPage />} />
+      <Route path="/approvals" element={<ApprovalsPage />} />
       <Route path="/manager/profile-settings" element={<ProfileSettings />} />
       <Route path="/profile" element={<ProfileSettings />} />
 
+      {/* Reporting Manager Routes */}
+      <Route path="/:companySlug/reporting-manager/dashboard" element={<ReportingManagerDashboard />} />
+      <Route path="/reporting-manager/dashboard" element={<ReportingManagerDashboard />} />
+      <Route path="/:companySlug/reporting-manager/approvals" element={<ReportingManagerApprovals />} />
+      <Route path="/reporting-manager/approvals" element={<ReportingManagerApprovals />} />
+      <Route path="/:companySlug/reporting-manager/profile-settings" element={<ReportingManagerProfileSettings />} />
+      <Route path="/reporting-manager/profile-settings" element={<ReportingManagerProfileSettings />} />
+
+      {/* Legal Team Routes */}
+      <Route path="/:companySlug/legal/dashboard" element={<LegalDashboard />} />
+      <Route path="/legal/dashboard" element={<LegalDashboard />} />
+      <Route path="/:companySlug/legal/approvals" element={<LegalApprovals />} />
+      <Route path="/legal/approvals" element={<LegalApprovals />} />
+      <Route path="/:companySlug/legal/profile-settings" element={<LegalProfileSettings />} />
+      <Route path="/legal/profile-settings" element={<LegalProfileSettings />} />
+
+      {/* Compliance Team Routes */}
+      <Route path="/:companySlug/compliance/dashboard" element={<ComplianceDashboard />} />
+      <Route path="/compliance/dashboard" element={<ComplianceDashboard />} />
+      <Route path="/:companySlug/compliance/approvals" element={<ComplianceApprovals />} />
+      <Route path="/compliance/approvals" element={<ComplianceApprovals />} />
+      <Route path="/:companySlug/compliance/profile-settings" element={<ComplianceProfileSettings />} />
+      <Route path="/compliance/profile-settings" element={<ComplianceProfileSettings />} />
+
       {/* Viewer Routes (with company slug) */}
       <Route path="/:companySlug/viewer/dashboard" element={<ViewerDashboard />} />
+      <Route path="/:companySlug/viewer/permitted-documents" element={<PermittedDocuments />} />
       <Route path="/:companySlug/viewer/my-documents" element={<ViewerMyDocument />} />
       <Route path="/:companySlug/viewer/shared-with-me" element={<ViewerSharedWithMe />} />
       <Route path="/:companySlug/viewer/my-access" element={<SearchResults />} />
@@ -278,6 +329,7 @@ function App() {
       <Route path="/:companySlug/viewer/trash" element={<ViewerTrash />} />
       {/* Legacy viewer routes (without slug) */}
       <Route path="/viewer/dashboard" element={<ViewerDashboard />} />
+      <Route path="/viewer/permitted-documents" element={<PermittedDocuments />} />
       <Route path="/viewer/my-documents" element={<ViewerMyDocument />} />
       <Route path="/viewer/shared-with-me" element={<ViewerSharedWithMe />} />
       <Route path="/viewer/my-access" element={<SearchResults />} />
@@ -292,7 +344,8 @@ function App() {
       <Route path="/:companySlug/admin/subscription" element={<PricingPlansPage />} />
 
     </Routes>
+    </>
   )
 }
 
-export default App
+export default App;

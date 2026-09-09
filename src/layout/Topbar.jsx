@@ -46,17 +46,37 @@ export default function Topbar() {
   }, [companySlug]);
 
   const handleProfileClick = () => {
-    navigate(`${slugPrefix}/manager/profile-settings`);
+    const role = localStorage.getItem("userRole");
+    if (role === "Reporting Manager") {
+      navigate(`${slugPrefix}/reporting-manager/profile-settings`);
+    } else if (role === "Legal Team") {
+      navigate(`${slugPrefix}/legal/profile-settings`);
+    } else if (role === "Compliance Team") {
+      navigate(`${slugPrefix}/compliance/profile-settings`);
+    } else {
+      navigate(`${slugPrefix}/manager/profile-settings`);
+    }
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`${slugPrefix}/manager/search-filters?q=${encodeURIComponent(searchQuery.trim())}`);
+    const role = localStorage.getItem("userRole");
+    if (role === "Reporting Manager") {
+      navigate(`${slugPrefix}/reporting-manager/approvals${searchQuery.trim() ? `?search=${encodeURIComponent(searchQuery.trim())}` : ''}`);
+    } else if (role === "Legal Team") {
+      navigate(`${slugPrefix}/legal/approvals${searchQuery.trim() ? `?search=${encodeURIComponent(searchQuery.trim())}` : ''}`);
+    } else if (role === "Compliance Team") {
+      navigate(`${slugPrefix}/compliance/approvals${searchQuery.trim() ? `?search=${encodeURIComponent(searchQuery.trim())}` : ''}`);
     } else {
-      navigate(`${slugPrefix}/manager/search-filters`);
+      if (searchQuery.trim()) {
+        navigate(`${slugPrefix}/manager/search-filters?q=${encodeURIComponent(searchQuery.trim())}`);
+      } else {
+        navigate(`${slugPrefix}/manager/search-filters`);
+      }
     }
   };
+
+  const userRole = localStorage.getItem("userRole") || "Manager";
 
   return (
     <header className="sticky top-0 z-40 h-16 bg-white border-b border-slate-200 px-4 lg:px-6 flex items-center justify-between">
@@ -76,7 +96,11 @@ export default function Topbar() {
 
           <input
             type="text"
-            placeholder="Search documents..."
+            placeholder={
+              userRole === "Reporting Manager" || userRole === "Legal Team" || userRole === "Compliance Team"
+                ? "Search approvals queue..."
+                : "Search documents..."
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="
@@ -107,11 +131,9 @@ export default function Topbar() {
           onClick={handleProfileClick}
           className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <img
-            src="https://i.pravatar.cc/100?img=12"
-            alt="user"
-            className="w-9 h-9 rounded-full object-cover border"
-          />
+          <div className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            {userName.charAt(0).toUpperCase()}
+          </div>
 
           <div className="hidden md:block">
             <h4 className="text-sm font-semibold text-slate-800">
@@ -119,7 +141,7 @@ export default function Topbar() {
             </h4>
 
             <p className="text-xs text-slate-500">
-              Manager
+              {userRole}
             </p>
           </div>
 

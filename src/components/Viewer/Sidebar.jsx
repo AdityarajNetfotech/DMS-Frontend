@@ -239,7 +239,7 @@ export default function Sidebar() {
           const now = new Date();
           const plan = data.subscription?.plan || 'Trial';
           const targetDate = plan === 'Trial' ? new Date(data.trialEndsAt) : new Date(data.subscription?.expiresAt);
-          
+
           let daysLeft = 0;
           if (targetDate && !isNaN(targetDate)) {
             const diffTime = targetDate - now;
@@ -274,6 +274,7 @@ export default function Sidebar() {
 
   const navItems = [
     { name: t("dashboard"), icon: Home, path: `${slugPrefix}/viewer/dashboard` },
+    // { name: "Permitted Documents", icon: ShieldCheck, path: `${slugPrefix}/viewer/permitted-documents` },
     { name: t("myDocuments"), icon: FileText, path: `${slugPrefix}/viewer/my-documents` },
     { name: t("sharedWithMe"), icon: Users, path: `${slugPrefix}/viewer/shared-with-me` },
     { name: t("myFavorite"), icon: Star, path: `${slugPrefix}/viewer/my-access` },
@@ -305,7 +306,7 @@ export default function Sidebar() {
               {branding.companyName || "DMS"}
             </h1>
             <p className="text-xs font-medium text-slate-500">
-              Viewer Dashboard
+              {t("viewerDashboard")}
             </p>
           </div>
         </div>
@@ -337,36 +338,34 @@ export default function Sidebar() {
           </nav>
 
           {/* Subscription & Trial Countdown Widget */}
-          <div className={`mt-6 p-3.5 rounded-2xl shadow-md border transition-all ${
-            subscriptionInfo.isExpired
+          <div className={`mt-6 p-3.5 rounded-2xl shadow-md border transition-all ${subscriptionInfo.isExpired
               ? 'bg-gradient-to-br from-red-950 to-red-900 text-white border-red-700/60'
               : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
-          }`}>
+            }`}>
             <div className="flex items-center justify-between">
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                subscriptionInfo.isExpired
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${subscriptionInfo.isExpired
                   ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                  : subscriptionInfo.plan === 'Trial' 
+                  : subscriptionInfo.plan === 'Trial'
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              }`}>
-                {subscriptionInfo.isExpired 
-                  ? 'Trial Expired' 
-                  : subscriptionInfo.plan === 'Trial' 
-                    ? '7-Day Free Trial' 
-                    : `${subscriptionInfo.plan} Plan`}
+                }`}>
+                {subscriptionInfo.isExpired
+                  ? t("trialExpired")
+                  : subscriptionInfo.plan === 'Trial'
+                    ? t("freeTrial7Days")
+                    : `${subscriptionInfo.plan} ${t("plan")}`}
               </span>
               <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
             </div>
 
             <div className="mt-2.5">
-              <p className="text-[11px] text-slate-300 font-medium">Subscription Status</p>
+              <p className="text-[11px] text-slate-300 font-medium">{t("subscriptionStatus")}</p>
               <div className="flex items-baseline gap-1.5 mt-0.5">
                 <span className="text-xl font-black text-white">
                   {subscriptionInfo.isExpired ? '0' : subscriptionInfo.daysLeft}
                 </span>
                 <span className="text-xs text-slate-400 font-semibold">
-                  {subscriptionInfo.isExpired ? 'Days / Expired' : 'Days Remaining'}
+                  {subscriptionInfo.isExpired ? t("daysExpired") : t("daysRemaining")}
                 </span>
               </div>
             </div>

@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import MainLayout from "../../layout/MainLayout";
+import DashboardLoader from "../../components/common/DashboardLoader";
 import { API_BASE_URL } from "../../config/api";
 
 import PageHeader from "../../components/Manager/PageHeader";
@@ -163,6 +164,7 @@ export default function Dashboard() {
       type: doc.fileType || "File",
       size: formatBytes(doc.fileSize),
       modified,
+      rawDate: doc.createdAt || doc.updatedAt,
     };
   });
 
@@ -226,9 +228,11 @@ export default function Dashboard() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center py-20">
-          <p className="text-slate-500 text-lg">Loading dashboard...</p>
-        </div>
+        <DashboardLoader
+          role="manager"
+          title="Loading Workspace Dashboard..."
+          subtitle="Aggregating documents, folder storage breakdown & team activities..."
+        />
       </MainLayout>
     );
   }

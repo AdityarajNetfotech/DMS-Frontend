@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 
 import Viewer from "../../components/Viewer/Viewer";
+import Pagination from "../../components/common/Pagination";
 import UploadFileModal from "../../components/Manager/UploadFileModal";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
 import { API_BASE_URL } from "../../config/api";
 
 const typeColors = {
@@ -163,6 +165,13 @@ export default function SharedWithme() {
   const [error, setError] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadFolderId, setUploadFolderId] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, ownerFilter, dateFilter]);
 
   const fetchSharedDocuments = async () => {
     setLoading(true);
@@ -215,14 +224,8 @@ export default function SharedWithme() {
     }
   }, [companySlug]);
 
-  const handleDownload = (documentId) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/download?token=${token}`, "_blank");
-  };
-
-  const handlePreview = (documentId) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/preview?token=${token}`, "_blank");
+  const handlePreview = (doc) => {
+    setPreviewDoc(doc);
   };
 
   const handleUploadFile = async (formData) => {
@@ -315,14 +318,20 @@ export default function SharedWithme() {
       return matchesSearch && matchesType && matchesOwner;
     });
 
-    if (dateFilter === "Newest") {
-      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (dateFilter === "Oldest") {
+    if (dateFilter === "Oldest") {
       docs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else {
+      // Default / Newest: always show latest first
+      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     return docs;
   }, [documents, searchTerm, typeFilter, ownerFilter, dateFilter]);
+
+  const paginatedDocuments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredDocuments.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredDocuments, currentPage]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -459,7 +468,7 @@ export default function SharedWithme() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-200">
-                    {filteredDocuments.map((document) => (
+                    {paginatedDocuments.map((document) => (
                       <tr
                         key={document._id}
                         className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
@@ -532,22 +541,13 @@ export default function SharedWithme() {
                                 </button>
                               )
                             ) : (
-                              <>
-                                <button
-                                  onClick={() => handlePreview(document._id)}
-                                  className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                                >
-                                  <Eye size={18} />
-                                </button>
-                                {document.downloadPermission && (
-                                  <button
-                                    onClick={() => handleDownload(document._id)}
-                                    className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                                  >
-                                    <Download size={18} />
-                                  </button>
-                                )}
-                              </>
+                              <button
+                                onClick={() => handlePreview(document)}
+                                className="rounded-md p-1.5 transition hover:bg-blue-50 text-slate-600 hover:text-blue-700 cursor-pointer"
+                                title="Preview Document"
+                              >
+                                <Eye size={18} />
+                              </button>
                             )}
                           </div>
                         </td>
@@ -563,29 +563,15 @@ export default function SharedWithme() {
             )}
           </div>
 
-          <div className="flex flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-slate-500">
-              Showing 1 to {filteredDocuments.length} of {filteredDocuments.length} results
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                <ChevronLeft size={19} />
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-bold text-blue-700">
-                1
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-50">
-                2
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-50">
-                3
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          </div>
+          {filteredDocuments.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredDocuments.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="shared documents"
+            />
+          )}
         </section>
       </div>
 
@@ -602,6 +588,14 @@ export default function SharedWithme() {
         }}
         companySlug={companySlug}
         currentFolderId={uploadFolderId}
+      />
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        initialTab="preview"
       />
     </Viewer>
   );

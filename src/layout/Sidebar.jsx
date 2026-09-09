@@ -18,6 +18,7 @@ import { NavLink, useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { API_BASE_URL } from "../config/api";
+import { useTranslation } from "../i18n/useTranslation";
 
 function SidebarThreeBg({ accentColor = 0x2563eb }) {
   const containerRef = useRef(null);
@@ -156,14 +157,12 @@ function SidebarThreeBg({ accentColor = 0x2563eb }) {
   );
 }
 
-import { useTranslation } from "../i18n/useTranslation";
-
 export default function Sidebar() {
   const navigate = useNavigate();
   const { companySlug } = useParams();
   const slugPrefix = companySlug ? `/${companySlug}` : "";
 
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
 
   // Force sidebar refresh on language event dispatch
   const [, forceUpdate] = useState({});
@@ -175,16 +174,14 @@ export default function Sidebar() {
 
   const [branding, setBranding] = useState(() => {
     const cached = localStorage.getItem(`branding_${companySlug}`);
-    if (cached && cached !== "null" && cached !== "undefined") {
+    if (cached) {
       try {
         const data = JSON.parse(cached);
-        if (data) {
-          return {
-            logo: data.logo || "",
-            primaryColor: data.primaryColor || "#2563eb",
-            companyName: data.companyName || "DMS"
-          };
-        }
+        return {
+          logo: data.logo || "",
+          primaryColor: data.primaryColor || "#2563eb",
+          companyName: data.companyName || "DMS"
+        };
       } catch (e) {
         console.error(e);
       }
@@ -218,7 +215,7 @@ export default function Sidebar() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/${companySlug}/branding`);
         const data = await res.json();
-        if (data.success && data.data) {
+        if (data.success) {
           const fresh = {
             logo: data.data.logo || "",
             primaryColor: data.data.primaryColor || "#2563eb",
@@ -241,7 +238,7 @@ export default function Sidebar() {
           const now = new Date();
           const plan = data.subscription?.plan || 'Trial';
           const targetDate = plan === 'Trial' ? new Date(data.trialEndsAt) : new Date(data.subscription?.expiresAt);
-          
+
           let daysLeft = 0;
           if (targetDate && !isNaN(targetDate)) {
             const diffTime = targetDate - now;
@@ -425,7 +422,7 @@ export default function Sidebar() {
 
           {/* Bottom */}
           <div className="border-t p-3 space-y-1 bg-white/40">
-             {isAdmin && (
+            {isAdmin && (
               <NavLink
                 to={`${slugPrefix}/admin/dashboard`}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-blue-600 bg-blue-50/50 hover:bg-blue-100/50 hover:text-blue-800"

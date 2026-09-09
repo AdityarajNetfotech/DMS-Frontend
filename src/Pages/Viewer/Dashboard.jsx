@@ -1,7 +1,6 @@
 import {
   CalendarDays,
   CloudUpload,
-  Download,
   FileText,
   Folder,
   Share2,
@@ -12,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Viewer from "../../components/Viewer/Viewer";
+import DashboardLoader from "../../components/common/DashboardLoader";
 import { API_BASE_URL } from "../../config/api";
 
 function StatCard({ stat }) {
@@ -286,12 +286,11 @@ export default function ViewerDashboard() {
   if (loading || !data) {
     return (
       <Viewer>
-        <div className="flex h-[80vh] items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
-            <p className="text-sm font-semibold text-slate-600 animate-pulse">Loading your dashboard...</p>
-          </div>
-        </div>
+        <DashboardLoader
+          role="viewer"
+          title="Loading Viewer Workspace..."
+          subtitle="Retrieving accessible files, document catalog & directory metrics..."
+        />
       </Viewer>
     );
   }

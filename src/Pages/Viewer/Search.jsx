@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 
 import {
@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 
 import Viewer from "../../components/Viewer/Viewer";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
+import Pagination from "../../components/common/Pagination";
 import { API_BASE_URL } from "../../config/api";
 
 const typeColors = {
@@ -153,6 +155,7 @@ export default function SearchPage() {
   const [dateFilter, setDateFilter] = useState("Date Added");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const fetchSearchResults = async (searchQuery) => {
     setLoading(true);
@@ -203,14 +206,8 @@ export default function SearchPage() {
     }
   }, [companySlug, q]);
 
-  const handleDownload = (documentId) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/download?token=${token}`, "_blank");
-  };
-
-  const handlePreview = (documentId) => {
-    const token = localStorage.getItem("accessToken");
-    window.open(`${API_BASE_URL}/api/${companySlug}/viewer/documents/${documentId}/preview?token=${token}`, "_blank");
+  const handlePreview = (doc) => {
+    setPreviewDoc(doc);
   };
 
   const stats = useMemo(() => {
@@ -278,14 +275,28 @@ export default function SearchPage() {
       return matchesSearch && matchesType && matchesOwner;
     });
 
-    if (dateFilter === "Newest") {
-      docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (dateFilter === "Oldest") {
-      docs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    }
+    docs.sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.date || 0).getTime();
+      const timeB = new Date(b.createdAt || b.date || 0).getTime();
+      if (dateFilter === "Oldest") {
+        return timeA - timeB;
+      }
+      return timeB - timeA;
+    });
 
     return docs;
   }, [documents, searchTerm, typeFilter, ownerFilter, dateFilter]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, ownerFilter, dateFilter, q]);
+
+  const paginatedDocuments = useMemo(() => {
+    return filteredDocuments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [filteredDocuments, currentPage]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -422,7 +433,7 @@ export default function SearchPage() {
                   </thead>
 
                   <tbody className="divide-y divide-slate-200">
-                    {filteredDocuments.map((document) => (
+                    {paginatedDocuments.map((document) => (
                       <tr
                         key={document._id}
                         className="text-sm font-medium text-slate-900 transition hover:bg-slate-50"
@@ -462,16 +473,11 @@ export default function SearchPage() {
                         <td className="py-5 pl-5">
                           <div className="flex items-center justify-end gap-4 text-slate-700">
                             <button 
-                              onClick={() => handlePreview(document._id)}
-                              className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
+                              onClick={() => handlePreview(document)}
+                              className="rounded-md p-1.5 transition hover:bg-blue-50 text-slate-600 hover:text-blue-700 cursor-pointer"
+                              title="Preview Document"
                             >
                               <Eye size={18} />
-                            </button>
-                            <button 
-                              onClick={() => handleDownload(document._id)}
-                              className="rounded-md p-1 transition hover:bg-slate-100 hover:text-blue-700 cursor-pointer"
-                            >
-                              <Download size={18} />
                             </button>
                           </div>
                         </td>
@@ -487,31 +493,23 @@ export default function SearchPage() {
             )}
           </div>
 
-          <div className="flex flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-medium text-slate-500">
-              Showing {filteredDocuments.length > 0 ? 1 : 0} to {filteredDocuments.length} of {filteredDocuments.length} results
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                <ChevronLeft size={19} />
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-sm font-bold text-blue-700">
-                1
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-50">
-                2
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-50">
-                3
-              </button>
-              <button className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                <ChevronRight size={19} />
-              </button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredDocuments.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            itemName="results"
+          />
         </section>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        initialTab="preview"
+      />
     </Viewer>
   );
 }

@@ -1,5 +1,5 @@
 export const en = {
-  // Sidebar General
+  // Common & Sidebar General
   dashboard: "Dashboard",
   profileSettings: "Profile Settings",
   userManagement: "User Management",
@@ -9,18 +9,83 @@ export const en = {
   logout: "Logout",
   selectLanguage: "Language",
   adminDashboard: "Admin Dashboard",
+  adminPortal: "Admin Portal",
+  workspaceAdmin: "Workspace Admin",
+  tenantAdmin: "Tenant Admin",
+  helpCenter: "Help Center",
+  workspace: "Workspace",
+  profile: "Profile",
 
-  // Sidebars additional links
+  // Sidebars navigation links
   myDocuments: "My Documents",
   folderExplorer: "Folder Explorer",
+  approvals: "Approvals",
   searchFilters: "Search & Filters",
   sharedWithMe: "Shared With Me",
   sharedByMe: "Shared By Me",
   archiveDocument: "Archive Document",
+  recentDocuments: "Recent Documents",
   trash: "Trash",
   myFavorite: "My Favorite",
+  managerWorkspace: "Manager Workspace",
+  adminWorkspace: "Admin Workspace",
+  managerSection: "Manager Section",
 
-  // Workspace Configuration (Direct support for original keys in WorkspaceContent.jsx)
+  // Reporting Manager Sidebar
+  reportingDashboard: "Reporting Dashboard",
+  teamApprovals: "Team Approvals",
+  reportingManager: "Reporting Manager",
+  makerChecker: "Maker-Checker",
+  teamVerification: "Team Verification",
+  reportingWorkspace: "Reporting Workspace",
+  youHave: "You have",
+  awaitingSignOff: "files awaiting your sign-off.",
+
+  // Legal Officer Sidebar
+  legalDashboard: "Legal Dashboard",
+  legalApprovals: "Legal Approvals",
+  legalTeam: "Legal Team",
+  legalOfficer: "Legal Officer",
+  legalReview: "Legal Review",
+  dualMakerChecker: "Dual Maker-Checker",
+  legalVerification: "Legal Verification",
+  legalQueueDesc: "files in Legal Documents queue awaiting dual-approval.",
+  legalWorkspace: "Legal Workspace",
+
+  // Compliance Team Sidebar
+  complianceDashboard: "Compliance Dashboard",
+  complianceApprovals: "Compliance Approvals",
+  complianceTeam: "Compliance Team",
+  complianceOfficer: "Compliance Officer",
+  auditAndAdherence: "Audit & Adherence",
+  regulatoryAudit: "Regulatory Audit",
+  complianceReview: "Compliance Review",
+  complianceQueueDesc: "files in Compliance Documents awaiting verification.",
+  complianceWorkspace: "Compliance Workspace",
+
+  // Viewer Sidebar
+  viewerDashboard: "Viewer Dashboard",
+  permittedDocuments: "Permitted Documents",
+  recentActivity: "Recent Activity",
+  searchDocuments: "Search Documents",
+
+  // Audit Logs
+  auditLogs: "Audit Logs",
+  auditTrail: "Audit Trail",
+
+  // Subscription & Trial Widgets
+  subscriptionStatus: "Subscription Status",
+  trialExpired: "Trial Expired",
+  freeTrial7Days: "7-Day Free Trial",
+  freeTrial: "Free Trial",
+  plan: "Plan",
+  daysRemaining: "Days Remaining",
+  daysExpired: "Days / Expired",
+  upgradeNow: "Upgrade Now",
+  activateSubscription: "Activate Subscription",
+  manageSubscription: "Manage Subscription",
+
+  // Workspace Configuration (WorkspaceContent.jsx)
   title: "Workspace Customization",
   subtitle: "Customize the look, branding identity, and logo theme of your document workspace.",
   discard: "Discard Changes",
@@ -49,3 +114,5 @@ export const en = {
   networkError: "Network error: Failed to save configuration",
   logoError: "Logo size must be less than 2MB"
 };
+
+export default en;

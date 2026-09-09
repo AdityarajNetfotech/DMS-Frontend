@@ -254,9 +254,12 @@ import {
   Folder,
   Presentation,
   Search,
+  Eye
 } from "lucide-react";
 import MainLayout from "../../layout/MainLayout";
+import Pagination from "../../components/common/Pagination";
 import { API_BASE_URL } from "../../config/api";
+import DocumentPreviewModal from "../../components/DocumentPreviewModal";
 
 function FileIcon({ kind, className = "" }) {
   if (kind === "folder") {
@@ -295,6 +298,13 @@ export default function Mydocument() {
   const [documents, setDocuments] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   useEffect(() => {
     const fetchRecentItems = async () => {
@@ -318,6 +328,19 @@ export default function Mydocument() {
 
   const filteredDocuments = documents.filter((doc) =>
     (doc.name || doc.originalFileName || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Always show the latest document 1st
+  const sortedDocuments = (filteredDocuments || []).sort((a, b) => {
+    const timeA = new Date(a.createdAt || a.modified || 0).getTime();
+    const timeB = new Date(b.createdAt || b.modified || 0).getTime();
+    return timeB - timeA;
+  });
+
+  // Paginate 10 documents per page
+  const paginatedDocuments = sortedDocuments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -374,8 +397,8 @@ export default function Mydocument() {
                       Loading latest items...
                     </td>
                   </tr>
-                ) : filteredDocuments.length > 0 ? (
-                  filteredDocuments.map((document) => (
+                ) : paginatedDocuments.length > 0 ? (
+                  paginatedDocuments.map((document) => (
                     <tr
                       key={document._id || document.id}
                       className="group transition-colors hover:bg-slate-50/50"
@@ -428,7 +451,22 @@ export default function Mydocument() {
                       </td>
 
                       <td className="px-6 py-5 text-slate-700">
-                        {document.type}
+                        <div className="flex items-center justify-between">
+                          <span>{document.type}</span>
+                          {document.kind !== 'folder' && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewDoc(document);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                              title="Preview Document"
+                            >
+                              <Eye size={16} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -443,25 +481,26 @@ export default function Mydocument() {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200 px-8 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
-              Showing <span className="font-semibold">{filteredDocuments.length}</span> of <span className="font-semibold">{documents.length}</span> documents
-            </p>
-
-            <div className="flex items-center gap-3">
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 hover:bg-slate-50">
-                <ChevronLeft size={18} />
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-700 text-white font-semibold">
-                1
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 hover:bg-slate-50">
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </div>
+          {sortedDocuments.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedDocuments.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemName="documents and folders"
+            />
+          )}
         </section>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+        companySlug={companySlug}
+        folderName={previewDoc?.folderId?.name || ''}
+        folderCategory={previewDoc?.folderId?.folderCategory || ''}
+      />
     </MainLayout>
   );
 }

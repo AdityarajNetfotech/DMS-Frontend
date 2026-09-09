@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -10,7 +10,8 @@ import {
   FolderCheck,
   CheckCircle2,
   Layers,
-  Cpu
+  Cpu,
+  Clock
 } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 
@@ -19,9 +20,21 @@ export default function DMSSignIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [infoMessage, setInfoMessage] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
+  const location = useLocation();
   const { companySlug } = useParams();
+
+  useEffect(() => {
+    const sessionExpiredMsg = sessionStorage.getItem('session_expired_msg');
+    if (sessionExpiredMsg) {
+      setInfoMessage(sessionExpiredMsg);
+      sessionStorage.removeItem('session_expired_msg');
+    } else if (location.state?.message) {
+      setInfoMessage(location.state.message);
+    }
+  }, [location.state]);
 
   const [branding, setBranding] = useState(() => {
     const cached = localStorage.getItem(`branding_${companySlug}`);
@@ -107,6 +120,12 @@ export default function DMSSignIn() {
 
         if (data.role === "Tenant Admin" || data.role === "Company Admin") {
           navigate(`${slugPrefix}/admin/user-management`);
+        } else if (data.role === "Reporting Manager") {
+          navigate(`${slugPrefix}/reporting-manager/dashboard`);
+        } else if (data.role === "Legal Team") {
+          navigate(`${slugPrefix}/legal/dashboard`);
+        } else if (data.role === "Compliance Team") {
+          navigate(`${slugPrefix}/compliance/dashboard`);
         } else if (data.role === "Manager") {
           navigate(`${slugPrefix}/manager/dashboard`);
         } else {
@@ -310,6 +329,14 @@ export default function DMSSignIn() {
                 </p>
               </div>
             </div>
+
+            {/* Info / Session Timeout Banner */}
+            {infoMessage && (
+              <div className="mb-6 p-3.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl font-medium flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>{infoMessage}</span>
+              </div>
+            )}
 
             {/* Error Banner */}
             {error && (
