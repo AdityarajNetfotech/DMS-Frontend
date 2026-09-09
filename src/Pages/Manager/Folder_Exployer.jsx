@@ -188,7 +188,7 @@ export default function FolderExployer() {
 
         const formattedItems = [
           ...childFolders.map(f => ({ ...f, kind: 'folder', type: 'Folder' })),
-          ...documents.map(d => ({ ...d, kind: getFileKind(d.fileType), type: d.fileType || 'File' }))
+          ...documents.map(d => ({ ...d, kind: getFileKind(d.mimeType || d.fileType || d.extension || d.originalFileName), type: d.fileType || 'File' }))
         ].filter(item => !item.isArchived);
 
         setItems(formattedItems);
@@ -219,10 +219,11 @@ export default function FolderExployer() {
 
   const getFileKind = (mimeType) => {
     if (!mimeType) return 'document';
-    if (mimeType.includes('pdf')) return 'pdf';
-    if (mimeType.includes('word') || mimeType.includes('document')) return 'word';
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'excel';
-    if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'powerpoint';
+    const lower = String(mimeType).toLowerCase();
+    if (lower.includes('pdf')) return 'pdf';
+    if (lower.includes('word') || lower.includes('document') || lower.includes('docx') || lower.includes('doc')) return 'word';
+    if (lower.includes('excel') || lower.includes('spreadsheet') || lower.includes('xlsx') || lower.includes('xls') || lower.includes('csv')) return 'excel';
+    if (lower.includes('powerpoint') || lower.includes('presentation') || lower.includes('pptx') || lower.includes('ppt')) return 'powerpoint';
     return 'document';
   };
 
