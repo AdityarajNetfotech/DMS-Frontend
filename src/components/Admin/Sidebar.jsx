@@ -17,6 +17,7 @@ import {
   CreditCard,
   Sparkles,
   Zap,
+  ScrollText,
 } from "lucide-react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { API_BASE_URL } from "../../config/api";
@@ -297,6 +298,11 @@ export default function Sidebar({
       icon: <TrendingUp size={18} />,
       label: t("managerActivity"),
       path: `${slugPrefix}/admin/manager-activity`,
+    },
+    {
+      icon: <ScrollText size={18} />,
+      label: t("auditLogs") || "Audit Logs",
+      path: `${slugPrefix}/admin/audit-logs`,
     },
     {
       icon: <Settings2 size={18} />,
