@@ -72,7 +72,7 @@ export default function UploadDocument() {
 
             <p className="mt-4 text-sm text-slate-500">
               Supported formats: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG,
-              PNG (Max 100MB)
+              PNG (Max 10MB)
             </p>
 
             <div className="mt-7 space-y-6">

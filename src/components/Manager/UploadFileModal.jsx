@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { X, UploadCloud, File, Loader2 } from 'lucide-react';
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 export default function UploadFileModal({ isOpen, onClose, onUpload, currentFolderId, folderId }) {
   const [files, setFiles] = useState([]);
   const [description, setDescription] = useState('');
@@ -12,6 +14,12 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
 
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
+    const oversized = selected.find((f) => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setError(`Can't upload file more than 10 MB (${oversized.name} is ${(oversized.size / (1024 * 1024)).toFixed(1)} MB)`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     if (selected.length > 0) {
       setFiles((prev) => [...prev, ...selected]);
       setError('');
@@ -25,6 +33,11 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
   const handleDrop = (e) => {
     e.preventDefault();
     const selected = Array.from(e.dataTransfer.files);
+    const oversized = selected.find((f) => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setError(`Can't upload file more than 10 MB (${oversized.name} is ${(oversized.size / (1024 * 1024)).toFixed(1)} MB)`);
+      return;
+    }
     if (selected.length > 0) {
       setFiles((prev) => [...prev, ...selected]);
       setError('');
@@ -44,6 +57,12 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
       return;
     }
 
+    const oversized = files.find((f) => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setError(`Can't upload file more than 10 MB (${oversized.name} is ${(oversized.size / (1024 * 1024)).toFixed(1)} MB)`);
+      return;
+    }
+
     setLoading(true);
     try {
       const activeFolderId = currentFolderId || folderId;
@@ -60,7 +79,7 @@ export default function UploadFileModal({ isOpen, onClose, onUpload, currentFold
       setDescription('');
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to upload files');
+      setError(err.message || "Can't upload file more than 10 MB");
     } finally {
       setLoading(false);
     }
