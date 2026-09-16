@@ -20,7 +20,7 @@ pipeline {
                                     git clone https://${GH_USER}:${GH_PAT}@github.com/AdityarajNetfotech/DMS-Frontend.git /home/dms-deploy/DMS-Frontend
                                 fi &&
                                 cd /home/dms-deploy/DMS-Frontend &&
-                                docker build --no-cache --build-arg VITE_API_URL=http://187.124.99.1:9107 -t dms-frontend . &&
+                                docker build --no-cache --build-arg VITE_API_URL=https://dms.intellinexa.in -t dms-frontend . &&
                                 docker stop dms-frontend || true &&
                                 docker rm dms-frontend || true &&
                                 docker run -d --name dms-frontend --restart unless-stopped -p 9106:80 dms-frontend
