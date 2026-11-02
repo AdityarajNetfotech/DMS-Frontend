@@ -71,7 +71,10 @@ export default function SSOCallback() {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
               },
-              body: JSON.stringify({ ssoToken: token })
+              body: JSON.stringify({
+                ssoToken: token,
+                vcOrigin: searchParams.get("vcOrigin") || searchParams.get("origin") || localStorage.getItem("verifychain_origin") || null
+              })
             });
             if (res.ok || res.status === 400 || res.status === 401 || res.status === 403 || res.status === 502) {
               response = res;
