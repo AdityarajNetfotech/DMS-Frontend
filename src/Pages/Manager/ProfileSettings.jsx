@@ -277,7 +277,7 @@ export default function ProfileSettings() {
         </section>
 
         {isProfileTab && (
-          <form onSubmit={handleSaveProfile} className="max-w-5xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-7">
+          <div className="max-w-5xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-7">
             <h2 className="text-xl font-bold text-slate-950">
               Profile Information
             </h2>
@@ -286,33 +286,21 @@ export default function ProfileSettings() {
               <Field
                 label="Full Name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={loading}
+                disabled={true}
               />
               <Field
                 label="Email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 type="email"
-                disabled={loading}
+                disabled={true}
               />
               <Field
-                label="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                type="tel"
-                disabled={loading}
+                label="Role"
+                value={userProfile.displayRole || localStorage.getItem("userRole") || "Manager"}
+                disabled={true}
               />
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-7 inline-flex h-12 min-w-[200px] items-center justify-center rounded-xl bg-blue-700 px-8 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50 cursor-pointer"
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </form>
+          </div>
         )}
 
         {isSignatureTab && (

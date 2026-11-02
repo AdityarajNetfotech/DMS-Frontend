@@ -1,3 +1,4 @@
+import { performDmsLogout } from '../utils/logoutHelper';
 import {
   LayoutDashboard,
   FolderOpen,
@@ -210,6 +211,26 @@ export default function Sidebar() {
   const userRole = localStorage.getItem("userRole");
   const isAdmin = userRole === "Tenant Admin" || userRole === "Company Admin";
 
+  const roleSubtitle = (() => {
+    const vcRole = localStorage.getItem("vcRole");
+    const role = localStorage.getItem("userRole");
+    const displayRole = localStorage.getItem("displayRole");
+    const email = (localStorage.getItem("userEmail") || "").toLowerCase();
+    const normalize = (r) => {
+      if (!r) return null;
+      const s = String(r).toLowerCase().trim().replace(/[-_]/g, " ");
+      if (s === "auditor") return "Auditor";
+      if (s === "business user" || s === "business_user") return "Business User";
+      if (s === "compliance officer" || s === "compliance_officer" || s === "compliance user") return "Compliance Officer";
+      return null;
+    };
+    const title = normalize(vcRole) || normalize(displayRole) || normalize(role) ||
+      (email.includes("abhishek") || email.includes("auditor") ? "Auditor" :
+       email.includes("aditya") || email.includes("business") ? "Business User" :
+       email.includes("soudip") || email.includes("compliance") ? "Compliance Officer" : null);
+    return title ? `${title} Portal` : "Manager Portal";
+  })();
+
   useEffect(() => {
     const fetchBranding = async () => {
       try {
@@ -272,11 +293,11 @@ export default function Sidebar() {
   }, [companySlug]);
 
   const menuItems = [
-    {
-      name: t("dashboard"),
-      icon: LayoutDashboard,
-      path: `${slugPrefix}/manager/dashboard`,
-    },
+    // {
+    //   name: t("dashboard"),
+    //   icon: LayoutDashboard,
+    //   path: `${slugPrefix}/manager/dashboard`,
+    // },
     {
       name: t("myDocuments"),
       icon: FolderOpen,
@@ -292,26 +313,26 @@ export default function Sidebar() {
       icon: Search,
       path: `${slugPrefix}/manager/search-filters`,
     },
-    {
-      name: t("sharedWithMe"),
-      icon: Share2,
-      path: `${slugPrefix}/manager/shared-with-me`,
-    },
-    {
-      name: t("sharedByMe"),
-      icon: Share2,
-      path: `${slugPrefix}/manager/shared-by-me`,
-    },
+    // {
+    //   name: t("sharedWithMe"),
+    //   icon: Share2,
+    //   path: `${slugPrefix}/manager/shared-with-me`,
+    // },
+    // {
+    //   name: t("sharedByMe"),
+    //   icon: Share2,
+    //   path: `${slugPrefix}/manager/shared-by-me`,
+    // },
     {
       name: t("archiveDocument"),
       icon: Archive,
       path: `${slugPrefix}/manager/recent-documents`,
     },
-    {
-      name: t("trash"),
-      icon: Trash2,
-      path: `${slugPrefix}/manager/trash`,
-    },
+    // {
+    //   name: t("trash"),
+    //   icon: Trash2,
+    //   path: `${slugPrefix}/manager/trash`,
+    // },
   ];
 
   const primaryColorStr = branding?.primaryColor || "#2563eb";
@@ -349,7 +370,7 @@ export default function Sidebar() {
                 </h2>
 
                 <p className="text-xs text-slate-500">
-                  Manager Dashboard
+                  {roleSubtitle}
                 </p>
               </div>
             </NavLink>
@@ -383,41 +404,10 @@ export default function Sidebar() {
               })}
             </nav>
 
-            {/* Subscription & Trial Countdown Widget */}
-            <div className={`mt-4 p-3.5 rounded-2xl shadow-md border transition-all ${
-              subscriptionInfo.isExpired
-                ? 'bg-gradient-to-br from-red-950 to-red-900 text-white border-red-700/60'
-                : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
-            }`}>
-              <div className="flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                  subscriptionInfo.isExpired
-                    ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                    : subscriptionInfo.plan === 'Trial' 
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                }`}>
-                  {subscriptionInfo.isExpired 
-                    ? 'Trial Expired' 
-                    : subscriptionInfo.plan === 'Trial' 
-                      ? '7-Day Free Trial' 
-                      : `${subscriptionInfo.plan} Plan`}
-                </span>
-                <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
-              </div>
-
-              <div className="mt-2.5">
-                <p className="text-[11px] text-slate-300 font-medium">Subscription Status</p>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <span className="text-xl font-black text-white">
-                    {subscriptionInfo.isExpired ? '0' : subscriptionInfo.daysLeft}
-                  </span>
-                  <span className="text-xs text-slate-400 font-semibold">
-                    {subscriptionInfo.isExpired ? 'Days / Expired' : 'Days Remaining'}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Subscription & Trial Countdown Widget commented out per user specification */}
+            {/*
+            <div className="hidden">Subscription widget removed</div>
+            */}
           </div>
 
           {/* Bottom */}
@@ -451,16 +441,7 @@ export default function Sidebar() {
 
             <button
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50/50 font-medium cursor-pointer"
-              onClick={() => {
-                const slug = companySlug || localStorage.getItem("companySlug");
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-                localStorage.removeItem("userRole");
-                localStorage.removeItem("userEmail");
-                localStorage.removeItem("userName");
-                localStorage.removeItem("companySlug");
-                navigate(slug ? `/${slug}/login` : "/login");
-              }}
+              onClick={() => performDmsLogout(companySlug)}
               type="button"
             >
               <LogOut size={18} />

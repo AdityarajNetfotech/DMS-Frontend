@@ -1,7 +1,13 @@
 import {
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   ChevronsUpDown,
+  FolderOpen,
+  FolderClosed,
+  FolderX,
+  ArrowLeft,
+  CornerLeftUp,
   FileSpreadsheet,
   FileText,
   Folder,
@@ -32,7 +38,7 @@ import {
   Database,
   ShieldCheck
 } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../layout/MainLayout";
 import { API_BASE_URL } from "../../config/api";
@@ -56,14 +62,18 @@ const iconStyles = {
   powerpoint: "bg-orange-100 text-orange-600",
 };
 
-function ItemIcon({ kind }) {
+function ItemIcon({ kind, isOpen }) {
   const className = `flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconStyles[kind] || "bg-slate-100 text-slate-500"
     }`;
 
   if (kind === "folder") {
     return (
       <div className={className}>
-        <Folder size={22} fill="currentColor" strokeWidth={1.7} />
+        {isOpen ? (
+          <FolderOpen size={22} fill="currentColor" strokeWidth={1.7} />
+        ) : (
+          <Folder size={22} fill="currentColor" strokeWidth={1.7} />
+        )}
       </div>
     );
   }
@@ -101,6 +111,8 @@ export default function FolderExployer() {
   const [currentFolder, setCurrentFolder] = useState(null); // null means root
   const [items, setItems] = useState([]); // combined folders and files
   const [loading, setLoading] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState({});
+  const [expandedFolders, setExpandedFolders] = useState({}); // { [folderId]: { loading: boolean, items: [] } }
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -122,38 +134,12 @@ export default function FolderExployer() {
   const [approvalHistoryConfig, setApprovalHistoryConfig] = useState({ isOpen: false, document: null });
   const [previewConfig, setPreviewConfig] = useState({ isOpen: false, document: null, initialTab: 'preview' });
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [subStatus, setSubStatus] = useState({
-    plan: 'Trial',
+  // Subscription model removed: always active Enterprise plan
+  const subStatus = {
+    plan: 'Enterprise',
     isAccessLocked: false,
     aiCount: 0
-  });
-
-  const fetchSubStatus = useCallback(async () => {
-    try {
-      if (!companySlug) return;
-      const res = await fetch(`${API_BASE_URL}/api/tenant/subscription/status/${companySlug}`);
-      const data = await res.json();
-      if (data.success) {
-        setSubStatus({
-          plan: data.subscription?.plan || 'Trial',
-          isAccessLocked: data.isAccessLocked,
-          aiCount: data.aiUsage?.count || 0
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch sub status in folder explorer", err);
-    }
-  }, [companySlug]);
-
-  useEffect(() => {
-    fetchSubStatus();
-  }, [fetchSubStatus]);
-
-  useEffect(() => {
-    if (!summarizeConfig.isOpen) {
-      fetchSubStatus();
-    }
-  }, [summarizeConfig.isOpen, fetchSubStatus]);
+  };
   const dropdownRef = useRef(null);
 
   const getAuthHeaders = () => ({
@@ -205,6 +191,122 @@ export default function FolderExployer() {
     fetchFolderTree();
     fetchFolderDetails(folderIdParam || null);
   }, [fetchFolderTree, fetchFolderDetails, folderIdParam]);
+
+  // Helper to find ancestor path in folder tree
+  const findFolderPath = useCallback((nodes, targetId, path = []) => {
+    if (!targetId || !nodes || nodes.length === 0) return [];
+    for (const node of nodes) {
+      if (String(node._id) === String(targetId)) {
+        return [...path, node];
+      }
+      if (node.children && node.children.length > 0) {
+        const found = findFolderPath(node.children, targetId, [...path, node]);
+        if (found.length > 0) return found;
+      }
+    }
+    return [];
+  }, []);
+
+  const handleOpenFolder = useCallback((folderId) => {
+    if (folderId) {
+      setSearchParams({ folderId });
+    } else {
+      setSearchParams({});
+    }
+    fetchFolderDetails(folderId);
+  }, [fetchFolderDetails, setSearchParams]);
+
+  const handleCloseFolder = useCallback(() => {
+    if (!currentFolder) return;
+    const path = findFolderPath(folderTree, currentFolder._id);
+    if (path.length > 1) {
+      const parent = path[path.length - 2];
+      handleOpenFolder(parent._id);
+    } else if (currentFolder.parentFolder) {
+      const pId = typeof currentFolder.parentFolder === 'object' 
+        ? currentFolder.parentFolder._id 
+        : currentFolder.parentFolder;
+      handleOpenFolder(pId);
+    } else {
+      handleOpenFolder(null);
+    }
+  }, [currentFolder, folderTree, findFolderPath, handleOpenFolder]);
+
+  // Auto-expand ancestors in sidebar tree when currentFolder changes
+  useEffect(() => {
+    if (currentFolder && folderTree.length > 0) {
+      const path = findFolderPath(folderTree, currentFolder._id);
+      if (path.length > 0) {
+        setSidebarExpanded(prev => {
+          const next = { ...prev };
+          path.forEach(p => { next[p._id] = true; });
+          return next;
+        });
+      }
+    }
+  }, [currentFolder, folderTree, findFolderPath]);
+
+  const toggleSidebarFolder = (e, folderId) => {
+    e.stopPropagation();
+    setSidebarExpanded(prev => ({
+      ...prev,
+      [folderId]: !prev[folderId]
+    }));
+  };
+
+  const toggleInlineFolder = async (e, folderId) => {
+    e.stopPropagation();
+    if (expandedFolders[folderId]) {
+      setExpandedFolders(prev => {
+        const updated = { ...prev };
+        delete updated[folderId];
+        return updated;
+      });
+      return;
+    }
+
+    setExpandedFolders(prev => ({
+      ...prev,
+      [folderId]: { loading: true, items: [] }
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/${companySlug}/manager/folders/${folderId}`, {
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const childFolders = data.data.childFolders || data.data.subfolders || [];
+        const documents = data.data.documents || [];
+        const formatted = [
+          ...childFolders.map(f => ({ ...f, kind: 'folder', type: 'Folder' })),
+          ...documents.map(d => ({
+            ...d,
+            kind: getFileKind(d.mimeType || d.fileType || d.extension || d.originalFileName),
+            type: d.fileType || 'File'
+          }))
+        ].filter(item => !item.isArchived);
+
+        setExpandedFolders(prev => ({
+          ...prev,
+          [folderId]: { loading: false, items: formatted }
+        }));
+      } else {
+        setExpandedFolders(prev => {
+          const updated = { ...prev };
+          delete updated[folderId];
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Failed to expand folder inline", err);
+      setExpandedFolders(prev => {
+        const updated = { ...prev };
+        delete updated[folderId];
+        return updated;
+      });
+    }
+  };
 
   // Handle outside click for dropdown
   useEffect(() => {
@@ -448,31 +550,52 @@ export default function FolderExployer() {
   };
 
   const renderSidebarTree = (folders, depth = 0) => {
-    return folders.map((folder) => (
-      <div key={folder._id}>
-        <button
-          onClick={() => fetchFolderDetails(folder._id)}
-          style={{ paddingLeft: `${depth * 20 + 12}px` }}
-          className={`flex w-full items-center gap-3 rounded-lg py-2.5 pr-3 text-left text-sm font-semibold transition ${currentFolder?._id === folder._id
-            ? "bg-blue-50 text-blue-700"
-            : "text-slate-700 hover:bg-slate-50"
+    return folders.map((folder) => {
+      const hasChildren = folder.children && folder.children.length > 0;
+      const isExpanded = sidebarExpanded[folder._id] ?? (depth === 0);
+      const isCurrent = currentFolder?._id === folder._id;
+
+      return (
+        <div key={folder._id}>
+          <div
+            style={{ paddingLeft: `${depth * 14 + 8}px` }}
+            className={`flex w-full items-center justify-between rounded-lg py-2 pr-2 text-left text-sm font-semibold transition group ${
+              isCurrent ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"
             }`}
-        >
-          {folder.children?.length > 0 ? (
-            <ChevronDown size={16} />
-          ) : (
-            <ChevronRight size={16} className="opacity-0" />
-          )}
-          <Folder size={20} />
-          <span className="truncate">{folder.name}</span>
-        </button>
-        {folder.children?.length > 0 && (
-          <div className="mt-1 border-l border-slate-200 ml-[22px]">
-            {renderSidebarTree(folder.children, depth + 1)}
+          >
+            <button
+              onClick={() => handleOpenFolder(folder._id)}
+              className="flex items-center gap-2.5 truncate flex-1 text-left cursor-pointer"
+              title={folder.name}
+            >
+              {isCurrent ? (
+                <FolderOpen size={18} className="text-blue-600 shrink-0" />
+              ) : (
+                <Folder size={18} className="text-amber-500 shrink-0" />
+              )}
+              <span className="truncate">{folder.name}</span>
+            </button>
+
+            {hasChildren && (
+              <button
+                type="button"
+                onClick={(e) => toggleSidebarFolder(e, folder._id)}
+                className="p-1 rounded hover:bg-slate-200/70 text-slate-400 hover:text-slate-700 transition cursor-pointer shrink-0"
+                title={isExpanded ? "Close subfolders" : "Open subfolders"}
+              >
+                {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+              </button>
+            )}
           </div>
-        )}
-      </div>
-    ));
+
+          {hasChildren && isExpanded && (
+            <div className="mt-0.5 border-l border-slate-200 ml-4">
+              {renderSidebarTree(folder.children, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   return (
@@ -480,24 +603,96 @@ export default function FolderExployer() {
       <div className="space-y-8 pb-10">
         <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-normal text-slate-950">
-              Folder Explorer
-            </h1>
-            <p className="mt-3 text-base text-slate-500">
-              Browse and manage your folders and documents.
-            </p>
+            {(() => {
+              const currentPath = currentFolder ? findFolderPath(folderTree, currentFolder._id) : [];
+              const parentFolder = currentPath.length > 1 
+                ? currentPath[currentPath.length - 2] 
+                : (currentFolder?.parentFolder ? { _id: typeof currentFolder.parentFolder === 'object' ? currentFolder.parentFolder._id : currentFolder.parentFolder, name: 'Parent Folder' } : null);
 
-            <nav className="mt-5 flex items-center gap-3 text-sm font-medium">
-              <button onClick={() => fetchFolderDetails(null)} className="text-blue-700 hover:underline">
-                Home
-              </button>
-              {currentFolder && (
+              return (
                 <>
-                  <ChevronRight size={16} className="text-slate-400" />
-                  <span className="text-slate-900">{currentFolder.name}</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="text-3xl font-bold tracking-normal text-slate-950 flex items-center gap-2.5">
+                      {currentFolder ? (
+                        <>
+                          <FolderOpen size={30} className="text-amber-500 shrink-0" />
+                          <span className="truncate max-w-[500px]" title={currentFolder.name}>
+                            {currentFolder.name}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Folder size={30} className="text-blue-700 shrink-0" />
+                          <span>Folder Explorer</span>
+                        </>
+                      )}
+                    </h1>
+
+                    {currentFolder && (
+                      <button
+                        type="button"
+                        onClick={handleCloseFolder}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+                        title={`Close folder and return to ${parentFolder ? parentFolder.name : 'Home'}`}
+                      >
+                        <FolderX size={15} className="text-rose-600" />
+                        <span>Close Folder</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-base text-slate-500">
+                    {currentFolder
+                      ? currentFolder.description || `Viewing files in ${currentFolder.name}`
+                      : "Browse and manage your compliance root folders and verification documents."}
+                  </p>
+
+                  <nav className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium">
+                    <button
+                      onClick={() => handleOpenFolder(null)}
+                      className={`hover:underline cursor-pointer flex items-center gap-1 ${
+                        !currentFolder ? 'font-bold text-slate-900' : 'text-blue-700'
+                      }`}
+                    >
+                      <span>Home</span>
+                    </button>
+
+                    {currentPath.length > 0 ? (
+                      currentPath.map((crumb, idx) => {
+                        const isLast = idx === currentPath.length - 1;
+                        return (
+                          <div key={crumb._id} className="flex items-center gap-2">
+                            <ChevronRight size={15} className="text-slate-400 shrink-0" />
+                            {isLast ? (
+                              <span className="font-bold text-slate-900 flex items-center gap-1 truncate max-w-[240px]">
+                                <FolderOpen size={15} className="text-amber-500 shrink-0" />
+                                <span className="truncate">{crumb.name}</span>
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleOpenFolder(crumb._id)}
+                                className="text-blue-700 hover:underline cursor-pointer truncate max-w-[200px]"
+                                title={`Go to ${crumb.name}`}
+                              >
+                                {crumb.name}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : currentFolder ? (
+                      <div className="flex items-center gap-2">
+                        <ChevronRight size={15} className="text-slate-400 shrink-0" />
+                        <span className="font-bold text-slate-900 flex items-center gap-1">
+                          <FolderOpen size={15} className="text-amber-500 shrink-0" />
+                          <span>{currentFolder.name}</span>
+                        </span>
+                      </div>
+                    ) : null}
+                  </nav>
                 </>
-              )}
-            </nav>
+              );
+            })()}
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -524,42 +719,14 @@ export default function FolderExployer() {
               </button>
             </div> */}
 
-            {(() => {
-              const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
-              if (subStatus.plan !== 'Trial') {
-                return (
-                  <button
-                    onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-800"
-                    title="Summarize current folder contents"
-                  >
-                    <Sparkles size={19} />
-                    AI Summarize
-                  </button>
-                );
-              }
-
-              return (
-                <div className="flex flex-col items-start gap-1 justify-center shrink-0">
-                  <button
-                    onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
-                    disabled={isAiLimitReached}
-                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition ${
-                      isAiLimitReached 
-                        ? 'opacity-40 cursor-not-allowed select-none' 
-                        : 'hover:from-violet-700 hover:to-indigo-800'
-                    }`}
-                    title={isAiLimitReached ? "You free limit is hit" : "Summarize current folder contents"}
-                  >
-                    <Sparkles size={19} />
-                    AI Summarize
-                  </button>
-                  <span className={`text-[10px] font-bold px-1 ${isAiLimitReached ? 'text-red-500 animate-pulse' : 'text-slate-500'}`}>
-                    {isAiLimitReached ? 'You free limit is hit' : `AI Limit: ${subStatus.aiCount}/5 Used`}
-                  </span>
-                </div>
-              );
-            })()}
+            <button
+              onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-800 cursor-pointer"
+              title="Summarize current folder contents"
+            >
+              <Sparkles size={19} />
+              AI Summarize
+            </button>
 
             {(() => {
               const uploadAllowed = !currentFolder || currentFolder.uploadAllowed === true;
@@ -595,7 +762,7 @@ export default function FolderExployer() {
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm h-fit max-h-[800px] overflow-y-auto">
             <button
-              onClick={() => fetchFolderDetails(null)}
+              onClick={() => handleOpenFolder(null)}
               className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm font-semibold transition ${!currentFolder ? 'text-blue-700 bg-blue-50' : 'text-slate-900 hover:bg-slate-50'}`}
             >
               <ChevronDown size={17} />
@@ -629,6 +796,33 @@ export default function FolderExployer() {
                 </thead>
 
                 <tbody className="divide-y divide-slate-200">
+                  {/* Top row: Close Folder / Up to Parent */}
+                  {currentFolder && (
+                    <tr
+                      onClick={handleCloseFolder}
+                      className="cursor-pointer bg-slate-50/80 hover:bg-blue-50/70 transition text-sm text-slate-700 font-medium border-b border-slate-200 group"
+                      title="Close this folder and return to previous folder"
+                    >
+                      <td colSpan={7} className="px-7 py-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 group-hover:bg-amber-200 transition">
+                              <CornerLeftUp size={18} />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-blue-700 group-hover:underline">
+                                .. (Close folder &amp; return to parent level)
+                              </span>
+                            </div>
+                          </div>
+                          <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-2xs group-hover:border-blue-300 group-hover:text-blue-700">
+                            <FolderX size={13} className="text-rose-500" />
+                            Close Folder
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                   {loading ? (
                     <tr>
                       <td colSpan={7} className="py-20 text-center text-slate-500">
@@ -642,52 +836,71 @@ export default function FolderExployer() {
                     paginatedItems.map((item, index) => {
                       const isNearBottom = index >= Math.max(3, paginatedItems.length - 3);
                       return (
+                      <React.Fragment key={item._id}>
                       <tr
-                        key={item._id}
                         className="text-sm font-medium text-slate-900 transition hover:bg-slate-50 group"
                       >
                         <td className="px-7 py-5">
-                          <div
-                            className="flex items-center gap-4 cursor-pointer min-w-0"
-                            onClick={() => item.kind === 'folder' ? fetchFolderDetails(item._id) : handleAction('preview', item)}
-                          >
-                            <ItemIcon kind={item.kind} />
-                            <div className="flex flex-col min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="truncate group-hover:text-blue-700 transition-colors font-semibold">
-                                  {item.name || item.title}
-                                </span>
-                                {item.kind === 'folder' && item.folderCategory === 'Legal' && (
-                                  <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200 shrink-0">
-                                    Legal
-                                  </span>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {item.kind === 'folder' && (
+                              <button
+                                type="button"
+                                onClick={(e) => toggleInlineFolder(e, item._id)}
+                                className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-800 transition cursor-pointer shrink-0"
+                                title={expandedFolders[item._id] ? "Close folder preview" : "Open folder preview to see files"}
+                              >
+                                {expandedFolders[item._id] ? (
+                                  <ChevronDown size={18} className="text-blue-700" />
+                                ) : (
+                                  <ChevronRight size={18} />
                                 )}
-                                {item.kind === 'folder' && item.folderCategory === 'Compliance' && (
-                                  <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shrink-0">
-                                    Compliance
+                              </button>
+                            )}
+                            <div
+                              className="flex items-center gap-3.5 cursor-pointer min-w-0 flex-1"
+                              onClick={() => item.kind === 'folder' ? handleOpenFolder(item._id) : handleAction('preview', item)}
+                            >
+                              <ItemIcon
+                                kind={item.kind}
+                                isOpen={item.kind === 'folder' && (Boolean(expandedFolders[item._id]) || currentFolder?._id === item._id)}
+                              />
+                              <div className="flex flex-col min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="truncate group-hover:text-blue-700 transition-colors font-semibold">
+                                    {item.name || item.title}
                                   </span>
-                                )}
-                              </div>
+                                  {item.kind === 'folder' && item.folderCategory === 'Legal' && (
+                                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200 shrink-0">
+                                      Legal
+                                    </span>
+                                  )}
+                                  {item.kind === 'folder' && item.folderCategory === 'Compliance' && (
+                                    <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shrink-0">
+                                      Compliance
+                                    </span>
+                                  )}
+                                </div>
 
-                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                {item.kind !== 'folder' && item.approvalStatus && (
-                                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border ${
-                                    item.approvalStatus === 'Approved'
-                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                      : item.approvalStatus === 'Rejected'
-                                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                      : 'bg-amber-50 text-amber-700 border-amber-200'
-                                  }`}>
-                                    {item.approvalStatus === 'Approved' ? '✓ Approved' :
-                                     item.approvalStatus === 'Rejected' ? '✕ Rejected' :
-                                     item.approvalStatus === 'Pending_Dual_Approval' ? '⏳ Pending Dual Approval' :
-                                     item.approvalStatus === 'Pending_Legal_Approval' ? '⏳ Pending Legal' :
-                                     item.approvalStatus === 'Pending_Compliance_Approval' ? '⏳ Pending Compliance' :
-                                     '⏳ Pending Approval'}
-                                  </span>
-                                )}
-                                {item.isLocked && <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"><Lock size={10} /> Locked</span>}
-                                {item.isArchived && <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><Archive size={10} /> Archived</span>}
+                                <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                  {item.kind !== 'folder' && item.approvalStatus && (
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                                      item.approvalStatus === 'Approved'
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : item.approvalStatus === 'Rejected'
+                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                      {item.approvalStatus === 'Approved' ? '✓ Approved' :
+                                       item.approvalStatus === 'Rejected' ? '✕ Rejected' :
+                                       item.approvalStatus === 'Pending_Dual_Approval' ? '⏳ Pending Dual Approval' :
+                                       item.approvalStatus === 'Pending_Legal_Approval' ? '⏳ Pending Legal' :
+                                       item.approvalStatus === 'Pending_Compliance_Approval' ? '⏳ Pending Compliance' :
+                                       '⏳ Pending Approval'}
+                                    </span>
+                                  )}
+                                  {item.isLocked && <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"><Lock size={10} /> Locked</span>}
+                                  {item.isArchived && <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><Archive size={10} /> Archived</span>}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -719,23 +932,13 @@ export default function FolderExployer() {
 
                         <td className="px-7 py-5">
                           <div className="flex justify-end gap-2 relative">
-                            {(() => {
-                              const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
-                              return (
-                                <button
-                                  onClick={() => handleAction('summarize', item)}
-                                  disabled={isAiLimitReached}
-                                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 transition ${
-                                    isAiLimitReached 
-                                      ? 'opacity-30 cursor-not-allowed select-none' 
-                                      : 'hover:bg-violet-50 hover:text-violet-700 cursor-pointer'
-                                  }`}
-                                  title={isAiLimitReached ? "You free limit is hit" : "AI Summarize"}
-                                >
-                                  <Sparkles size={18} />
-                                </button>
-                              );
-                            })()}
+                            <button
+                              onClick={() => handleAction('summarize', item)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 hover:text-violet-700 transition cursor-pointer"
+                              title="AI Summarize"
+                            >
+                              <Sparkles size={18} />
+                            </button>
                             <button
                               onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200 cursor-pointer"
@@ -750,23 +953,31 @@ export default function FolderExployer() {
                                   isNearBottom ? 'bottom-11 origin-bottom-right' : 'top-11 origin-top-right'
                                 }`}
                               >
-                                {(() => {
-                                  const isAiLimitReached = subStatus.plan === 'Trial' && subStatus.aiCount >= 5;
-                                  return (
-                                    <button 
-                                      onClick={() => handleAction('summarize', item)} 
-                                      disabled={isAiLimitReached}
-                                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold transition ${
-                                        isAiLimitReached 
-                                          ? 'text-slate-400 opacity-50 cursor-not-allowed select-none' 
-                                          : 'text-violet-700 hover:bg-violet-50 cursor-pointer'
-                                      }`}
-                                    >
-                                      <Sparkles size={16} className={`shrink-0 ${isAiLimitReached ? "text-slate-400" : "text-violet-600"}`} />
-                                      <span className="truncate">AI Summarize</span>
-                                    </button>
-                                  );
-                                })()}
+                                <button 
+                                  onClick={() => handleAction('summarize', item)} 
+                                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-violet-700 hover:bg-violet-50 transition cursor-pointer"
+                                >
+                                  <Sparkles size={16} className="text-violet-600 shrink-0" />
+                                  <span className="truncate">AI Summarize</span>
+                                </button>
+                                {item.kind === 'folder' && (
+                                  <button 
+                                    onClick={() => handleOpenFolder(item._id)} 
+                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                                  >
+                                    <FolderOpen size={16} className="text-blue-600 shrink-0" />
+                                    <span className="truncate">Open Folder</span>
+                                  </button>
+                                )}
+                                {item.kind === 'folder' && expandedFolders[item._id] && (
+                                  <button 
+                                    onClick={(e) => toggleInlineFolder(e, item._id)} 
+                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                  >
+                                    <FolderX size={16} className="text-rose-500 shrink-0" />
+                                    <span className="truncate">Close Folder Preview</span>
+                                  </button>
+                                )}
                                 {item.kind !== 'folder' && (
                                   <button 
                                     onClick={() => handleAction('preview', item)} 
@@ -851,6 +1062,97 @@ export default function FolderExployer() {
                           </div>
                         </td>
                       </tr>
+                      {/* Inline Expanded Folder Preview */}
+                      {item.kind === 'folder' && expandedFolders[item._id] && (
+                        <tr className="bg-slate-50/90 border-b border-slate-200">
+                          <td colSpan={7} className="px-8 py-3.5">
+                            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                              <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                                <div className="flex items-center gap-2">
+                                  <FolderOpen size={18} className="text-amber-500" />
+                                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    Files in {item.name}:
+                                  </span>
+                                  <span className="text-xs text-slate-400">
+                                    ({expandedFolders[item._id].items?.length || 0} items)
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenFolder(item._id)}
+                                    className="text-xs font-semibold text-blue-700 hover:underline flex items-center gap-1 cursor-pointer bg-blue-50 px-2.5 py-1 rounded border border-blue-200"
+                                  >
+                                    <span>Open Full Folder</span>
+                                    <span>&rarr;</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => toggleInlineFolder(e, item._id)}
+                                    className="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-2 py-1 rounded border border-rose-200 flex items-center gap-1 cursor-pointer"
+                                    title="Close folder preview"
+                                  >
+                                    <FolderX size={13} />
+                                    <span>Close</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {expandedFolders[item._id].loading ? (
+                                <div className="py-6 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"></div>
+                                  Loading folder contents...
+                                </div>
+                              ) : expandedFolders[item._id].items?.length > 0 ? (
+                                <div className="divide-y divide-slate-100">
+                                  {expandedFolders[item._id].items.map((subItem) => (
+                                    <div key={subItem._id} className="py-2.5 flex items-center justify-between hover:bg-slate-50 px-2 rounded-lg transition">
+                                      <div 
+                                        className="flex items-center gap-3 cursor-pointer min-w-0 flex-1"
+                                        onClick={() => subItem.kind === 'folder' ? handleOpenFolder(subItem._id) : handleAction('preview', subItem)}
+                                      >
+                                        <ItemIcon kind={subItem.kind} />
+                                        <div className="flex flex-col min-w-0">
+                                          <span className="text-sm font-semibold text-slate-800 hover:text-blue-700 truncate">
+                                            {subItem.name || subItem.title}
+                                          </span>
+                                          <span className="text-[11px] text-slate-400">
+                                            {subItem.type} • {formatSize(subItem.fileSize, subItem.kind === 'folder')} • {formatDate(subItem.updatedAt || subItem.createdAt)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {subItem.kind !== 'folder' && (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAction('preview', subItem)}
+                                            className="px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition cursor-pointer"
+                                          >
+                                            Preview
+                                          </button>
+                                        )}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleAction('download', subItem)}
+                                          className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition cursor-pointer"
+                                          title="Download"
+                                        >
+                                          <Download size={15} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="py-4 text-center text-xs text-slate-400 italic">
+                                  This folder is currently empty.
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     );
                   })
                   ) : (

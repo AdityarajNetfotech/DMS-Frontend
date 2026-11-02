@@ -1,3 +1,4 @@
+import { performDmsLogout } from '../../utils/logoutHelper';
 import {
   LayoutDashboard,
   FileCheck2,
@@ -373,12 +374,7 @@ export default function ComplianceSidebar() {
               </div>
 
               <button
-                onClick={() => {
-                  localStorage.removeItem("accessToken");
-                  localStorage.removeItem("refreshToken");
-                  localStorage.removeItem("userRole");
-                  navigate(`${slugPrefix}/login`);
-                }}
+                onClick={() => performDmsLogout(companySlug)}
                 title={t("logout")}
                 className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-white transition cursor-pointer"
               >

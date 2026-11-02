@@ -8,6 +8,7 @@ import LoginPage from './Pages/LoginPage'
 import ForgotPassword from './Pages/Auth/ForgotPassword';
 import VerifyOTP from './Pages/Auth/VerifyOTP';
 import ResetPassword from './Pages/Auth/ResetPassword';
+import SSOCallback from './Pages/Auth/SSOCallback';
 import Dashboard from "./Pages/Dashboard";
 import TenantManagement from "./Pages/TenantManagement";
 import RegisterTenant from "./Pages/RegisterTenant";
@@ -198,6 +199,8 @@ function App() {
 
       {/* Slug-based tenant login route (from email link) */}
       <Route path="/:companySlug/login" element={<LoginPage />} />
+      <Route path="/:companySlug/sso" element={<SSOCallback />} />
+      <Route path="/sso" element={<SSOCallback />} />
       <Route path="/:companySlug/forgot-password" element={<ForgotPassword />} />
       <Route path="/:companySlug/verify-otp" element={<VerifyOTP />} />
       <Route path="/:companySlug/reset-password" element={<ResetPassword />} />
@@ -292,31 +295,38 @@ function App() {
       <Route path="/manager/profile-settings" element={<ProfileSettings />} />
       <Route path="/profile" element={<ProfileSettings />} />
 
-      {/* Reporting Manager Routes */}
+      {/* Reporting Manager Routes - Commented out per user request */}
+      {/*
       <Route path="/:companySlug/reporting-manager/dashboard" element={<ReportingManagerDashboard />} />
       <Route path="/reporting-manager/dashboard" element={<ReportingManagerDashboard />} />
       <Route path="/:companySlug/reporting-manager/approvals" element={<ReportingManagerApprovals />} />
       <Route path="/reporting-manager/approvals" element={<ReportingManagerApprovals />} />
       <Route path="/:companySlug/reporting-manager/profile-settings" element={<ReportingManagerProfileSettings />} />
       <Route path="/reporting-manager/profile-settings" element={<ReportingManagerProfileSettings />} />
+      */}
 
-      {/* Legal Team Routes */}
+      {/* Legal Team Routes - Commented out per user request */}
+      {/*
       <Route path="/:companySlug/legal/dashboard" element={<LegalDashboard />} />
       <Route path="/legal/dashboard" element={<LegalDashboard />} />
       <Route path="/:companySlug/legal/approvals" element={<LegalApprovals />} />
       <Route path="/legal/approvals" element={<LegalApprovals />} />
       <Route path="/:companySlug/legal/profile-settings" element={<LegalProfileSettings />} />
       <Route path="/legal/profile-settings" element={<LegalProfileSettings />} />
+      */}
 
-      {/* Compliance Team Routes */}
+      {/* Compliance Team Routes - Commented out per user request */}
+      {/*
       <Route path="/:companySlug/compliance/dashboard" element={<ComplianceDashboard />} />
       <Route path="/compliance/dashboard" element={<ComplianceDashboard />} />
       <Route path="/:companySlug/compliance/approvals" element={<ComplianceApprovals />} />
       <Route path="/compliance/approvals" element={<ComplianceApprovals />} />
       <Route path="/:companySlug/compliance/profile-settings" element={<ComplianceProfileSettings />} />
       <Route path="/compliance/profile-settings" element={<ComplianceProfileSettings />} />
+      */}
 
-      {/* Viewer Routes (with company slug) */}
+      {/* Viewer Routes - Commented out per user request */}
+      {/*
       <Route path="/:companySlug/viewer/dashboard" element={<ViewerDashboard />} />
       <Route path="/:companySlug/viewer/permitted-documents" element={<PermittedDocuments />} />
       <Route path="/:companySlug/viewer/my-documents" element={<ViewerMyDocument />} />
@@ -327,7 +337,6 @@ function App() {
       <Route path="/:companySlug/viewer/recent" element={<SharedWithme />} />
       <Route path="/:companySlug/viewer/shared-folders/:folderId" element={<ViewerSharedFolderDetail />} />
       <Route path="/:companySlug/viewer/trash" element={<ViewerTrash />} />
-      {/* Legacy viewer routes (without slug) */}
       <Route path="/viewer/dashboard" element={<ViewerDashboard />} />
       <Route path="/viewer/permitted-documents" element={<PermittedDocuments />} />
       <Route path="/viewer/my-documents" element={<ViewerMyDocument />} />
@@ -338,10 +347,13 @@ function App() {
       <Route path="/viewer/recent" element={<SharedWithme />} />
       <Route path="/viewer/shared-folders/:folderId" element={<ViewerSharedFolderDetail />} />
       <Route path="/viewer/trash" element={<ViewerTrash />} />
+      */}
 
-      {/* Subscription routes */}
+      {/* Subscription routes - Commented out per user request */}
+      {/*
       <Route path="/:companySlug/subscription" element={<PricingPlansPage />} />
       <Route path="/:companySlug/admin/subscription" element={<PricingPlansPage />} />
+      */}
 
     </Routes>
     </>

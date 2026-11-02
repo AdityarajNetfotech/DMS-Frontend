@@ -43,7 +43,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as XLSX from 'xlsx';
 import { API_BASE_URL } from '../config/api';
 
-const ALLOWED_ROLES = ['manager', 'reporting manager', 'tenant admin', 'company admin', 'admin', 'super admin'];
+const ALLOWED_ROLES = ['manager', 'reporting manager', 'tenant admin', 'company admin', 'admin', 'super admin', 'auditor', 'business user', 'business_user', 'compliance officer', 'compliance_officer'];
 
 // Helper to sanitize any string so that pdf-lib's WinAnsi encoding never throws WinAnsi cannot encode
 const safePdfText = (font, text) => {

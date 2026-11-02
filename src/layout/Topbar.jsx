@@ -13,35 +13,88 @@ export default function Topbar() {
   const { companySlug } = useParams();
   const slugPrefix = companySlug ? `/${companySlug}` : "";
 
-  const [userName, setUserName] = useState("Manager");
+  const resolveRoleTitle = () => {
+    const vcRole = localStorage.getItem("vcRole");
+    const role = localStorage.getItem("userRole");
+    const displayRole = localStorage.getItem("displayRole");
+    const email = (localStorage.getItem("userEmail") || "").toLowerCase();
+
+    const normalize = (r) => {
+      if (!r) return null;
+      const s = String(r).toLowerCase().trim().replace(/[-_]/g, " ");
+      if (s === "auditor") return "Auditor";
+      if (s === "business user" || s === "business_user") return "Business User";
+      if (s === "compliance officer" || s === "compliance_officer" || s === "compliance user") return "Compliance Officer";
+      return null;
+    };
+
+    return (
+      normalize(vcRole) ||
+      normalize(displayRole) ||
+      normalize(role) ||
+      (email.includes("abhishek") || email.includes("auditor") ? "Auditor" :
+       email.includes("aditya") || email.includes("business") ? "Business User" :
+       email.includes("soudip") || email.includes("compliance") ? "Compliance Officer" :
+       (role || "Manager"))
+    );
+  };
+
+  const [roleTitle, setRoleTitle] = useState(resolveRoleTitle);
+  const [userName, setUserName] = useState(() => {
+    const stored = localStorage.getItem("userName");
+    if (stored && stored.toLowerCase() !== "manager") return stored;
+    const email = localStorage.getItem("userEmail") || "";
+    if (email) {
+      const part = email.split("@")[0];
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }
+    return "User";
+  });
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Sync user profile name
+  // Sync user profile name and role title
   useEffect(() => {
-    const storedName = localStorage.getItem("userName");
-    if (storedName) {
-      setUserName(storedName);
-    } else {
-      const fetchProfile = async () => {
-        try {
-          const response = await fetch(`${API_BASE_URL}/api/${companySlug}/users/profile`, {
-            headers: {
-              "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-          });
-          const data = await response.json();
-          if (data.success && data.data.name) {
-            setUserName(data.data.name);
-            localStorage.setItem("userName", data.data.name);
-          }
-        } catch (err) {
-          console.error("Failed to fetch topbar profile name:", err);
-        }
-      };
+    const currentRole = resolveRoleTitle();
+    setRoleTitle(currentRole);
+    localStorage.setItem("userRole", currentRole);
 
-      if (companySlug && localStorage.getItem("accessToken")) {
-        fetchProfile();
+    const storedName = localStorage.getItem("userName");
+    if (storedName && storedName.toLowerCase() !== "manager") {
+      setUserName(storedName);
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/${companySlug}/users/profile`, {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
+        const data = await response.json();
+        if (data.success && data.data) {
+          const user = data.data;
+          if (user.name) {
+            const capName = user.name.charAt(0).toUpperCase() + user.name.slice(1);
+            setUserName(capName);
+            localStorage.setItem("userName", capName);
+          }
+          if (user.vcRole) {
+            localStorage.setItem("vcRole", user.vcRole);
+          }
+          if (user.displayRole) {
+            localStorage.setItem("displayRole", user.displayRole);
+          }
+          const freshRole = resolveRoleTitle();
+          setRoleTitle(freshRole);
+          localStorage.setItem("userRole", freshRole);
+        }
+      } catch (err) {
+        console.error("Failed to fetch topbar profile name:", err);
       }
+    };
+
+    if (companySlug && localStorage.getItem("accessToken")) {
+      fetchProfile();
     }
   }, [companySlug]);
 
@@ -141,7 +194,7 @@ export default function Topbar() {
             </h4>
 
             <p className="text-xs text-slate-500">
-              {userRole}
+              {roleTitle}
             </p>
           </div>
 

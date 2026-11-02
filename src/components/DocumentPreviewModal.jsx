@@ -192,7 +192,7 @@ export default function DocumentPreviewModal({
   const token = localStorage.getItem('accessToken') || '';
   const userRole = (localStorage.getItem('userRole') || '').toLowerCase();
   const isViewer = userRole === 'viewer';
-  const canEditCloud = ['manager', 'reporting manager', 'tenant admin', 'company admin', 'admin', 'super admin'].includes(userRole);
+  const canEditCloud = ['manager', 'reporting manager', 'tenant admin', 'company admin', 'admin', 'super admin', 'auditor', 'business user', 'business_user', 'compliance officer', 'compliance_officer'].includes(userRole);
   const service = isViewer ? 'viewer' : 'manager';
   const storedSlug = localStorage.getItem('companySlug') || localStorage.getItem('tenantSlug') || '';
   const effectiveSlug = companySlug || doc.tenantId || (storedSlug && storedSlug !== 'undefined' && storedSlug !== 'null' ? storedSlug : '') || 'default';

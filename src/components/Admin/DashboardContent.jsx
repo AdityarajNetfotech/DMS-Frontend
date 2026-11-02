@@ -359,43 +359,10 @@ export default function DashboardContent() {
         aria-label="Upload document"
       />
 
-      {/* Subscription Status Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 text-white shadow-lg border border-slate-700/80 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-400/30 flex items-center justify-center font-bold shrink-0">
-            <Database size={24} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${
-                subStatus.plan === 'Trial'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              }`}>
-                {subStatus.plan === 'Trial' ? '7-Day Free Trial' : `${subStatus.plan} Plan Active`}
-              </span>
-              {subStatus.isAccessLocked && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">
-                  Expired
-                </span>
-              )}
-            </div>
-            <h3 className="text-lg font-black text-white mt-1">
-              {subStatus.plan === 'Trial' ? 'Free Trial Period Active' : `Current Plan: ${subStatus.plan}`}
-            </h3>
-            <p className="text-xs text-slate-300 font-medium mt-0.5">
-              {subStatus.daysLeft} days remaining for your current workspace tier. Upgrade anytime to unlock higher team and storage limits.
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => navigate(`/${companySlug}/admin/subscription`)}
-          className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition cursor-pointer shrink-0 self-start md:self-auto"
-        >
-          {subStatus.plan === 'Trial' ? 'Activate Subscription' : 'Manage Subscription & Plans'}
-        </button>
-      </div>
+      {/* Subscription Status Banner removed per user specification */}
+      {/*
+      <div className="hidden">Subscription banner removed</div>
+      */}
 
       {/* Welcome Banner */}
       <WelcomeBanner

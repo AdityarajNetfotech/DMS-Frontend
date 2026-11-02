@@ -1,3 +1,4 @@
+import { performDmsLogout } from '../../utils/logoutHelper';
 import {
   ChevronDown,
   ChevronLeft,
@@ -276,7 +277,7 @@ export default function Sidebar() {
     { name: t("dashboard"), icon: Home, path: `${slugPrefix}/viewer/dashboard` },
     // { name: "Permitted Documents", icon: ShieldCheck, path: `${slugPrefix}/viewer/permitted-documents` },
     { name: t("myDocuments"), icon: FileText, path: `${slugPrefix}/viewer/my-documents` },
-    { name: t("sharedWithMe"), icon: Users, path: `${slugPrefix}/viewer/shared-with-me` },
+    // { name: t("sharedWithMe"), icon: Users, path: `${slugPrefix}/viewer/shared-with-me` },
     { name: t("myFavorite"), icon: Star, path: `${slugPrefix}/viewer/my-access` },
   ];
 
@@ -337,39 +338,7 @@ export default function Sidebar() {
             })}
           </nav>
 
-          {/* Subscription & Trial Countdown Widget */}
-          <div className={`mt-6 p-3.5 rounded-2xl shadow-md border transition-all ${subscriptionInfo.isExpired
-              ? 'bg-gradient-to-br from-red-950 to-red-900 text-white border-red-700/60'
-              : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
-            }`}>
-            <div className="flex items-center justify-between">
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${subscriptionInfo.isExpired
-                  ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                  : subscriptionInfo.plan === 'Trial'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                }`}>
-                {subscriptionInfo.isExpired
-                  ? t("trialExpired")
-                  : subscriptionInfo.plan === 'Trial'
-                    ? t("freeTrial7Days")
-                    : `${subscriptionInfo.plan} ${t("plan")}`}
-              </span>
-              <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
-            </div>
-
-            <div className="mt-2.5">
-              <p className="text-[11px] text-slate-300 font-medium">{t("subscriptionStatus")}</p>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl font-black text-white">
-                  {subscriptionInfo.isExpired ? '0' : subscriptionInfo.daysLeft}
-                </span>
-                <span className="text-xs text-slate-400 font-semibold">
-                  {subscriptionInfo.isExpired ? t("daysExpired") : t("daysRemaining")}
-                </span>
-              </div>
-            </div>
-          </div>
+          {/* Subscription & Trial Countdown Widget commented out per user specification */}
         </div>
 
         <div className="border-t border-slate-200 pt-4 bg-white/40 flex flex-col gap-1">
@@ -386,16 +355,7 @@ export default function Sidebar() {
           <button
             type="button"
             className="w-full flex items-center gap-4 px-8 py-2.5 text-sm font-medium text-red-500 transition hover:bg-red-50/50 cursor-pointer"
-            onClick={() => {
-              const slug = companySlug || localStorage.getItem("companySlug");
-              localStorage.removeItem("accessToken");
-              localStorage.removeItem("refreshToken");
-              localStorage.removeItem("userRole");
-              localStorage.removeItem("userEmail");
-              localStorage.removeItem("userName");
-              localStorage.removeItem("companySlug");
-              navigate(slug ? `/${slug}/login` : "/login");
-            }}
+            onClick={() => performDmsLogout(companySlug)}
           >
             <ChevronLeft size={20} />
             {t("logout")}

@@ -267,11 +267,6 @@ export default function AdminProfileSettings() {
                 disabled={true}
               />
               <Field
-                label="Phone Number"
-                value={phone}
-                disabled={true}
-              />
-              <Field
                 label="Role"
                 value="Tenant Admin"
                 type="text"

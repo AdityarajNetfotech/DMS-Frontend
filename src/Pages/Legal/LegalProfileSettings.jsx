@@ -311,26 +311,13 @@ export default function LegalProfileSettings() {
                 disabled={loading}
               />
               <Field
-                label="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                type="tel"
-                disabled={loading}
-              />
-              <Field
                 label="Assigned System Role"
                 value={role}
                 disabled={true}
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-8 inline-flex h-12 min-w-[200px] items-center justify-center rounded-xl bg-purple-700 px-8 text-sm font-bold text-white shadow-sm transition hover:bg-purple-800 disabled:opacity-50 cursor-pointer"
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
+
           </form>
         )}
 

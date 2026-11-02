@@ -1,3 +1,4 @@
+import { performDmsLogout } from '../../utils/logoutHelper';
 // src/components/Sidebar.jsx
 
 import { useEffect, useRef, useState } from "react";
@@ -309,11 +310,7 @@ export default function Sidebar({
       label: t("workspaceConfiguration"),
       path: `${slugPrefix}/admin/workspace-configuration`,
     },
-    {
-      icon: <CreditCard size={18} />,
-      label: t("subscriptionBilling"),
-      path: `${slugPrefix}/admin/subscription`,
-    },
+
   ];
 
   // Convert hex to color value for Three.js point light safely
@@ -386,52 +383,7 @@ export default function Sidebar({
               </NavLink>
             ))}
 
-            {/* Subscription & Trial Countdown Widget */}
-            <div className={`mt-4 p-3.5 rounded-2xl shadow-md border transition-all ${subscriptionInfo.isExpired
-                ? 'bg-gradient-to-br from-red-950 to-red-905 text-white border-red-700/60'
-                : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-700/60'
-              }`}>
-              <div className="flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${subscriptionInfo.isExpired
-                    ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                    : subscriptionInfo.plan === 'Trial'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  }`}>
-                  {subscriptionInfo.isExpired
-                    ? 'Trial Expired'
-                    : subscriptionInfo.plan === 'Trial'
-                      ? '7-Day Free Trial'
-                      : `${subscriptionInfo.plan} Plan`}
-                </span>
-                <Sparkles size={14} className={subscriptionInfo.isExpired ? "text-red-400" : "text-amber-400 animate-pulse"} />
-              </div>
-
-              <div className="mt-2.5">
-                <p className="text-[11px] text-slate-300 font-medium">Subscription Status</p>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <span className="text-xl font-black text-white">
-                    {subscriptionInfo.isExpired ? '0' : subscriptionInfo.daysLeft}
-                  </span>
-                  <span className="text-xs text-slate-400 font-semibold">
-                    {subscriptionInfo.isExpired ? 'Days / Expired' : 'Days Remaining'}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  navigate(`${slugPrefix}/admin/subscription`);
-                }}
-                style={subscriptionInfo.isExpired ? { backgroundColor: '#ef4444' } : { backgroundColor: branding.primaryColor }}
-                className="w-full mt-3 py-2 px-3 rounded-xl font-bold text-xs text-white shadow-sm hover:brightness-110 transition cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Zap size={14} />
-                <span>{subscriptionInfo.isExpired ? 'Upgrade Now' : subscriptionInfo.plan === 'Trial' ? 'Activate Subscription' : 'Manage Subscription'}</span>
-              </button>
-            </div>
+            {/* Subscription & Trial Countdown Widget commented out per user specification */}
           </div>
 
           {/* Footer */}
@@ -484,16 +436,7 @@ export default function Sidebar({
 
             <button
               type="button"
-              onClick={() => {
-                const slug = companySlug || localStorage.getItem("companySlug");
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-                localStorage.removeItem("userRole");
-                localStorage.removeItem("userEmail");
-                localStorage.removeItem("userName");
-                localStorage.removeItem("companySlug");
-                navigate(slug ? `/${slug}/login` : "/login");
-              }}
+              onClick={() => performDmsLogout(companySlug)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50/50 font-medium cursor-pointer"
             >
               <LogOut size={18} />

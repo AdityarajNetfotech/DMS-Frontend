@@ -120,16 +120,9 @@ export default function DMSSignIn() {
 
         if (data.role === "Tenant Admin" || data.role === "Company Admin") {
           navigate(`${slugPrefix}/admin/user-management`);
-        } else if (data.role === "Reporting Manager") {
-          navigate(`${slugPrefix}/reporting-manager/dashboard`);
-        } else if (data.role === "Legal Team") {
-          navigate(`${slugPrefix}/legal/dashboard`);
-        } else if (data.role === "Compliance Team") {
-          navigate(`${slugPrefix}/compliance/dashboard`);
-        } else if (data.role === "Manager") {
-          navigate(`${slugPrefix}/manager/dashboard`);
         } else {
-          navigate(`${slugPrefix}/viewer/dashboard`);
+          // Direct all users to the Manager dashboard
+          navigate(`${slugPrefix}/manager/dashboard`);
         }
       } else {
         setError(data.message || "Invalid credentials");
