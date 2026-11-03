@@ -254,6 +254,7 @@ export default function ProfileSettings() {
               ) : null}
             </button>
 
+            {/* Change Password Tab (Commented Out)
             <button
               type="button"
               onClick={() => {
@@ -272,7 +273,7 @@ export default function ProfileSettings() {
               {isPasswordTab ? (
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
               ) : null}
-            </button>
+            </button> */}
           </div>
         </section>
 
@@ -311,6 +312,7 @@ export default function ProfileSettings() {
           />
         )}
 
+        {/* Change Password Form (Commented Out)
         {isPasswordTab && (
           <form onSubmit={handleChangePassword} className="max-w-5xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-7">
             <h2 className="text-xl font-bold text-slate-950">
@@ -350,7 +352,7 @@ export default function ProfileSettings() {
               {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
-        )}
+        )} */}
       </div>
     </MainLayout>
   );

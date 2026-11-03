@@ -221,7 +221,7 @@ export default function Profilepage() {
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
               ) : null}
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 setActiveTab("password");
@@ -238,11 +238,11 @@ export default function Profilepage() {
               {!isProfileTab ? (
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
               ) : null}
-            </button>
+            </button> */}
           </div>
         </section>
 
-        {isProfileTab ? (
+        {isProfileTab && (
           <form onSubmit={handleSaveProfile} className="max-w-5xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <h2 className="text-xl font-bold text-slate-950">
               Profile Information
@@ -284,7 +284,9 @@ export default function Profilepage() {
               {loading ? "Saving..." : "Save Changes"}
             </button>
           </form>
-        ) : (
+        )}
+
+        {/* {!isProfileTab && (
           <form onSubmit={handleChangePassword} className="max-w-5xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <h2 className="text-xl font-bold text-slate-950">
               Change Password
@@ -323,7 +325,7 @@ export default function Profilepage() {
               {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
-        )}
+        )} */}
       </div>
     </Viewer>
   );

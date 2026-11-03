@@ -264,7 +264,7 @@ export default function ReportingManagerProfileSettings() {
               ) : null}
             </button>
 
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 setActiveTab("password");
@@ -283,7 +283,7 @@ export default function ReportingManagerProfileSettings() {
               {isPasswordTab ? (
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-blue-700" />
               ) : null}
-            </button>
+            </button> */}
           </div>
         </section>
 
@@ -329,7 +329,7 @@ export default function ReportingManagerProfileSettings() {
           />
         )}
 
-        {isPasswordTab && (
+        {/* {isPasswordTab && (
           <form onSubmit={handleChangePassword} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <h2 className="text-lg font-bold text-slate-950">
               Change Account Password
@@ -368,7 +368,7 @@ export default function ReportingManagerProfileSettings() {
               {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
-        )}
+        )} */}
       </div>
     </ReportingManagerLayout>
   );

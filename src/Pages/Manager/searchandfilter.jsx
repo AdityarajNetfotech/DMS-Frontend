@@ -833,13 +833,12 @@ export default function Searchandfilter() {
             <table className="w-full min-w-[1050px] table-fixed text-left">
               <thead>
                 <tr className="border-b border-slate-200 text-sm font-semibold text-slate-500">
-                  <th className="w-[22%] px-6 py-4">
+                  <th className="w-[30%] px-6 py-4">
                     <span className="inline-flex items-center gap-2">
                       Name <ArrowUpDown size={15} />
                     </span>
                   </th>
-                  <th className="w-[12%] px-5 py-4">Uploaded By</th>
-                  <th className="w-[12%] px-5 py-4">Department</th>
+                  <th className="w-[14%] px-5 py-4">Uploaded By</th>
                   <th className="w-[14%] px-5 py-4">
                     <span className="inline-flex items-center gap-2">
                       Last Modified <ArrowUpDown size={15} />
@@ -854,7 +853,7 @@ export default function Searchandfilter() {
               <tbody className="divide-y divide-slate-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-500">Loading results...</td>
+                    <td colSpan={7} className="py-12 text-center text-slate-500">Loading results...</td>
                   </tr>
                 ) : sortedResults.length > 0 ? (
                   paginatedResults.map((result) => (
@@ -885,15 +884,6 @@ export default function Searchandfilter() {
                           <Avatar value={(result.uploadedBy?.name || result.createdBy?.name || "S").charAt(0).toUpperCase()} />
                           <span className="truncate">{result.uploadedBy?.name || result.createdBy?.name || "System"}</span>
                         </div>
-                      </td>
-                      <td className="px-5 py-4 text-slate-700">
-                        {result.departmentId?.name ? (
-                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                            {result.departmentId.name}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic text-xs">Global</span>
-                        )}
                       </td>
                       <td className="px-5 py-4">{new Date(result.createdAt || result.modified || Date.now()).toLocaleDateString()}</td>
                       <td className="px-5 py-4">
@@ -928,7 +918,7 @@ export default function Searchandfilter() {
                     </tr>
                   ))) : (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-500">No results found.</td>
+                    <td colSpan={7} className="py-12 text-center text-slate-500">No results found.</td>
                   </tr>
                 )}
               </tbody>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Clock, ShieldAlert, LogOut, CheckCircle } from 'lucide-react';
+import { performDmsLogout } from '../utils/logoutHelper';
 
 const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 const WARNING_MS = 14 * 60 * 1000; // 14 minutes (1 minute warning)
@@ -52,25 +53,17 @@ export default function InactivityTracker() {
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
 
-    const companySlug = localStorage.getItem('companySlug');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('superAdminToken');
+    const isSuperAdmin = !localStorage.getItem('companySlug') && localStorage.getItem('superAdminToken');
+    if (isSuperAdmin) {
+      localStorage.removeItem('superAdminToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      navigate('/superadminlogin', { replace: true });
+      return;
+    }
 
-    const redirectPath = companySlug ? `/${companySlug}/login` : '/login';
-    sessionStorage.setItem(
-      'session_expired_msg',
-      'Your session has expired due to 15 minutes of inactivity for your security.'
-    );
-    navigate(redirectPath, {
-      replace: true,
-      state: {
-        sessionExpired: true,
-        message: 'Your session has expired due to 15 minutes of inactivity.'
-      }
-    });
+    const companySlug = localStorage.getItem('companySlug');
+    performDmsLogout(companySlug, 'inactivity');
   }, [navigate]);
 
   const stayLoggedIn = () => {

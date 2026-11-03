@@ -264,6 +264,7 @@ export default function LegalProfileSettings() {
               ) : null}
             </button>
 
+            {/* Change Password Tab (Commented Out)
             <button
               type="button"
               onClick={() => {
@@ -283,7 +284,7 @@ export default function LegalProfileSettings() {
               {isPasswordTab ? (
                 <span className="absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-purple-700" />
               ) : null}
-            </button>
+            </button> */}
           </div>
         </section>
 
@@ -329,7 +330,7 @@ export default function LegalProfileSettings() {
           />
         )}
 
-        {isPasswordTab && (
+        {/* {isPasswordTab && (
           <form onSubmit={handleChangePassword} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <h2 className="text-lg font-bold text-slate-950">
               Change Security Password
@@ -368,7 +369,7 @@ export default function LegalProfileSettings() {
               {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
-        )}
+        )} */}
       </div>
     </LegalLayout>
   );

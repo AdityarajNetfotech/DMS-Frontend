@@ -140,11 +140,13 @@ export default function SSOCallback() {
         const originParam = searchParams.get("vcOrigin") || searchParams.get("origin");
         if (originParam) {
           localStorage.setItem("verifychain_origin", originParam);
+          sessionStorage.setItem("verifychain_origin", originParam);
         } else if (document.referrer) {
           try {
             const ref = new URL(document.referrer);
             if (ref.origin && !ref.origin.includes(':5174')) {
               localStorage.setItem("verifychain_origin", ref.origin);
+              sessionStorage.setItem("verifychain_origin", ref.origin);
             }
           } catch (e) {}
         }

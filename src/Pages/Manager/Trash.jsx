@@ -210,10 +210,9 @@ export default function Trash() {
             <table className="w-full min-w-[900px] table-fixed text-left">
               <thead>
                 <tr className="border-b border-slate-200 bg-white text-sm font-semibold text-slate-500">
-                  <th className="w-[30%] px-6 py-5">Name</th>
-                  <th className="w-[15%] px-5 py-5">Manager</th>
-                  <th className="w-[15%] px-5 py-5">Department</th>
-                  <th className="w-[20%] px-5 py-5">Deleted On</th>
+                  <th className="w-[40%] px-6 py-5">Name</th>
+                  <th className="w-[18%] px-5 py-5">Manager</th>
+                  <th className="w-[22%] px-5 py-5">Deleted On</th>
                   <th className="w-[10%] px-5 py-5">Size</th>
                   <th className="w-[10%] px-5 py-5 text-center">Actions</th>
                 </tr>
@@ -222,7 +221,7 @@ export default function Trash() {
               <tbody className="divide-y divide-slate-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-slate-500">
+                    <td colSpan={5} className="py-10 text-center text-slate-500">
                       Loading trash items...
                     </td>
                   </tr>
@@ -240,15 +239,6 @@ export default function Trash() {
                       </td>
                       <td className="px-5 py-6 text-slate-700 font-medium">
                         {item.managerName}
-                      </td>
-                      <td className="px-5 py-6 text-slate-700">
-                        {item.departmentName !== "Global" ? (
-                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                            {item.departmentName}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic text-xs">Global</span>
-                        )}
                       </td>
                       <td className="px-5 py-6">
                         {item.deletedOn ? new Date(item.deletedOn).toLocaleString() : "-"}
@@ -278,7 +268,7 @@ export default function Trash() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={5}
                       className="py-10 text-center text-slate-500"
                     >
                       No items found in trash.

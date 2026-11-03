@@ -384,7 +384,6 @@ export default function Mydocument() {
                 <tr>
                   <th className="px-6 py-4 font-medium">Name</th>
                   <th className="px-6 py-4 font-medium">Manager</th>
-                  <th className="px-6 py-4 font-medium">Department</th>
                   <th className="px-6 py-4 font-medium">Date Modified</th>
                   <th className="px-6 py-4 font-medium">Size</th>
                   <th className="px-6 py-4 font-medium">Type</th>
@@ -393,7 +392,7 @@ export default function Mydocument() {
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <td colSpan={5} className="py-12 text-center text-slate-500">
                       Loading latest items...
                     </td>
                   </tr>
@@ -430,16 +429,6 @@ export default function Mydocument() {
                         {document.uploadedBy?.name || document.createdBy?.name || "System"}
                       </td>
 
-                      <td className="px-6 py-5 text-slate-700">
-                        {document.departmentId?.name ? (
-                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                            {document.departmentId.name}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic text-xs">Global</span>
-                        )}
-                      </td>
-
                       <td className="px-6 py-5 text-slate-600">
                         {new Date(document.createdAt || document.modified).toLocaleString()}
                       </td>
@@ -472,7 +461,7 @@ export default function Mydocument() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <td colSpan={5} className="py-12 text-center text-slate-500">
                       No documents or folders found.
                     </td>
                   </tr>

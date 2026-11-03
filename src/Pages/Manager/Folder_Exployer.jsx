@@ -48,7 +48,6 @@ import MoveCopyModal from "../../components/Manager/MoveCopyModal";
 import ShareDocumentModal from "../../components/Manager/ShareDocumentModal";
 import RenameModal from "../../components/Manager/RenameModal";
 import ConvertFormatModal from "../../components/Manager/ConvertFormatModal";
-import AISummarizeModal from "../../components/Manager/AISummarizeModal";
 import DocumentMetadataModal from "../../components/Manager/DocumentMetadataModal";
 import ApprovalHistoryModal from "../../components/Manager/ApprovalHistoryModal";
 import DocumentPreviewModal from "../../components/DocumentPreviewModal";
@@ -129,7 +128,6 @@ export default function FolderExployer() {
   const [shareConfig, setShareConfig] = useState({ isOpen: false, document: null });
   const [renameConfig, setRenameConfig] = useState({ isOpen: false, item: null });
   const [convertConfig, setConvertConfig] = useState({ isOpen: false, item: null });
-  const [summarizeConfig, setSummarizeConfig] = useState({ isOpen: false, item: null });
   const [metadataConfig, setMetadataConfig] = useState({ isOpen: false, item: null, initialEditMode: false });
   const [approvalHistoryConfig, setApprovalHistoryConfig] = useState({ isOpen: false, document: null });
   const [previewConfig, setPreviewConfig] = useState({ isOpen: false, document: null, initialTab: 'preview' });
@@ -152,8 +150,16 @@ export default function FolderExployer() {
         headers: getAuthHeaders(),
       });
       const data = await res.json();
-      if (data.success) {
-        setFolderTree(data.data);
+      if (data.success && Array.isArray(data.data)) {
+        const seenTreeRoots = new Set();
+        const cleanTree = data.data.filter(node => {
+          if (!node.parentFolder && ['KYC Documents', 'KYB Documents', 'Director Documents', 'Partner Documents', 'Vendor Documents'].includes(node.name)) {
+            if (seenTreeRoots.has(node.name)) return false;
+            seenTreeRoots.add(node.name);
+          }
+          return true;
+        });
+        setFolderTree(cleanTree);
       }
     } catch (err) {
       console.error("Failed to fetch folder tree", err);
@@ -172,8 +178,18 @@ export default function FolderExployer() {
         const childFolders = data.data.childFolders || data.data.subfolders || [];
         const documents = data.data.documents || [];
 
+        const SYSTEM_ROOT_NAMES = ['KYC Documents', 'KYB Documents', 'Director Documents', 'Partner Documents', 'Vendor Documents'];
+        const seenNames = new Set();
+        const deduplicatedChildFolders = childFolders.filter(f => {
+          if (!f.parentFolder && SYSTEM_ROOT_NAMES.includes(f.name)) {
+            if (seenNames.has(f.name)) return false;
+            seenNames.add(f.name);
+          }
+          return true;
+        });
+
         const formattedItems = [
-          ...childFolders.map(f => ({ ...f, kind: 'folder', type: 'Folder' })),
+          ...deduplicatedChildFolders.map(f => ({ ...f, kind: 'folder', type: 'Folder' })),
           ...documents.map(d => ({ ...d, kind: getFileKind(d.mimeType || d.fileType || d.extension || d.originalFileName), type: d.fileType || 'File' }))
         ].filter(item => !item.isArchived);
 
@@ -416,10 +432,6 @@ export default function FolderExployer() {
         return;
       } else if (action === 'convert') {
         setConvertConfig({ isOpen: true, item });
-        return;
-      } else if (action === 'summarize') {
-        setSummarizeConfig({ isOpen: true, item: null });
-        setSummarizeConfig({ isOpen: true, item });
         return;
       } else if (action === 'metadata') {
         setPreviewConfig({ isOpen: true, document: item, initialTab: 'metadata' });
@@ -719,6 +731,7 @@ export default function FolderExployer() {
               </button>
             </div> */}
 
+            {/* AI Summarize Button
             <button
               onClick={() => handleAction('summarize', currentFolder || { _id: 'root', name: 'Root Folder', kind: 'folder' })}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-800 cursor-pointer"
@@ -726,7 +739,7 @@ export default function FolderExployer() {
             >
               <Sparkles size={19} />
               AI Summarize
-            </button>
+            </button> */}
 
             {(() => {
               const uploadAllowed = !currentFolder || currentFolder.uploadAllowed === true;
@@ -780,10 +793,9 @@ export default function FolderExployer() {
               <table className="w-full min-w-[850px] table-fixed text-left">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50/50 text-sm font-semibold text-slate-500">
-                    <th className="w-[28%] px-7 py-5">Name</th>
-                    <th className="w-[16%] px-6 py-5">Manager</th>
-                    <th className="w-[16%] px-6 py-5">Department</th>
-                    <th className="w-[18%] px-6 py-5">
+                    <th className="w-[34%] px-7 py-5">Name</th>
+                    <th className="w-[18%] px-6 py-5">Manager</th>
+                    <th className="w-[20%] px-6 py-5">
                       <button className="inline-flex items-center gap-2">
                         Last Modified
                         <ChevronsUpDown size={16} />
@@ -803,7 +815,7 @@ export default function FolderExployer() {
                       className="cursor-pointer bg-slate-50/80 hover:bg-blue-50/70 transition text-sm text-slate-700 font-medium border-b border-slate-200 group"
                       title="Close this folder and return to previous folder"
                     >
-                      <td colSpan={7} className="px-7 py-3">
+                      <td colSpan={6} className="px-7 py-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 group-hover:bg-amber-200 transition">
@@ -825,7 +837,7 @@ export default function FolderExployer() {
                   )}
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="py-20 text-center text-slate-500">
+                      <td colSpan={6} className="py-20 text-center text-slate-500">
                         <div className="flex flex-col items-center justify-center gap-3">
                           <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
                           Loading contents...
@@ -910,16 +922,6 @@ export default function FolderExployer() {
                           {item.uploadedBy?.name || item.createdBy?.name || "System"}
                         </td>
 
-                        <td className="px-6 py-5 text-slate-700">
-                          {item.departmentId?.name ? (
-                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                              {item.departmentId.name}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 italic text-xs">Global</span>
-                          )}
-                        </td>
-
                         <td className="px-6 py-5 text-slate-700 font-medium">
                           {formatDate(item.updatedAt || item.createdAt)}
                         </td>
@@ -932,14 +934,7 @@ export default function FolderExployer() {
 
                         <td className="px-7 py-5">
                           <div className="flex justify-end gap-2 relative">
-                            <button
-                              onClick={() => handleAction('summarize', item)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 hover:text-violet-700 transition cursor-pointer"
-                              title="AI Summarize"
-                            >
-                              <Sparkles size={18} />
-                            </button>
-                            <button
+                                                        <button
                               onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200 cursor-pointer"
                             >
@@ -953,14 +948,7 @@ export default function FolderExployer() {
                                   isNearBottom ? 'bottom-11 origin-bottom-right' : 'top-11 origin-top-right'
                                 }`}
                               >
-                                <button 
-                                  onClick={() => handleAction('summarize', item)} 
-                                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-violet-700 hover:bg-violet-50 transition cursor-pointer"
-                                >
-                                  <Sparkles size={16} className="text-violet-600 shrink-0" />
-                                  <span className="truncate">AI Summarize</span>
-                                </button>
-                                {item.kind === 'folder' && (
+                                                                {item.kind === 'folder' && (
                                   <button 
                                     onClick={() => handleOpenFolder(item._id)} 
                                     className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
@@ -987,7 +975,15 @@ export default function FolderExployer() {
                                     <span className="truncate">Preview Document</span>
                                   </button>
                                 )}
-                                {item.kind !== 'folder' && (
+                                {/* AI Summarize Action
+                                <button 
+                                  onClick={() => handleAction('summarize', item)} 
+                                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-violet-700 hover:bg-violet-50 transition cursor-pointer"
+                                >
+                                  <Sparkles size={16} className="text-violet-600 shrink-0" />
+                                  <span className="truncate">AI Summarize</span>
+                                </button> */}
+                                {/* {item.kind !== 'folder' && (
                                   <button 
                                     onClick={() => handleAction('approval-history', item)} 
                                     className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition cursor-pointer"
@@ -995,7 +991,7 @@ export default function FolderExployer() {
                                     <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
                                     <span className="truncate">Approval History</span>
                                   </button>
-                                )}
+                                )} */}
                                 {item.kind !== 'folder' && (
                                   <>
                                     <button 
@@ -1044,10 +1040,10 @@ export default function FolderExployer() {
                                     <span className="truncate">Add File</span>
                                   </button>
                                 )}
-                                <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                {/* <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
                                   <FolderOutput size={16} className="text-slate-500 shrink-0" />
                                   <span className="truncate">Move</span>
-                                </button>
+                                </button> */}
                                 <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
                                   <Edit3 size={16} className="text-slate-500 shrink-0" />
                                   <span className="truncate">Rename</span>
@@ -1065,7 +1061,7 @@ export default function FolderExployer() {
                       {/* Inline Expanded Folder Preview */}
                       {item.kind === 'folder' && expandedFolders[item._id] && (
                         <tr className="bg-slate-50/90 border-b border-slate-200">
-                          <td colSpan={7} className="px-8 py-3.5">
+                          <td colSpan={6} className="px-8 py-3.5">
                             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                               <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
                                 <div className="flex items-center gap-2">
@@ -1158,7 +1154,7 @@ export default function FolderExployer() {
                   ) : (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={6}
                         className="py-16 text-center text-slate-500"
                       >
                         <Folder size={48} className="mx-auto mb-4 text-slate-300" />
@@ -1227,12 +1223,13 @@ export default function FolderExployer() {
         item={convertConfig.item}
       />
 
+      {/* AISummarizeModal
       <AISummarizeModal
-        isOpen={summarizeConfig.isOpen}
+        isOpen={summarizeConfig?.isOpen}
         onClose={() => setSummarizeConfig({ isOpen: false, item: null })}
-        item={summarizeConfig.item}
+        item={summarizeConfig?.item}
         companySlug={companySlug}
-      />
+      /> */}
 
       <DocumentMetadataModal
         isOpen={metadataConfig.isOpen}
