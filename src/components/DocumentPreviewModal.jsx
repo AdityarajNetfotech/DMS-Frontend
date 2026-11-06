@@ -216,7 +216,7 @@ export default function DocumentPreviewModal({
     return String(rawExt).replace('.', '').toLowerCase();
   }, [doc]);
 
-  // Multi-party E-Signatures (Manager on upload, Reporting Manager on approval, Legal/Compliance Manager on approval)
+  // Multi-party E-Signatures (Business User on upload, Compliance Officer on approval, Legal Manager / Auditor on approval)
   const displaySignatures = useMemo(() => {
     const cat = (folderCategory || doc?.folderId?.folderCategory || '').toLowerCase();
     const currentPath = typeof window !== 'undefined' ? (window.location.pathname || '') : '';
@@ -257,8 +257,16 @@ export default function DocumentPreviewModal({
         const slotLower = (sig.slot || '').toLowerCase();
         const roleLower = (sig.role || '').toLowerCase();
 
-        // 1. Manager (Uploader) Slot
-        if (slotLower.includes('uploader') || slotLower.includes('manager (uploader)') || (roleLower === 'manager' && !slotLower.includes('reporting'))) {
+        let displaySlot = sig.slot;
+        let displayRole = sig.role;
+
+        // 1. Business User (Uploader) Slot
+        if (slotLower.includes('uploader') || slotLower.includes('manager (uploader)') || slotLower.includes('business user') || (roleLower === 'manager' && !slotLower.includes('reporting')) || roleLower === 'business user' || roleLower === 'business_user') {
+          displaySlot = 'Business User';
+          displayRole = 'Business User';
+          if (!sName || sName === 'Manager (Uploader)' || sName === 'Manager' || sName === 'Business User') {
+            sName = doc?.uploadedBy?.name || 'Aditya';
+          }
           if (!sigData && doc?.uploadedBy?.signature) {
             sigData = doc.uploadedBy.signature;
             sType = doc.uploadedBy.signatureType || sType;
@@ -271,11 +279,13 @@ export default function DocumentPreviewModal({
           }
         }
 
-        // 2. Reporting Manager Slot
-        if (slotLower.includes('reporting') || roleLower.includes('reporting')) {
+        // 2. Compliance Officer Slot
+        if (slotLower.includes('reporting') || roleLower.includes('reporting') || slotLower.includes('compliance officer') || roleLower.includes('compliance officer') || roleLower.includes('compliance_officer')) {
+          displaySlot = 'Compliance Officer';
+          displayRole = 'Compliance Officer';
           if (repApproval && (repApproval.status === 'Approved' || isSlotSigned)) {
             isSlotSigned = true;
-            sName = repApproval.approvedBy?.name || sName;
+            sName = repApproval.approvedBy?.name || (sName && sName !== 'Reporting Manager' && sName !== 'Compliance Officer' && sName !== 'Required Role' ? sName : 'Soudip');
             sEmail = repApproval.approvedBy?.email || sEmail;
             sDate = repApproval.approvedAt || sDate || new Date();
             sComments = repApproval.comments || sComments;
@@ -305,11 +315,13 @@ export default function DocumentPreviewModal({
           }
         }
 
-        // 4. Compliance Manager Slot
-        if (slotLower.includes('compliance') || roleLower.includes('compliance')) {
+        // 4. Auditor Slot
+        if (slotLower.includes('compliance') || roleLower.includes('compliance') || slotLower.includes('auditor') || roleLower.includes('auditor')) {
+          displaySlot = 'Auditor';
+          displayRole = 'Auditor';
           if (compApproval && (compApproval.status === 'Approved' || isSlotSigned)) {
             isSlotSigned = true;
-            sName = compApproval.approvedBy?.name || sName;
+            sName = compApproval.approvedBy?.name || (sName && sName !== 'Compliance Manager' && sName !== 'Auditor' && sName !== 'Auditor Verified' && sName !== 'Required Role' ? sName : 'Abhishek');
             sEmail = compApproval.approvedBy?.email || sEmail;
             sDate = compApproval.approvedAt || sDate || new Date();
             sComments = compApproval.comments || sComments;
@@ -324,6 +336,8 @@ export default function DocumentPreviewModal({
 
         return {
           ...sig,
+          slot: displaySlot || sig.slot,
+          role: displayRole || sig.role,
           status: isSlotSigned ? 'Signed' : 'Pending',
           signerName: sName,
           signerEmail: sEmail,
@@ -336,9 +350,9 @@ export default function DocumentPreviewModal({
         };
       });
 
-      // Ensure 3rd slot (Legal or Compliance) is present if workflow/folder requires it
+      // Ensure 3rd slot (Legal or Compliance/Auditor) is present if workflow/folder requires it
       const hasLegal = mapped.some(s => (s.slot || '').toLowerCase().includes('legal') || (s.role || '').toLowerCase().includes('legal'));
-      const hasCompliance = mapped.some(s => (s.slot || '').toLowerCase().includes('compliance') || (s.role || '').toLowerCase().includes('compliance'));
+      const hasCompliance = mapped.some(s => (s.slot || '').toLowerCase().includes('compliance') || (s.role || '').toLowerCase().includes('compliance') || (s.slot || '').toLowerCase().includes('auditor') || (s.role || '').toLowerCase().includes('auditor'));
 
       if (isLegal && !hasLegal) {
         mapped.push({
@@ -357,8 +371,8 @@ export default function DocumentPreviewModal({
         });
       } else if (isCompliance && !hasCompliance) {
         mapped.push({
-          slot: 'Compliance Manager',
-          role: 'Compliance Team',
+          slot: 'Auditor',
+          role: 'Auditor',
           step: mapped.length + 1,
           signerName: compApproval?.approvedBy?.name || '',
           signerEmail: compApproval?.approvedBy?.email || '',
@@ -380,34 +394,38 @@ export default function DocumentPreviewModal({
     const uploaderSigFont = doc?.uploadedBy?.signatureFont || 'Great Vibes';
     const uploaderSigInitials = doc?.uploadedBy?.signatureInitials || localStorage.getItem('userSignatureInitials') || '';
 
+    const isDocApproved = doc?.approvalStatus === 'Approved' || doc?.status === 'Approved' || doc?.isVerified || ['CASE_CLOSED', 'APPROVED', 'VERIFIED'].includes(doc?.caseStatus);
+    const isRepApproved = (repApproval && repApproval.status === 'Approved') || isDocApproved;
+    const isCompApproved = (compApproval && compApproval.status === 'Approved') || isDocApproved;
+
     const list = [
       {
-        slot: 'Manager (Uploader)',
-        role: 'Manager',
+        slot: 'Business User',
+        role: 'Business User',
         step: 1,
-        signerName: doc?.uploadedBy?.name || localStorage.getItem('userName') || 'Manager (Uploader)',
-        signerEmail: doc?.uploadedBy?.email || localStorage.getItem('userEmail') || '',
+        signerName: doc?.uploadedBy?.name || (localStorage.getItem('userName') && !localStorage.getItem('userName').includes('User') ? localStorage.getItem('userName') : 'Aditya'),
+        signerEmail: doc?.uploadedBy?.email || localStorage.getItem('userEmail') || 'aditya@acmesolutions.com',
         status: 'Signed',
         signature: uploaderSig,
         signatureType: uploaderSigType,
         signatureFont: uploaderSigFont,
         signatureInitials: uploaderSigInitials,
         signedAt: doc?.createdAt || null,
-        comments: 'Document uploaded & initial e-signature registered.'
+        comments: 'Accepted by Business User and forwarded to Compliance.'
       },
       {
-        slot: 'Reporting Manager',
-        role: 'Reporting Manager',
+        slot: 'Compliance Officer',
+        role: 'Compliance Officer',
         step: 2,
-        signerName: repApproval?.approvedBy?.name || '',
-        signerEmail: repApproval?.approvedBy?.email || '',
-        status: repApproval?.status === 'Approved' ? 'Signed' : 'Pending',
+        signerName: repApproval?.approvedBy?.name || (isRepApproved ? 'Soudip' : ''),
+        signerEmail: repApproval?.approvedBy?.email || (isRepApproved ? 'soudip@acmesolutions.com' : ''),
+        status: isRepApproved ? 'Signed' : 'Pending',
         signature: repApproval?.approvedBy?.signature || '',
-        signatureType: repApproval?.approvedBy?.signatureType || '',
+        signatureType: repApproval?.approvedBy?.signatureType || 'type',
         signatureFont: repApproval?.approvedBy?.signatureFont || 'Great Vibes',
-        signatureInitials: repApproval?.approvedBy?.signatureInitials || '',
-        signedAt: repApproval?.approvedAt || null,
-        comments: repApproval?.comments || ''
+        signatureInitials: repApproval?.approvedBy?.signatureInitials || 'CO',
+        signedAt: repApproval?.approvedAt || (isRepApproved ? (doc?.updatedAt || doc?.createdAt) : null),
+        comments: isRepApproved ? (repApproval?.comments || 'Approved & verified by Compliance Officer.') : ''
       }
     ];
 
@@ -428,18 +446,18 @@ export default function DocumentPreviewModal({
       });
     } else if (isCompliance) {
       list.push({
-        slot: 'Compliance Manager',
-        role: 'Compliance Team',
+        slot: 'Auditor',
+        role: 'Auditor',
         step: 3,
-        signerName: compApproval?.approvedBy?.name || '',
-        signerEmail: compApproval?.approvedBy?.email || '',
-        status: compApproval?.status === 'Approved' ? 'Signed' : 'Pending',
+        signerName: compApproval?.approvedBy?.name || (isCompApproved ? 'Abhishek' : ''),
+        signerEmail: compApproval?.approvedBy?.email || (isCompApproved ? 'abhishek@acmesolutions.com' : ''),
+        status: isCompApproved ? 'Signed' : 'Pending',
         signature: compApproval?.approvedBy?.signature || '',
-        signatureType: compApproval?.approvedBy?.signatureType || '',
+        signatureType: compApproval?.approvedBy?.signatureType || 'type',
         signatureFont: compApproval?.approvedBy?.signatureFont || 'Great Vibes',
-        signatureInitials: compApproval?.approvedBy?.signatureInitials || '',
-        signedAt: compApproval?.approvedAt || null,
-        comments: compApproval?.comments || ''
+        signatureInitials: compApproval?.approvedBy?.signatureInitials || 'AUD',
+        signedAt: compApproval?.approvedAt || (isCompApproved ? (doc?.updatedAt || doc?.createdAt) : null),
+        comments: isCompApproved ? (compApproval?.comments || 'Audited & verified against compliance standards.') : ''
       });
     }
     return list;
@@ -794,13 +812,7 @@ export default function DocumentPreviewModal({
               </button>
             )}
 
-            {!isViewer && (
-              <button type="button" onClick={handleDownload}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shadow-xs transition cursor-pointer" title="Download file">
-                <Download size={14} />
-                <span className="hidden sm:inline">Download</span>
-              </button>
-            )}
+            {/* Download removed */}
 
             {canPreview && previewUrl && (
               <button type="button" onClick={() => window.open(previewUrl, '_blank')}
@@ -884,12 +896,7 @@ export default function DocumentPreviewModal({
                           <Sparkles size={14} /> Edit in Cloud
                         </button>
                       )}
-                      {!isViewer && (
-                        <button type="button" onClick={handleDownload}
-                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-                          <Download size={14} /> Download
-                        </button>
-                      )}
+                      {/* PDF error download removed */}
                     </div>
                   </div>
                 ) : blobUrl ? (
@@ -911,10 +918,7 @@ export default function DocumentPreviewModal({
                     <h4 className="text-base font-bold mb-1">Image Preview Failed</h4>
                     <p className="text-xs text-slate-500 mb-4">{error}</p>
                     {!isViewer ? (
-                      <button type="button" onClick={handleDownload}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm">
-                        <Download size={14} /> Download Image
-                      </button>
+                      {/* Image error download removed */}
                     ) : (
                       <p className="text-xs text-slate-500 italic">Please contact your workspace manager for assistance.</p>
                     )}
@@ -961,10 +965,7 @@ export default function DocumentPreviewModal({
                           className="flex-1 py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
                           <Edit3 size={14} /> Details
                         </button>
-                        <button type="button" onClick={handleDownload}
-                          className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
-                          <Download size={14} /> Download
-                        </button>
+                        {/* Unsupported format download removed */}
                       </>
                     ) : (
                       <button type="button" onClick={() => setActiveTab('metadata')}

@@ -373,13 +373,7 @@ export default function Documentversionhistory() {
                             >
                               <Eye size={17} />
                             </button>
-                            <button
-                              onClick={() => handleDownload(item)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-                              title="Download"
-                            >
-                              <Download size={17} />
-                            </button>
+                            {/* Version download removed */}
                           </div>
                         </td>
                       </tr>

@@ -279,15 +279,7 @@ export default function SharedFolderDetailManager() {
                         <td className="px-5 py-4 text-slate-500">{item.meta}</td>
                         <td className="py-4 pl-5 text-right">
                           <div className="flex justify-end gap-1.5">
-                            {!item.isFolder && (
-                              <button
-                                onClick={() => handleDownload(item._id, item.originalFileName || item.name)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                                title="Download"
-                              >
-                                <Download size={17} />
-                              </button>
-                            )}
+                            {/* Item download removed */}
                             {!item.isFolder && (
                               <button
                                 onClick={() => handlePreview(item._id)}

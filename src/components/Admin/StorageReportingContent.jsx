@@ -291,10 +291,7 @@ export default function StorageReportingContent() {
               across all sub-tenants.
             </p>
 
-            <button className="mt-6 text-[#0B2C87] font-semibold flex items-center gap-2">
-              <Download size={16} />
-              DOWNLOAD PDF
-            </button>
+            {/* DOWNLOAD PDF removed */}
           </div>
 
           {/* Card 2 */}
@@ -317,10 +314,7 @@ export default function StorageReportingContent() {
               activity period logs.
             </p>
 
-            <button className="mt-6 text-[#0B2C87] font-semibold flex items-center gap-2">
-              <Download size={16} />
-              DOWNLOAD CSV
-            </button>
+            {/* DOWNLOAD CSV removed */}
           </div>
 
           {/* Card 3 */}
@@ -343,10 +337,7 @@ export default function StorageReportingContent() {
               metadata audit trails.
             </p>
 
-            <button className="mt-6 text-[#0B2C87] font-semibold flex items-center gap-2">
-              <Download size={16} />
-              DOWNLOAD XLSX
-            </button>
+            {/* DOWNLOAD XLSX removed */}
           </div>
         </div>
       </div>

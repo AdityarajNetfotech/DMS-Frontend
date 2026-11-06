@@ -239,8 +239,8 @@ export default function FolderExployer() {
       const parent = path[path.length - 2];
       handleOpenFolder(parent._id);
     } else if (currentFolder.parentFolder) {
-      const pId = typeof currentFolder.parentFolder === 'object' 
-        ? currentFolder.parentFolder._id 
+      const pId = typeof currentFolder.parentFolder === 'object'
+        ? currentFolder.parentFolder._id
         : currentFolder.parentFolder;
       handleOpenFolder(pId);
     } else {
@@ -571,9 +571,8 @@ export default function FolderExployer() {
         <div key={folder._id}>
           <div
             style={{ paddingLeft: `${depth * 14 + 8}px` }}
-            className={`flex w-full items-center justify-between rounded-lg py-2 pr-2 text-left text-sm font-semibold transition group ${
-              isCurrent ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"
-            }`}
+            className={`flex w-full items-center justify-between rounded-lg py-2 pr-2 text-left text-sm font-semibold transition group ${isCurrent ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"
+              }`}
           >
             <button
               onClick={() => handleOpenFolder(folder._id)}
@@ -617,8 +616,8 @@ export default function FolderExployer() {
           <div>
             {(() => {
               const currentPath = currentFolder ? findFolderPath(folderTree, currentFolder._id) : [];
-              const parentFolder = currentPath.length > 1 
-                ? currentPath[currentPath.length - 2] 
+              const parentFolder = currentPath.length > 1
+                ? currentPath[currentPath.length - 2]
                 : (currentFolder?.parentFolder ? { _id: typeof currentFolder.parentFolder === 'object' ? currentFolder.parentFolder._id : currentFolder.parentFolder, name: 'Parent Folder' } : null);
 
               return (
@@ -662,9 +661,8 @@ export default function FolderExployer() {
                   <nav className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium">
                     <button
                       onClick={() => handleOpenFolder(null)}
-                      className={`hover:underline cursor-pointer flex items-center gap-1 ${
-                        !currentFolder ? 'font-bold text-slate-900' : 'text-blue-700'
-                      }`}
+                      className={`hover:underline cursor-pointer flex items-center gap-1 ${!currentFolder ? 'font-bold text-slate-900' : 'text-blue-700'
+                        }`}
                     >
                       <span>Home</span>
                     </button>
@@ -748,9 +746,8 @@ export default function FolderExployer() {
                   <button
                     onClick={() => setIsCreateFolderOpen(true)}
                     disabled={!uploadAllowed}
-                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition ${
-                      !uploadAllowed ? 'opacity-40 cursor-not-allowed' : 'hover:bg-blue-800'
-                    }`}
+                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm transition ${!uploadAllowed ? 'opacity-40 cursor-not-allowed' : 'hover:bg-blue-800'
+                      }`}
                   >
                     <Plus size={19} />
                     New Folder
@@ -759,9 +756,8 @@ export default function FolderExployer() {
                   <button
                     onClick={() => setIsUploadOpen(true)}
                     disabled={!uploadAllowed}
-                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition ${
-                      !uploadAllowed ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-800'
-                    }`}
+                    className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition ${!uploadAllowed ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-800'
+                      }`}
                   >
                     <UploadCloud size={19} />
                     Upload
@@ -848,134 +844,132 @@ export default function FolderExployer() {
                     paginatedItems.map((item, index) => {
                       const isNearBottom = index >= Math.max(3, paginatedItems.length - 3);
                       return (
-                      <React.Fragment key={item._id}>
-                      <tr
-                        className="text-sm font-medium text-slate-900 transition hover:bg-slate-50 group"
-                      >
-                        <td className="px-7 py-5">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            {item.kind === 'folder' && (
-                              <button
-                                type="button"
-                                onClick={(e) => toggleInlineFolder(e, item._id)}
-                                className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-800 transition cursor-pointer shrink-0"
-                                title={expandedFolders[item._id] ? "Close folder preview" : "Open folder preview to see files"}
-                              >
-                                {expandedFolders[item._id] ? (
-                                  <ChevronDown size={18} className="text-blue-700" />
-                                ) : (
-                                  <ChevronRight size={18} />
+                        <React.Fragment key={item._id}>
+                          <tr
+                            className="text-sm font-medium text-slate-900 transition hover:bg-slate-50 group"
+                          >
+                            <td className="px-7 py-5">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                {item.kind === 'folder' && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => toggleInlineFolder(e, item._id)}
+                                    className="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-800 transition cursor-pointer shrink-0"
+                                    title={expandedFolders[item._id] ? "Close folder preview" : "Open folder preview to see files"}
+                                  >
+                                    {expandedFolders[item._id] ? (
+                                      <ChevronDown size={18} className="text-blue-700" />
+                                    ) : (
+                                      <ChevronRight size={18} />
+                                    )}
+                                  </button>
                                 )}
-                              </button>
-                            )}
-                            <div
-                              className="flex items-center gap-3.5 cursor-pointer min-w-0 flex-1"
-                              onClick={() => item.kind === 'folder' ? handleOpenFolder(item._id) : handleAction('preview', item)}
-                            >
-                              <ItemIcon
-                                kind={item.kind}
-                                isOpen={item.kind === 'folder' && (Boolean(expandedFolders[item._id]) || currentFolder?._id === item._id)}
-                              />
-                              <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="truncate group-hover:text-blue-700 transition-colors font-semibold">
-                                    {item.name || item.title}
-                                  </span>
-                                  {item.kind === 'folder' && item.folderCategory === 'Legal' && (
-                                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200 shrink-0">
-                                      Legal
-                                    </span>
-                                  )}
-                                  {item.kind === 'folder' && item.folderCategory === 'Compliance' && (
-                                    <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shrink-0">
-                                      Compliance
-                                    </span>
-                                  )}
-                                </div>
+                                <div
+                                  className="flex items-center gap-3.5 cursor-pointer min-w-0 flex-1"
+                                  onClick={() => item.kind === 'folder' ? handleOpenFolder(item._id) : handleAction('preview', item)}
+                                >
+                                  <ItemIcon
+                                    kind={item.kind}
+                                    isOpen={item.kind === 'folder' && (Boolean(expandedFolders[item._id]) || currentFolder?._id === item._id)}
+                                  />
+                                  <div className="flex flex-col min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="truncate group-hover:text-blue-700 transition-colors font-semibold">
+                                        {item.name || item.title}
+                                      </span>
+                                      {item.kind === 'folder' && item.folderCategory === 'Legal' && (
+                                        <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200 shrink-0">
+                                          Legal
+                                        </span>
+                                      )}
+                                      {item.kind === 'folder' && item.folderCategory === 'Compliance' && (
+                                        <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shrink-0">
+                                          Compliance
+                                        </span>
+                                      )}
+                                    </div>
 
-                                <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                  {item.kind !== 'folder' && item.approvalStatus && (
-                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border ${
-                                      item.approvalStatus === 'Approved'
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                        : item.approvalStatus === 'Rejected'
-                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                        : 'bg-amber-50 text-amber-700 border-amber-200'
-                                    }`}>
-                                      {item.approvalStatus === 'Approved' ? '✓ Approved' :
-                                       item.approvalStatus === 'Rejected' ? '✕ Rejected' :
-                                       item.approvalStatus === 'Pending_Dual_Approval' ? '⏳ Pending Dual Approval' :
-                                       item.approvalStatus === 'Pending_Legal_Approval' ? '⏳ Pending Legal' :
-                                       item.approvalStatus === 'Pending_Compliance_Approval' ? '⏳ Pending Compliance' :
-                                       '⏳ Pending Approval'}
-                                    </span>
-                                  )}
-                                  {item.isLocked && <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"><Lock size={10} /> Locked</span>}
-                                  {item.isArchived && <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><Archive size={10} /> Archived</span>}
+                                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                      {/* {item.kind !== 'folder' && item.approvalStatus && (
+                                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border ${item.approvalStatus === 'Approved'
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                          : item.approvalStatus === 'Rejected'
+                                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                                          }`}>
+                                          {item.approvalStatus === 'Approved' ? '✓ Approved' :
+                                            item.approvalStatus === 'Rejected' ? '✕ Rejected' :
+                                              item.approvalStatus === 'Pending_Dual_Approval' ? '⏳ Pending Dual Approval' :
+                                                item.approvalStatus === 'Pending_Legal_Approval' ? '⏳ Pending Legal' :
+                                                  item.approvalStatus === 'Pending_Compliance_Approval' ? '⏳ Pending Compliance' :
+                                                    '⏳ Pending Approval'}
+                                        </span>
+                                      )} */}
+                                      {item.isLocked && <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"><Lock size={10} /> Locked</span>}
+                                      {item.isArchived && <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200"><Archive size={10} /> Archived</span>}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </div>
-                        </td>
+                            </td>
 
-                        <td className="px-6 py-5 text-slate-700 font-medium truncate">
-                          {item.uploadedBy?.name || item.createdBy?.name || "System"}
-                        </td>
+                            <td className="px-6 py-5 text-slate-700 font-medium truncate">
+                              {item.uploadedBy?.name || item.createdBy?.name || "System"}
+                            </td>
 
-                        <td className="px-6 py-5 text-slate-700 font-medium">
-                          {formatDate(item.updatedAt || item.createdAt)}
-                        </td>
+                            <td className="px-6 py-5 text-slate-700 font-medium">
+                              {formatDate(item.updatedAt || item.createdAt)}
+                            </td>
 
-                        <td className="px-6 py-5 text-slate-700 font-medium">{formatSize(item.fileSize, item.kind === 'folder')}</td>
+                            <td className="px-6 py-5 text-slate-700 font-medium">{formatSize(item.fileSize, item.kind === 'folder')}</td>
 
-                        <td className="px-6 py-5 text-slate-700 font-medium">
-                          <span className="capitalize">{item.type}</span>
-                        </td>
+                            <td className="px-6 py-5 text-slate-700 font-medium">
+                              <span className="capitalize">{item.type}</span>
+                            </td>
 
-                        <td className="px-7 py-5">
-                          <div className="flex justify-end gap-2 relative">
-                                                        <button
-                              onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200 cursor-pointer"
-                            >
-                              <MoreVertical size={20} />
-                            </button>
+                            <td className="px-7 py-5">
+                              <div className="flex justify-end gap-2 relative">
+                                <button
+                                  onClick={() => setActiveDropdown(activeDropdown === item._id ? null : item._id)}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-200 cursor-pointer"
+                                >
+                                  <MoreVertical size={20} />
+                                </button>
 
-                            {activeDropdown === item._id && (
-                              <div
-                                ref={dropdownRef}
-                                className={`absolute right-0 z-50 w-52 sm:w-56 max-h-60 sm:max-h-72 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl transition-all [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 [&::-webkit-scrollbar-track]:bg-transparent ${
-                                  isNearBottom ? 'bottom-11 origin-bottom-right' : 'top-11 origin-top-right'
-                                }`}
-                              >
-                                                                {item.kind === 'folder' && (
-                                  <button 
-                                    onClick={() => handleOpenFolder(item._id)} 
-                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                                {activeDropdown === item._id && (
+                                  <div
+                                    ref={dropdownRef}
+                                    className={`absolute right-0 z-50 w-52 sm:w-56 max-h-60 sm:max-h-72 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl transition-all [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 [&::-webkit-scrollbar-track]:bg-transparent ${isNearBottom ? 'bottom-11 origin-bottom-right' : 'top-11 origin-top-right'
+                                      }`}
                                   >
-                                    <FolderOpen size={16} className="text-blue-600 shrink-0" />
-                                    <span className="truncate">Open Folder</span>
-                                  </button>
-                                )}
-                                {item.kind === 'folder' && expandedFolders[item._id] && (
-                                  <button 
-                                    onClick={(e) => toggleInlineFolder(e, item._id)} 
-                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                                  >
-                                    <FolderX size={16} className="text-rose-500 shrink-0" />
-                                    <span className="truncate">Close Folder Preview</span>
-                                  </button>
-                                )}
-                                {item.kind !== 'folder' && (
-                                  <button 
-                                    onClick={() => handleAction('preview', item)} 
-                                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
-                                  >
-                                    <Eye size={16} className="text-blue-600 shrink-0" />
-                                    <span className="truncate">Preview Document</span>
-                                  </button>
-                                )}
-                                {/* AI Summarize Action
+                                    {item.kind === 'folder' && (
+                                      <button
+                                        onClick={() => handleOpenFolder(item._id)}
+                                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                                      >
+                                        <FolderOpen size={16} className="text-blue-600 shrink-0" />
+                                        <span className="truncate">Open Folder</span>
+                                      </button>
+                                    )}
+                                    {item.kind === 'folder' && expandedFolders[item._id] && (
+                                      <button
+                                        onClick={(e) => toggleInlineFolder(e, item._id)}
+                                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                      >
+                                        <FolderX size={16} className="text-rose-500 shrink-0" />
+                                        <span className="truncate">Close Folder Preview</span>
+                                      </button>
+                                    )}
+                                    {item.kind !== 'folder' && (
+                                      <button
+                                        onClick={() => handleAction('preview', item)}
+                                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-blue-700 hover:bg-blue-50 transition cursor-pointer"
+                                      >
+                                        <Eye size={16} className="text-blue-600 shrink-0" />
+                                        <span className="truncate">Preview Document</span>
+                                      </button>
+                                    )}
+                                    {/* AI Summarize Action
                                 <button 
                                   onClick={() => handleAction('summarize', item)} 
                                   className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-violet-700 hover:bg-violet-50 transition cursor-pointer"
@@ -983,7 +977,7 @@ export default function FolderExployer() {
                                   <Sparkles size={16} className="text-violet-600 shrink-0" />
                                   <span className="truncate">AI Summarize</span>
                                 </button> */}
-                                {/* {item.kind !== 'folder' && (
+                                    {/* {item.kind !== 'folder' && (
                                   <button 
                                     onClick={() => handleAction('approval-history', item)} 
                                     className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition cursor-pointer"
@@ -992,165 +986,155 @@ export default function FolderExployer() {
                                     <span className="truncate">Approval History</span>
                                   </button>
                                 )} */}
-                                {item.kind !== 'folder' && (
-                                  <>
-                                    <button 
-                                      onClick={() => handleAction('edit-details', item)} 
-                                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-                                    >
-                                      <Edit3 size={16} className="text-slate-500 shrink-0" />
-                                      <span className="truncate">Edit Details</span>
-                                    </button>
-                                    <button 
-                                      onClick={() => handleAction('metadata', item)} 
-                                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-                                    >
-                                      <Database size={16} className="text-slate-500 shrink-0" />
-                                      <span className="truncate">Metadata & OCR</span>
-                                    </button>
-                                  </>
-                                )}
-                                <button onClick={() => handleAction('download', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
-                                  <Download size={16} className="text-slate-500 shrink-0" />
-                                  <span className="truncate">Download</span>
-                                </button>
-                                {item.kind !== 'folder' && (
-                                  <button onClick={() => navigate(`/${companySlug}/manager/document-version-history?documentId=${item._id}`)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
-                                    <History size={16} className="text-slate-500 shrink-0" />
-                                    <span className="truncate">Version History</span>
-                                  </button>
-                                )}
-                                <button onClick={() => handleAction('share', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                    {item.kind !== 'folder' && (
+                                      <>
+                                        <button
+                                          onClick={() => handleAction('edit-details', item)}
+                                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                                        >
+                                          <Edit3 size={16} className="text-slate-500 shrink-0" />
+                                          <span className="truncate">Edit Details</span>
+                                        </button>
+                                        <button
+                                          onClick={() => handleAction('metadata', item)}
+                                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                                        >
+                                          <Database size={16} className="text-slate-500 shrink-0" />
+                                          <span className="truncate">Metadata & OCR</span>
+                                        </button>
+                                      </>
+                                    )}
+                                    {/* Download action removed */}
+                                    {item.kind !== 'folder' && (
+                                      <button onClick={() => navigate(`/${companySlug}/manager/document-version-history?documentId=${item._id}`)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                        <History size={16} className="text-slate-500 shrink-0" />
+                                        <span className="truncate">Version History</span>
+                                      </button>
+                                    )}
+                                    {/* <button onClick={() => handleAction('share', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
                                   <Share2 size={16} className="text-slate-500 shrink-0" />
                                   <span className="truncate">Share</span>
-                                </button>
-                                <button onClick={() => handleAction('archive', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
-                                  <Archive size={16} className="text-slate-500 shrink-0" />
-                                  <span className="truncate">Archive</span>
-                                </button>
-                                {item.kind !== 'folder' && (
-                                  <button onClick={() => handleAction('copy', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
-                                    <Copy size={16} className="text-slate-500 shrink-0" />
-                                    <span className="truncate">Copy</span>
-                                  </button>
-                                )}
-                                {item.kind === 'folder' && (
-                                  <button onClick={() => handleAction('upload', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
-                                    <UploadCloud size={16} className="text-slate-500 shrink-0" />
-                                    <span className="truncate">Add File</span>
-                                  </button>
-                                )}
-                                {/* <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                </button> */}
+                                    <button onClick={() => handleAction('archive', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                      <Archive size={16} className="text-slate-500 shrink-0" />
+                                      <span className="truncate">Archive</span>
+                                    </button>
+                                    {item.kind !== 'folder' && (
+                                      <button onClick={() => handleAction('copy', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                        <Copy size={16} className="text-slate-500 shrink-0" />
+                                        <span className="truncate">Copy</span>
+                                      </button>
+                                    )}
+                                    {item.kind === 'folder' && (
+                                      <button onClick={() => handleAction('upload', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                        <UploadCloud size={16} className="text-slate-500 shrink-0" />
+                                        <span className="truncate">Add File</span>
+                                      </button>
+                                    )}
+                                    {/* <button onClick={() => handleAction('move', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
                                   <FolderOutput size={16} className="text-slate-500 shrink-0" />
                                   <span className="truncate">Move</span>
                                 </button> */}
-                                <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
-                                  <Edit3 size={16} className="text-slate-500 shrink-0" />
-                                  <span className="truncate">Rename</span>
-                                </button>
-                                <hr className="my-1 border-slate-100" />
+                                    <button onClick={() => handleAction('rename', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                                      <Edit3 size={16} className="text-slate-500 shrink-0" />
+                                      <span className="truncate">Rename</span>
+                                    </button>
+                                    {/* <hr className="my-1 border-slate-100" />
                                 <button onClick={() => handleAction('delete', item)} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer">
                                   <Trash2 size={16} className="text-red-500 shrink-0" />
                                   <span className="truncate">Move to Trash</span>
-                                </button>
+                                </button> */}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                      {/* Inline Expanded Folder Preview */}
-                      {item.kind === 'folder' && expandedFolders[item._id] && (
-                        <tr className="bg-slate-50/90 border-b border-slate-200">
-                          <td colSpan={6} className="px-8 py-3.5">
-                            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                              <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-                                <div className="flex items-center gap-2">
-                                  <FolderOpen size={18} className="text-amber-500" />
-                                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                                    Files in {item.name}:
-                                  </span>
-                                  <span className="text-xs text-slate-400">
-                                    ({expandedFolders[item._id].items?.length || 0} items)
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenFolder(item._id)}
-                                    className="text-xs font-semibold text-blue-700 hover:underline flex items-center gap-1 cursor-pointer bg-blue-50 px-2.5 py-1 rounded border border-blue-200"
-                                  >
-                                    <span>Open Full Folder</span>
-                                    <span>&rarr;</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => toggleInlineFolder(e, item._id)}
-                                    className="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-2 py-1 rounded border border-rose-200 flex items-center gap-1 cursor-pointer"
-                                    title="Close folder preview"
-                                  >
-                                    <FolderX size={13} />
-                                    <span>Close</span>
-                                  </button>
-                                </div>
-                              </div>
-
-                              {expandedFolders[item._id].loading ? (
-                                <div className="py-6 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
-                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"></div>
-                                  Loading folder contents...
-                                </div>
-                              ) : expandedFolders[item._id].items?.length > 0 ? (
-                                <div className="divide-y divide-slate-100">
-                                  {expandedFolders[item._id].items.map((subItem) => (
-                                    <div key={subItem._id} className="py-2.5 flex items-center justify-between hover:bg-slate-50 px-2 rounded-lg transition">
-                                      <div 
-                                        className="flex items-center gap-3 cursor-pointer min-w-0 flex-1"
-                                        onClick={() => subItem.kind === 'folder' ? handleOpenFolder(subItem._id) : handleAction('preview', subItem)}
-                                      >
-                                        <ItemIcon kind={subItem.kind} />
-                                        <div className="flex flex-col min-w-0">
-                                          <span className="text-sm font-semibold text-slate-800 hover:text-blue-700 truncate">
-                                            {subItem.name || subItem.title}
-                                          </span>
-                                          <span className="text-[11px] text-slate-400">
-                                            {subItem.type} • {formatSize(subItem.fileSize, subItem.kind === 'folder')} • {formatDate(subItem.updatedAt || subItem.createdAt)}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        {subItem.kind !== 'folder' && (
-                                          <button
-                                            type="button"
-                                            onClick={() => handleAction('preview', subItem)}
-                                            className="px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition cursor-pointer"
-                                          >
-                                            Preview
-                                          </button>
-                                        )}
-                                        <button
-                                          type="button"
-                                          onClick={() => handleAction('download', subItem)}
-                                          className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition cursor-pointer"
-                                          title="Download"
-                                        >
-                                          <Download size={15} />
-                                        </button>
-                                      </div>
+                            </td>
+                          </tr>
+                          {/* Inline Expanded Folder Preview */}
+                          {item.kind === 'folder' && expandedFolders[item._id] && (
+                            <tr className="bg-slate-50/90 border-b border-slate-200">
+                              <td colSpan={6} className="px-8 py-3.5">
+                                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <FolderOpen size={18} className="text-amber-500" />
+                                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                                        Files in {item.name}:
+                                      </span>
+                                      <span className="text-xs text-slate-400">
+                                        ({expandedFolders[item._id].items?.length || 0} items)
+                                      </span>
                                     </div>
-                                  ))}
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenFolder(item._id)}
+                                        className="text-xs font-semibold text-blue-700 hover:underline flex items-center gap-1 cursor-pointer bg-blue-50 px-2.5 py-1 rounded border border-blue-200"
+                                      >
+                                        <span>Open Full Folder</span>
+                                        <span>&rarr;</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => toggleInlineFolder(e, item._id)}
+                                        className="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-2 py-1 rounded border border-rose-200 flex items-center gap-1 cursor-pointer"
+                                        title="Close folder preview"
+                                      >
+                                        <FolderX size={13} />
+                                        <span>Close</span>
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {expandedFolders[item._id].loading ? (
+                                    <div className="py-6 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"></div>
+                                      Loading folder contents...
+                                    </div>
+                                  ) : expandedFolders[item._id].items?.length > 0 ? (
+                                    <div className="divide-y divide-slate-100">
+                                      {expandedFolders[item._id].items.map((subItem) => (
+                                        <div key={subItem._id} className="py-2.5 flex items-center justify-between hover:bg-slate-50 px-2 rounded-lg transition">
+                                          <div
+                                            className="flex items-center gap-3 cursor-pointer min-w-0 flex-1"
+                                            onClick={() => subItem.kind === 'folder' ? handleOpenFolder(subItem._id) : handleAction('preview', subItem)}
+                                          >
+                                            <ItemIcon kind={subItem.kind} />
+                                            <div className="flex flex-col min-w-0">
+                                              <span className="text-sm font-semibold text-slate-800 hover:text-blue-700 truncate">
+                                                {subItem.name || subItem.title}
+                                              </span>
+                                              <span className="text-[11px] text-slate-400">
+                                                {subItem.type} • {formatSize(subItem.fileSize, subItem.kind === 'folder')} • {formatDate(subItem.updatedAt || subItem.createdAt)}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            {subItem.kind !== 'folder' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleAction('preview', subItem)}
+                                                className="px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition cursor-pointer"
+                                              >
+                                                Preview
+                                              </button>
+                                            )}
+                                            {/* Subitem download removed */}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="py-4 text-center text-xs text-slate-400 italic">
+                                      This folder is currently empty.
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <div className="py-4 text-center text-xs text-slate-400 italic">
-                                  This folder is currently empty.
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                      </React.Fragment>
-                    );
-                  })
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td

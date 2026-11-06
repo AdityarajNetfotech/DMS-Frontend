@@ -512,15 +512,7 @@ export default function SharedWithMeManager() {
                         </td>
                         <td className="py-5 pl-5 text-right">
                           <div className="flex justify-end gap-1.5">
-                            {!document.isFolder && (
-                              <button
-                                onClick={() => handleDownload(document._id)}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
-                                title="Download"
-                              >
-                                <Download size={18} />
-                              </button>
-                            )}
+                            {/* Document download removed */}
                             {!document.isFolder && (
                               <button
                                 onClick={() => handlePreview(document)}

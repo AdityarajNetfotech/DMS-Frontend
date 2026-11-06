@@ -586,15 +586,7 @@ export default function ElectronicSignatureSettings({
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadSignature}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition cursor-pointer"
-                title="Download signature PNG"
-              >
-                <Download size={13} />
-                <span>Download PNG</span>
-              </button>
+              {/* Download signature PNG removed */}
               <button
                 type="button"
                 onClick={handleRemoveSignature}
